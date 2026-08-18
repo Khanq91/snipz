@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:snipz/features/detail/detail_screen.dart';
 import 'package:snipz/features/gallery/gallery_screen.dart';
+import 'package:snipz/features/settings/settings_screen.dart';
 
 /// One router instance per app widget (created in SnipzApp's state so tests
 /// don't share navigation state). Every route uses a fade transition — the
@@ -17,6 +18,11 @@ GoRouter buildRouter() => GoRouter(
       path: '/component/:id',
       pageBuilder: (context, state) =>
           _fadePage(state, DetailScreen(id: state.pathParameters['id']!)),
+    ),
+    GoRoute(
+      path: '/settings',
+      pageBuilder: (context, state) =>
+          _fadePage(state, const SettingsScreen()),
     ),
   ],
   errorPageBuilder: (context, state) =>

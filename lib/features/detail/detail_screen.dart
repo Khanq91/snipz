@@ -45,18 +45,31 @@ class DetailScreen extends ConsumerWidget {
   }
 }
 
-class _DetailBody extends StatelessWidget {
+class _DetailBody extends ConsumerWidget {
   const _DetailBody({required this.meta});
 
   final ComponentMeta meta;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final bool isFavorite = ref.watch(favoritesProvider).contains(meta.id);
     return DefaultTabController(
       length: 2,
       child: Scaffold(
         appBar: AppBar(
           title: Text(meta.title),
+          actions: [
+            IconButton(
+              key: const ValueKey('detail-favorite'),
+              tooltip: isFavorite ? 'Unfavorite' : 'Favorite',
+              icon: Icon(
+                isFavorite ? Icons.star : Icons.star_border,
+                color: isFavorite ? Colors.amber : null,
+              ),
+              onPressed: () =>
+                  ref.read(favoritesProvider.notifier).toggle(meta.id),
+            ),
+          ],
           bottom: const TabBar(
             tabs: [
               Tab(text: 'Preview'),

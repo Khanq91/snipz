@@ -7,12 +7,13 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart' show ValueKey;
-import 'package:flutter/widgets.dart' show Scrollable;
+import 'package:flutter/widgets.dart' show GridView, Scrollable;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:snipz/app/app.dart';
 import 'package:snipz/app/providers.dart';
 import 'package:snipz/core/index_loader.dart';
+import 'package:snipz/core/prefs.dart';
 
 void main() {
   late List<String> reads;
@@ -25,7 +26,10 @@ void main() {
     });
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [indexLoaderProvider.overrideWithValue(loader)],
+        overrides: [
+          indexLoaderProvider.overrideWithValue(loader),
+          prefsStoreProvider.overrideWithValue(MemoryPrefsStore()),
+        ],
         child: const SnipzApp(),
       ),
     );
@@ -38,11 +42,14 @@ void main() {
   // longer fit the 800x600 test viewport). Fixed pumps, no settling.
   Future<Finder> revealTile(WidgetTester tester, String id) async {
     final Finder tile = find.byKey(ValueKey<String>('tile-$id'));
-    // .first: the reveal_list thumbnail mounts a second (nested) Scrollable.
+    // Target the grid's own scrollable — the filter chip row (horizontal
+    // ListView) and nested thumbnail scrollables would otherwise match first.
     await tester.scrollUntilVisible(
       tile,
       200,
-      scrollable: find.byType(Scrollable).first,
+      scrollable: find
+          .descendant(of: find.byType(GridView), matching: find.byType(Scrollable))
+          .first,
     );
     await tester.ensureVisible(tile);
     await tester.pump();
