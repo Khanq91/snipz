@@ -28,6 +28,11 @@ class BuiltComponent {
   final Map<String, Object?> sources;
 }
 
+/// Committed artifacts must be byte-identical no matter how git checked the
+/// sources out (core.autocrlf gives CRLF working trees on Windows, LF on CI),
+/// so every embedded text is canonicalized to LF.
+String _readLf(File f) => f.readAsStringSync().replaceAll('\r\n', '\n');
+
 /// Parses every component into artifact payloads. Collects ALL problems and
 /// throws one FormatException — never silently skips a component (§10).
 List<BuiltComponent> computeArtifacts() {
@@ -40,10 +45,7 @@ List<BuiltComponent> computeArtifacts() {
       if (!readme.existsSync()) {
         throw FormatException('[$id] README.md is missing');
       }
-      final Frontmatter fm = parseFrontmatter(
-        readme.readAsStringSync(),
-        id: id,
-      );
+      final Frontmatter fm = parseFrontmatter(_readLf(readme), id: id);
       final Map<String, Object?> m = fm.map;
       final Map<String, String> files = pairsToMap(
         m['files'],
@@ -104,7 +106,7 @@ List<BuiltComponent> computeArtifacts() {
         'readme_body': fm.body,
         'files': {
           for (final String name in dartFileNames(folder))
-            name: File('${folder.path}/$name').readAsStringSync(),
+            name: _readLf(File('${folder.path}/$name')),
         },
       };
       out.add(BuiltComponent(id: id, meta: meta, sources: sources));
