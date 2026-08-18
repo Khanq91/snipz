@@ -3,22 +3,23 @@
 id: gradient_waves
 title: Gradient Waves
 kind: paint
-tags: [waves, gradient, animated, background, ocean]
+tags: [waves, gradient, animated, background, shader, raymarch]
 
 # --- TAXONOMY (§2) ---
-paint_source: painter
+paint_source: shader
 carriers_verified: []
 carriers_failed: []
 scale_aware: true
 
 # --- PORTABILITY (§3 — files block is script-written, do not hand-edit) ---
-portability: single_file
+portability: folder_with_assets
 entry: gradient_waves.dart
 files:
   - gradient_waves.dart: "entry, public API"
 vendored_from: null
 assets_required: []
-shaders_required: []
+shaders_required:
+  - lib/components/gradient_waves/gradient_waves.frag
 
 # --- CURRENT DEPS (mutable — validate checks THIS) ---
 deps: []
@@ -37,7 +38,7 @@ created_deps: []
 platforms_initial: [android]
 
 # --- COMPONENT VERSION ---
-version: 1.0.0
+version: 2.0.0
 
 # --- DERIVED (computed from Test History by verify.dart, do not hand-edit) ---
 latest_known_good: null
@@ -49,73 +50,105 @@ preview: null
 
 # Gradient Waves
 
-Animated ocean-like waves: stacked sine layers filled with a horizon→wave
-gradient, fog-faded toward the back, crest highlight on each ridge. Dựng lại
-ý tưởng "Gradient Waves" của react-bits — bản gốc là WebGL raymarching; bản
-này stylize bằng `CustomPainter` thuần (không `.frag`, không asset — luật 4).
+Port 1:1 GLSL raymarch gốc của react-bits (plasma waves, fog 3D, camera
+tilt/parallax, film grain) qua `FragmentProgram` + file `gradient_waves.frag`
+đi kèm. Đây là bản trung thực — khác bản 1.x (layered sine painter) đã bị
+thay thế. Drag trên màn hình = mouse-hover parallax của web.
 
-**Không có factory `Shader`** — sóng là *geometry* (path hình sin thay đổi
-theo thời gian), không biểu diễn được bằng `ui.Gradient.*` tĩnh. Thay vào đó
-widget nhận `child` để làm nền cho card/button; demo có sẵn carrier mẫu.
+Khác bản gốc: raymarch cap **64 steps** (gốc lên 110) cho GPU Android tầm
+trung; `detail` chọn 24/40/64.
 
 ## Install
 
 ```yaml
-# no external dependencies — Flutter SDK only
+# no pub dependencies — Flutter SDK only, BUT the shader must be declared:
+flutter:
+  shaders:
+    - lib/components/gradient_waves/gradient_waves.frag
 ```
+
+Đặt folder ở chỗ khác → đổi path trong `shaders:` và truyền `assetKey`
+tương ứng cho widget/`loadGradientWavesProgram`.
 
 ## Reuse
 
-- **Copy:** the whole `gradient_waves/` folder (1 dart file, see `files`)
+- **Copy:** the whole `gradient_waves/` folder (1 dart + 1 frag, see `files`
+  + `shaders_required`)
 - **Import:** `import 'gradient_waves/gradient_waves.dart';` — one line
 - **Or:** `dart tools/export.dart gradient_waves` → zip + paste-ready block
 
-Button carrier example:
+Fill nền: `GradientWaves()`. Carrier khác qua `ShaderMask` — factory trả
+`ui.Shader` thật (§2.3):
 
 ```dart
-ClipRRect(
-  borderRadius: BorderRadius.circular(28),
-  child: SizedBox(
-    width: 220,
-    height: 56,
-    child: GradientWaves(
-      scale: 3.5, // small carrier → more periods (§9.1)
-      child: const Center(child: Text('Get started')),
-    ),
+final program = await loadGradientWavesProgram(); // once, app startup is fine
+
+// Text carrier — animate by rebuilding with a growing `time`:
+ShaderMask(
+  blendMode: BlendMode.srcIn,
+  shaderCallback: (bounds) => createGradientWavesShader(
+    program,
+    bounds,
+    time: t, // seconds
+    scale: 2, // small carrier → denser waves (§9.1)
   ),
+  child: const Text('WAVES'),
 )
 ```
 
 ## API
 
-`GradientWaves` widget:
+`createGradientWavesShader(program, bounds, {...})` — the primary API.
+`configureGradientWavesShader(shader, size, {...})` — same params, reuses
+one shader instance (per-frame cheap path). `GradientWaves` widget — fills
+bounds, own clock + touch parallax, optional `child`.
 
 | Param | Type | Default | Meaning |
 |---|---|---|---|
-| `scale` | `double` | `1.0` | Detail density (§9.1): wave periods across the width ≈ `1.5 × scale`. Button 48–56px dùng 3–4 |
-| `horizonColor` | `Color` | `0xFF5227FF` | Sky/background; far layers fog toward it |
-| `waveColor` | `Color` | `0xFFFF9FFC` | Body color of the front layer |
-| `crestColor` | `Color` | white | Ridge highlight + sky tint |
-| `layers` | `int` | `4` | Stacked wave layers (clamped 1..8) |
-| `amplitude` | `double` | `1.0` | Wave height multiplier (relative to paint height) |
-| `speed` | `double` | `1.0` | Animation tempo |
-| `animate` | `bool` | `true` | External stop switch — `false` halts the ticker, no frames scheduled |
-| `child` | `Widget?` | `null` | Foreground content on top of the waves |
+| `scale` | `double` | `1.0` | Detail density (§9.1): nhân vào `waveScale` — carrier nhỏ tăng 2–3 |
+| `horizonColor` | `Color` | `0xFF5227FF` | Nền trời / fog |
+| `waveColor` | `Color` | `0xFFFF9FFC` | Thân sóng |
+| `crestColor` | `Color` | trắng | Đỉnh sóng |
+| `speed` | `double` | `0.4` | Tempo |
+| `amplitude` | `double` | `2.5` | Chiều cao sóng (scene units) |
+| `waveScale` | `double` | `0.6` | Tần số sóng |
+| `waveRatio` | `double` | `0.9` | Tần số Y so với X |
+| `swell` | `double` | `35` | Phình cong lớn |
+| `turbulence` | `double` | `20` | Nhiễu loạn |
+| `tilt` | `double` | `1.11` | Camera roll (rad) |
+| `zoom` | `double` | `1.0` | FOV divisor |
+| `height` | `double` | `5.5` | Offset dọc camera |
+| `fogDepth` | `double` | `15` | Thấp = mù hơn |
+| `detail` | `GradientWavesDetail` | `medium` | Steps 24/40/64 — xem Caveats |
+| `brightness` / `opacity` | `double` | `1.0` | Output |
+| `grain` / `grainIntensity` | `bool`/`double` | `true`/`0.05` | Film grain trên alpha (widget mặc định bật; factory mặc định tắt cho text sạch) |
+| `touchParallax` / `parallaxStrength` | `bool`/`double` | `true`/`0.5` | Drag xoay camera (widget) |
+| `animate` | `bool` | `true` | Stop switch — tắt ticker |
+| `program` / `assetKey` | — | null / vault path | Preload hoặc đổi vị trí .frag |
 
 ## Caveats
 
-- **Not the raymarched original.** React-bits dùng fragment-shader
-  raymarching (fog 3D, camera parallax). Vault cấm `FragmentProgram` (luật
-  4) nên đây là bản 2.5D layered — cùng vibe, không cùng kỹ thuật.
-- Repaints every frame while `animate: true` (~48 segments × layers path
-  points — rẻ trên Android hiện đại, nhưng đừng chạy 10 instance cùng lúc).
-- No `Shader` factory → không áp lên text qua `ShaderMask` được. Muốn chữ
-  gradient động thì dùng `spectrum_sweep`.
-- Paint luôn phủ kín nền (sky gradient) — không có mode transparent.
+- **Cost = steps × pixels, mỗi step một lần eval plasma.** Cap 64. Trên
+  Android tầm trung (Impeller): fullscreen `medium` (40) là mức an toàn;
+  `high` (64) chỉ nên dùng cho vùng nhỏ hoặc flagship; máy yếu/màn 120Hz
+  → `low` (24) hoặc `animate: false` (raymarch chỉ chạy khi repaint).
+- Cần Flutter hỗ trợ `FragmentProgram` (3.10+; vault tạo trên 3.44.5).
+  Widget hiện `horizonColor` phẳng đúng 1 frame đầu khi program đang load.
+- Output **premultiplied alpha** (giống bản gốc) — compositing bình thường
+  là đúng; đừng đọc raw pixel rồi tự unpremultiply.
+- ShaderMask + text vẫn tốn `saveLayer` (§9.2) — của ShaderMask, không phải
+  shader này.
+- Grain hash theo logical px (gốc theo physical px) — hạt to hơn chút trên
+  màn dpr cao; muốn tắt: `grain: false`.
+- Liquid-crisp AA của bản web (dpr 2) phụ thuộc resolution thiết bị —
+  không có MSAA option.
 
 ## Changelog
 
-- **1.0.0** (2026-08-18) — created
+- **2.0.0** (2026-08-18) — thay bản stylized painter bằng port GLSL raymarch
+  gốc qua FragmentProgram; thêm factory `ui.Shader` (§2.3), grain, zoom/
+  tilt/swell/turbulence/fog đầy đủ theo props web. API painter cũ bị bỏ.
+- **1.0.0** (2026-08-18) — created (layered sine painter, đã thay thế)
 
 ## Test History
 
@@ -127,25 +160,28 @@ ClipRRect(
 Tích hợp component `GradientWaves` vào project này.
 
 **Context**
-- Chức năng: nền sóng gradient động (layered sine waves, crest highlight,
-  fog), painter thuần — không shader file, không asset.
+- Chức năng: nền sóng raymarch GLSL (port react-bits), FragmentProgram +
+  file `gradient_waves.frag` đi kèm. Factory `createGradientWavesShader`
+  trả `ui.Shader` cho ShaderMask; widget `GradientWaves` fill nền.
 - Public API: xem bảng API trong README.
-- Portability: single_file — copy cả folder `gradient_waves/` (1 file),
-  import duy nhất `gradient_waves.dart`.
-- Deps: không có — Flutter SDK only.
+- Portability: folder_with_assets — copy cả folder `gradient_waves/`
+  (1 dart + 1 frag), import duy nhất `gradient_waves.dart`, VÀ khai báo
+  `.frag` trong pubspec `shaders:` (xem Install).
+- Deps: không có pub package — Flutter SDK only.
 
 **Việc cần làm**
 1. Copy folder `gradient_waves/` vào thư mục widget của project đích.
-2. Fullscreen: đặt `GradientWaves()` dưới cùng một `Stack`. Card/button:
-   bọc `ClipRRect` + `SizedBox`, truyền content qua `child` (xem ví dụ
-   README).
+2. Thêm path `.frag` vào pubspec `shaders:` (path thật sau khi copy) và
+   truyền `assetKey` nếu khác path mặc định trong `gradient_waves.dart`.
+3. Fullscreen: `GradientWaves()`. Text/carrier khác: `ShaderMask` +
+   `createGradientWavesShader` (xem ví dụ README).
 
 **Việc cần adapt theo project đích**
-- `horizonColor`/`waveColor`/`crestColor`: đổi sang palette của project.
-- `scale`: carrier nhỏ dưới 100px → tăng lên 3–4 (§9.1).
-- Màn hình tĩnh/ít pin: đặt `animate: false` khi widget offscreen.
+- 3 màu sang palette của project; `detail` theo tier thiết bị target.
+- Carrier nhỏ: tăng `scale` 2–3 (§9.1).
+- Màn hình tĩnh: `animate: false`.
 
 **Rào (constraints)**
-- KHÔNG sửa logic bên trong. Chỉ đổi styling qua constructor params.
-- KHÔNG tách entry file ra nhiều file.
+- KHÔNG sửa logic shader/dart bên trong. Chỉ đổi qua params.
+- KHÔNG đổi thứ tự uniform trong `.frag` — Dart set theo index.
 - Flutter version của project thấp hơn `latest_known_good` → đọc Test History trước.

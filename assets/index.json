@@ -1,6 +1,6 @@
 {
   "_generated": true,
-  "_generated_at": "2026-08-18T09:04:39.419974Z",
+  "_generated_at": "2026-08-18T09:46:51.385488Z",
   "_generated_flutter": "3.44.5",
   "_generated_dart": "3.12.2",
   "components": [
@@ -163,20 +163,23 @@
         "gradient",
         "animated",
         "background",
-        "ocean"
+        "shader",
+        "raymarch"
       ],
-      "paint_source": "painter",
+      "paint_source": "shader",
       "carriers_verified": [],
       "carriers_failed": {},
       "scale_aware": true,
-      "portability": "single_file",
+      "portability": "folder_with_assets",
       "entry": "gradient_waves.dart",
       "files": {
         "gradient_waves.dart": "entry, public API"
       },
       "vendored_from": null,
       "assets_required": [],
-      "shaders_required": [],
+      "shaders_required": [
+        "lib/components/gradient_waves/gradient_waves.frag"
+      ],
       "deps": {},
       "origin": "reimplemented",
       "source": "https://reactbits.dev/backgrounds/gradient-waves",
@@ -189,7 +192,7 @@
       "platforms_initial": [
         "android"
       ],
-      "version": "1.0.0",
+      "version": "2.0.0",
       "latest_known_good": null,
       "last_verified": null,
       "status": null,
@@ -223,6 +226,53 @@
       "deps": {},
       "origin": "reimplemented",
       "source": "https://reactbits.dev/backgrounds/particles",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-18",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
+      "id": "pixel_blast",
+      "title": "Pixel Blast",
+      "kind": "paint",
+      "tags": [
+        "pixel",
+        "dither",
+        "ripple",
+        "interactive",
+        "animated",
+        "background",
+        "shader"
+      ],
+      "paint_source": "shader",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": true,
+      "portability": "folder_with_assets",
+      "entry": "pixel_blast.dart",
+      "files": {
+        "pixel_blast.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [
+        "lib/components/pixel_blast/pixel_blast.frag"
+      ],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://reactbits.dev/backgrounds/pixel-blast",
       "author": "Khang",
       "license": "MIT",
       "created": "2026-08-18",

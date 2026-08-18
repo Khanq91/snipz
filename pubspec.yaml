@@ -31,3 +31,10 @@ flutter:
   assets:
     - assets/index.json
     - assets/sources/
+
+  # Shader components are the one exception to the rule above: the shaders:
+  # key does not support directories, so each .frag is listed explicitly.
+  # Keep in sync with each component's `shaders_required` frontmatter.
+  shaders:
+    - lib/components/gradient_waves/gradient_waves.frag
+    - lib/components/pixel_blast/pixel_blast.frag
