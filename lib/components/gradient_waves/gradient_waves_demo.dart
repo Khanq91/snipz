@@ -17,7 +17,26 @@ final ComponentDemo gradientWavesDemo = ComponentDemo(
     touchParallax: false,
     detail: GradientWavesDetail.low,
   ),
-  // No hand-built carriers: this paint satisfies the §2.3 shader contract
-  // (createGradientWavesShader returns a real ui.Shader for ShaderMask), so
-  // carrier composition is the host's job — see the README example.
+  // No hand-built carriers: this paint satisfies the §2.3 shader contract.
+  // One FragmentShader is reused and reconfigured per tick, as the entry
+  // recommends — cheaper than allocating per frame.
+  shader: CarrierShaderSpec(
+    prepare: () async {
+      final program = await loadGradientWavesProgram();
+      final shader = program.fragmentShader();
+      return CarrierShaderHandle(
+        build: (bounds, scale, time) {
+          configureGradientWavesShader(
+            shader,
+            bounds.size,
+            time: time,
+            scale: scale,
+            detail: GradientWavesDetail.low, // small carriers, small budget
+          );
+          return shader;
+        },
+        dispose: shader.dispose,
+      );
+    },
+  ),
 );

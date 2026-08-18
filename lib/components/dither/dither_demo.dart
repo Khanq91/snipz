@@ -11,6 +11,20 @@ final ComponentDemo ditherDemo = ComponentDemo(
   builder: (context) => const _DitherShowcase(),
   // Static frame for the gallery grid — no ticker per tile (§8.3).
   thumbnailBuilder: (context) => const DitherWaves(animate: false),
+  // §2.3 shader contract: one FragmentShader reused, reconfigured per tick.
+  shader: CarrierShaderSpec(
+    prepare: () async {
+      final program = await loadDitherProgram();
+      final shader = program.fragmentShader();
+      return CarrierShaderHandle(
+        build: (bounds, scale, time) {
+          configureDitherShader(shader, bounds.size, time: time, scale: scale);
+          return shader;
+        },
+        dispose: shader.dispose,
+      );
+    },
+  ),
 );
 
 /// Fullscreen animated waves with foreground content — the standard

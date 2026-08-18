@@ -13,6 +13,17 @@ final ComponentDemo spectrumSweepDemo = ComponentDemo(
   builder: (context) => const _SpinningSweep(),
   // Static thumbnail: no ticker in the grid (§9.2).
   thumbnailBuilder: (context) => const SpectrumSweep(),
+  // §2.3 shader contract: the app builds every carrier itself from this —
+  // carrierBuilders stays empty. Same spin as the fullscreen demo.
+  shader: CarrierShaderSpec(
+    prepare: () async => CarrierShaderHandle(
+      build: (bounds, scale, time) => createSpectrumSweepShader(
+        bounds,
+        scale: scale,
+        rotation: time * 2 * math.pi / 24,
+      ),
+    ),
+  ),
 );
 
 /// Usage example: the widget wrapper with an externally driven rotation.

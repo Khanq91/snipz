@@ -1,6 +1,6 @@
 {
   "_generated": true,
-  "_generated_at": "2026-08-18T14:23:56.380902Z",
+  "_generated_at": "2026-08-18T15:00:57.426855Z",
   "_generated_flutter": "3.44.0",
   "_generated_dart": "3.12.0",
   "components": [
@@ -523,8 +523,15 @@
         "shader"
       ],
       "paint_source": "shader",
-      "carriers_verified": [],
-      "carriers_failed": {},
+      "carriers_verified": [
+        "fullscreen",
+        "card",
+        "button",
+        "text"
+      ],
+      "carriers_failed": {
+        "icon": "7 màu quanh 24–48px alias thành vành nhiễu — mất bản chất spectrum"
+      },
       "scale_aware": true,
       "portability": "single_file",
       "entry": "spectrum_sweep.dart",

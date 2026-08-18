@@ -1,5 +1,5 @@
 // Preview stage per component kind (spec §8.5):
-//   paint             -> full-stage preview (carrier switcher is Phase 3)
+//   paint             -> carrier switcher (Phase 3)
 //   carrier/composite -> padded frame + local light/dark toggle
 //   effect            -> sample target + effect on/off toggle
 // Checkerboard and device frame are later phases.
@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:snipz/app/theme.dart';
 import 'package:snipz/core/component_demo.dart';
 import 'package:snipz/core/models.dart';
+import 'package:snipz/features/detail/carrier_switcher.dart';
 
 class PreviewStage extends StatefulWidget {
   const PreviewStage({super.key, required this.meta, required this.demo});
@@ -39,9 +40,9 @@ class _PreviewStageState extends State<PreviewStage> {
     };
   }
 
-  /// Paint fills the whole stage — closest to its fullscreen carrier.
+  /// Paint gets the carrier switcher (§8.5) — fullscreen chip by default.
   Widget _paintStage(ComponentDemo demo) =>
-      ClipRect(child: demo.builder(context));
+      CarrierSwitcher(meta: widget.meta, demo: demo);
 
   Widget _framedStage(ComponentDemo demo) {
     final ThemeData stageTheme = buildTheme(

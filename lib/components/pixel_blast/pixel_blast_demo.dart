@@ -19,7 +19,26 @@ final ComponentDemo pixelBlastDemo = ComponentDemo(
     color: Color(0xFF060010),
     child: PixelBlast(animate: false, enableRipples: false),
   ),
-  // No hand-built carriers: this paint satisfies the §2.3 shader contract
-  // (createPixelBlastShader returns a real ui.Shader for ShaderMask), so
-  // carrier composition is the host's job — see the README example.
+  // No hand-built carriers: this paint satisfies the §2.3 shader contract.
+  // One FragmentShader is reused and reconfigured per tick. transparent:false
+  // gives shape carriers the dark backdrop the demo supplies by hand above.
+  shader: CarrierShaderSpec(
+    prepare: () async {
+      final program = await loadPixelBlastProgram();
+      final shader = program.fragmentShader();
+      return CarrierShaderHandle(
+        build: (bounds, scale, time) {
+          configurePixelBlastShader(
+            shader,
+            bounds.size,
+            time: time,
+            scale: scale,
+            transparent: false,
+          );
+          return shader;
+        },
+        dispose: shader.dispose,
+      );
+    },
+  ),
 );

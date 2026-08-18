@@ -7,8 +7,9 @@ tags: [gradient, sweep, spectrum, shader]
 
 # --- TAXONOMY (§2) ---
 paint_source: shader
-carriers_verified: []
-carriers_failed: []
+carriers_verified: [fullscreen, card, button, text]
+carriers_failed:
+  - icon: "7 màu quanh 24–48px alias thành vành nhiễu — mất bản chất spectrum"
 scale_aware: true
 
 # --- PORTABILITY (§3 — files block is script-written, do not hand-edit) ---
@@ -90,6 +91,22 @@ ShaderMask(
 | `colors` | `List<Color>?` | spectrum palette | Palette, cycled `scale` times |
 
 `SpectrumSweep` widget: same `scale` / `rotation` / `colors`, fills its bounds.
+
+## Carriers
+
+Verified qua carrier switcher của app (widget test
+`test/carrier_switcher_test.dart` — không cần `carrierBuilders`, chỉ dùng
+factory §2.3).
+
+| Carrier | Result | Note |
+|---|---|---|
+| fullscreen | pass | demo mặc định |
+| card | pass | — |
+| button | pass | — |
+| text | pass | ShaderMask + srcIn; saveLayer mỗi frame (§9.2) — switcher chỉ render khi tap chip |
+| border | untested | — |
+| icon | fail | 7 màu quanh 24–48px alias thành vành nhiễu — mất bản chất spectrum |
+| divider | untested | — |
 
 ## Caveats
 
