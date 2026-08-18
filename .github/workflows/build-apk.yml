@@ -43,6 +43,9 @@ jobs:
       - name: Run tests
         run: flutter test --no-pub
 
+      - name: Validate vault
+        run: dart tools/validate.dart
+
       - name: Validate signing secrets
         shell: bash
         env:

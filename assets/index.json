@@ -1,0 +1,167 @@
+{
+  "_generated": true,
+  "_generated_at": "2026-08-18T08:01:08.738143Z",
+  "_generated_flutter": "3.44.5",
+  "_generated_dart": "3.12.2",
+  "components": [
+    {
+      "id": "aurora_stack",
+      "title": "Aurora Stack",
+      "kind": "paint",
+      "tags": [
+        "aurora",
+        "animated",
+        "blobs",
+        "background",
+        "grain"
+      ],
+      "paint_source": "widget",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": true,
+      "portability": "folder",
+      "entry": "aurora_stack.dart",
+      "files": {
+        "aurora_stack.dart": "entry, public API",
+        "_blob_painter.dart": "required by aurora_stack.dart",
+        "_noise_layer.dart": "required by aurora_stack.dart"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "original",
+      "source": null,
+      "author": "Khang",
+      "license": null,
+      "created": "2026-08-18",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": "3.44.5",
+      "last_verified": "2026-08-18",
+      "status": "verified",
+      "preview": null,
+      "file_count": 3,
+      "test_history": [
+        {
+          "date": "2026-08-18",
+          "flutter": "3.44.5",
+          "dart": "3.12.2",
+          "deps_resolved": "—",
+          "platform": "android",
+          "result": "pass",
+          "note": "initial: analyze + tests clean"
+        }
+      ]
+    },
+    {
+      "id": "glass_card",
+      "title": "Glass Card",
+      "kind": "carrier",
+      "tags": [
+        "glass",
+        "blur",
+        "card",
+        "frosted"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "glass_card.dart",
+      "files": {
+        "glass_card.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "original",
+      "source": null,
+      "author": "Khang",
+      "license": null,
+      "created": "2026-08-18",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": "3.44.5",
+      "last_verified": "2026-08-18",
+      "status": "verified",
+      "preview": null,
+      "file_count": 1,
+      "test_history": [
+        {
+          "date": "2026-08-18",
+          "flutter": "3.44.5",
+          "dart": "3.12.2",
+          "deps_resolved": "—",
+          "platform": "android",
+          "result": "pass",
+          "note": "initial: analyze + tests clean"
+        }
+      ]
+    },
+    {
+      "id": "spectrum_sweep",
+      "title": "Spectrum Sweep",
+      "kind": "paint",
+      "tags": [
+        "gradient",
+        "sweep",
+        "spectrum",
+        "shader"
+      ],
+      "paint_source": "shader",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": true,
+      "portability": "single_file",
+      "entry": "spectrum_sweep.dart",
+      "files": {
+        "spectrum_sweep.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "original",
+      "source": null,
+      "author": "Khang",
+      "license": null,
+      "created": "2026-08-18",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": "3.44.5",
+      "last_verified": "2026-08-18",
+      "status": "verified",
+      "preview": null,
+      "file_count": 1,
+      "test_history": [
+        {
+          "date": "2026-08-18",
+          "flutter": "3.44.5",
+          "dart": "3.12.2",
+          "deps_resolved": "—",
+          "platform": "android",
+          "result": "pass",
+          "note": "initial: analyze + tests clean"
+        }
+      ]
+    }
+  ]
+}
