@@ -1,7 +1,8 @@
 # PROMPT BÀN GIAO — Snipz (Flutter Component Vault)
 
-> Spec **v3**. Paste toàn bộ file này vào session Claude Code mới.
-> v3 = v2 + chốt toàn bộ mâu thuẫn đã được review, + chốt platform target là Android/mobile.
+> Spec **v3.1**. Paste toàn bộ file này vào session Claude Code mới.
+> v3 = chốt mâu thuẫn sau review + platform Android/mobile.
+> v3.1 = thay `adapted` bằng `origin` (§0.3), + 3 điều chỉnh kế hoạch Phase 0/1 (§0.4).
 
 ---
 
@@ -41,12 +42,62 @@ Máy dev chạy Flutter **3.44.5**; CI đang pin **3.38.9** (mặc định templ
 | 14 | `registry.dart` relative-import ra ngoài `lib/` — rủi ro tooling | Đặt vault ở **`lib/components/`**, không ở root. Vì `components/` không còn cần là asset (xem #6), lợi ích duy nhất của root chỉ là thẩm mỹ thư mục — không đáng đổi lấy rủi ro analyzer/CI. Ranh giới "vault vs viewer" do `validate.dart` enforce, không do vị trí thư mục |
 | 15 | `--files=n` nghĩa là gì | entry + (n−1) file `_part.dart` placeholder |
 | 16 | `preview.gif` | Phục vụ người xem repo trên GitHub. App KHÔNG dùng (§1 bắt render widget thật). Hai đối tượng đọc khác nhau, không mâu thuẫn |
+| 17 | `adapted: bool` quá thô — không phân biệt được code tôi tự dựng lại với code copy nguyên xi | Thay bằng `origin` 4 giá trị. Xem §0.3 |
+
+### 0.3 `origin` — thay cho `adapted` (quyết định #17)
+
+Vault này KHÔNG chỉ chứa code copy về rồi chạy. Phần lớn là **tôi nhìn một UI thấy đẹp rồi tự dựng lại**. Mục tiêu là dễ mang qua project khác, không phải lưu trữ code người khác.
+
+`adapted: true/false` không diễn tả được khác biệt đó, mà khác biệt đó lại quan trọng đúng vào lúc cần: 8 tháng sau tôi lấy component ra dùng cho việc kiếm tiền và không nhớ nó từ đâu ra.
+
+```yaml
+origin: reimplemented   # original | reimplemented | adapted | copied
+```
+
+| Giá trị | Nghĩa | `source` | `license` |
+|---|---|---|---|
+| `original` | Tôi tự nghĩ, tự viết | optional | của tôi |
+| `reimplemented` | Nhìn UI/thiết kế rồi **tự code lại**. Code là của tôi | optional — chỉ là *cảm hứng*, có thể chỉ là ảnh chụp màn hình, không có URL | của tôi |
+| `adapted` | Lấy code người khác rồi sửa | **bắt buộc** | license gốc **vẫn ràng buộc**, đi theo file sang project mới |
+| `copied` | Nguyên xi | **bắt buộc** | như trên |
+
+`validate.dart` (check #10): `origin` là `adapted`/`copied` → `source` và `license` bắt buộc có, **không được `unknown`**. `original`/`reimplemented` → `source` optional.
+
+Gallery hiện icon nhỏ theo `origin` → lọc được "cái nào hoàn toàn của tôi" trong 1 giây.
+
+Hệ quả với `author`: với `original`/`reimplemented` thì `author` là tôi, không phải người khác.
+
+### 0.4 Điều chỉnh kế hoạch (áp dụng khi implement Phase 0/1)
+
+**a. Import graph phải follow cả `export`, không chỉ `import`.**
+Entry file theo §3.1.3 re-export file phụ (`export '_noise_layer.dart';`). Nếu graph chỉ parse `import` thì `_noise_layer.dart` trông như **file mồ côi** → check #4 FAIL sai trên chính seed `aurora_stack`. Và nếu "sửa" bằng cách thêm import thừa vào entry cho qua check thì hỏng cả hai đầu.
+→ Parse bằng **regex trên `import` / `export` / `part`**. **KHÔNG dùng package `analyzer`** — nó nặng và gắn chặt Dart SDK version, đúng loại nợ mà `validate.dart` phải tránh, vì đây là thứ duy nhất phải sống sót qua mọi lần nâng Flutter.
+
+**b. Mọi check của `validate.dart` phải có test âm tính.**
+Check không có kịch bản phá thì rất dễ được implement thành hàm luôn trả `pass` mà vẫn báo hoàn thành. Ngoài 4 kịch bản đã có ở Phase 1, bổ sung:
+
+| Check | Kịch bản phá | Kỳ vọng |
+|---|---|---|
+| #2 portability | Thêm `import 'package:http/http.dart';` vào seed mà không khai `deps` | FAIL |
+| #3 entry | Đổi tên entry lệch tên folder | FAIL |
+| #6 schema | Set `status: stale` | FAIL (quyết định #5 — check dễ bị làm no-op nhất) |
+| #7 registry sync | Xoá entry trong `registry.dart` | FAIL |
+| #10 origin | `origin: copied` mà `license: unknown` | FAIL |
+
+**c. Assert "1 lần load" làm ngay Phase 1, không dời sang Phase 2.**
+`index_loader` nhận reader dạng inject (`Future<String> Function(String path)`) thay vì gọi thẳng `rootBundle`. Đếm được số lần gọi bằng unit test ngay Phase 1, không cần chờ gallery. Rẻ, và giữ đúng nguyên tắc "phase nào verify phase đó".
+
+**d. KHÔNG tạo `analysis_options.yaml` riêng cho `lib/components/`.**
+Code trong vault phần lớn là do tôi viết (xem §0.3), nên `flutter analyze` = 0 issue là mục tiêu bình thường, đạt được. Thêm file nới lint chỉ tạo chỗ trốn cho code cẩu thả về sau.
+Trường hợp thật sự copy nguyên xi (`origin: copied`) mà lint đỏ: dùng `// ignore:` **cục bộ ngay dòng đó** — có dấu vết, review được, và nhìn là biết đang mượn code. Không nới cấu hình toàn folder.
 
 ---
 
 ## 1. MỤC TIÊU SẢN PHẨM
 
-Tôi sưu tầm component / background / animation / effect Flutter từ trên mạng và muốn quản lý chúng có hệ thống để tái sử dụng.
+Tôi sưu tầm component / background / animation / effect Flutter và muốn quản lý chúng có hệ thống để tái sử dụng.
+
+**"Sưu tầm" KHÔNG có nghĩa là chỉ copy code người khác về.** Phần lớn là tôi nhìn một UI thấy đẹp (Dribbble shot, app khác, video) rồi **tự dựng lại bằng code của mình**. Mục tiêu là **dễ mang qua project khác**, không phải lưu trữ code người khác. Trường `origin` (§0.3) phân biệt bốn mức độ này, và nó ảnh hưởng tới license khi tôi dùng component cho việc kiếm tiền.
 
 > Sản phẩm thật là **cái vault**. App Flutter chỉ là **mục lục có hình** (visual index).
 
@@ -258,10 +309,10 @@ deps:
   - blur: ^4.0.1
 
 # --- ORIGIN (bắt buộc) ---
-source: https://...
-author: "Tên tác giả gốc"
-license: MIT                 # hoặc unknown
-adapted: true
+origin: reimplemented        # original | reimplemented | adapted | copied — xem §0.3
+source: https://...          # bắt buộc nếu origin là adapted/copied; là *cảm hứng* nếu reimplemented
+author: "Khang"              # tôi, nếu origin là original/reimplemented
+license: MIT                 # bắt buộc nếu adapted/copied, KHÔNG được unknown
 
 # --- CREATION SNAPSHOT (bất biến, script tự điền, thuần khảo cổ) ---
 created: 2026-08-17
@@ -525,7 +576,12 @@ Script quan trọng nhất. Check:
 6. **Frontmatter schema** — field bắt buộc, enum `kind`/`status`/`result`/`portability`/carrier, format ngày. `status` KHÔNG được có giá trị `stale`
 7. **Registry sync** — khớp folder thực tế
 8. **Artifact sync** — `index.json` và `sources/*.json` khớp README + source thực tế. Stale → fail, gợi ý chạy `build_index.dart`
-9. **Warning** (không fail) — `kind: paint` mà `scale_aware: false`
+9. **Origin/license** — `origin` là `adapted`/`copied` → `source` và `license` bắt buộc có, không được `unknown` (§0.3)
+10. **Warning** (không fail) — `kind: paint` mà `scale_aware: false`
+
+**Cách parse import graph** (dùng cho check #1 và #4): regex trên `import` / `export` / `part`. **Phải follow cả `export`**, vì entry re-export file phụ — chỉ parse `import` thì file phụ thành mồ côi và check #4 FAIL sai. **KHÔNG dùng package `analyzer`** (§0.4a).
+
+**Mọi check phải có test âm tính** — xem bảng §0.4b.
 
 Exit code khác 0 nếu fail → pre-commit hook + CI.
 
@@ -550,6 +606,9 @@ Frontmatter parse lỗi: báo rõ **id nào, dòng nào**, không nuốt lỗi r
 - **Hive** — favorite/note/settings (JSON string)
 - **KHÔNG Freezed** — model immutable viết tay + `fromJson` (~15 field, không đáng kéo build_runner vào)
 - `yaml` — parse frontmatter (chỉ trong `tools/`, app đọc JSON)
+- `archive` (dev dep) — nén zip cho `export.dart`, thuần Dart nên chạy được cả Windows/CI, không shell ra `zip`/`Compress-Archive`
+- **KHÔNG dùng package `analyzer`** — import graph parse bằng regex (§0.4a)
+- Deps app (riverpod, go_router, hive, flutter_markdown_plus) chỉ thêm ở **Phase 2** khi dùng thật. Phase 1 chỉ cần `yaml` + `archive` + 2 dòng `assets:` cố định
 - **`flutter_markdown_plus`** — render README. `flutter_markdown` gốc đã bị Flutter team discontinue; đây là bản kế nhiệm chính thức. Không cân nhắc lại
 
 ---
@@ -557,8 +616,9 @@ Frontmatter parse lỗi: báo rõ **id nào, dòng nào**, không nuốt lỗi r
 ## 12. ROADMAP
 
 **Phase 0 — Dọn project trống**
-Xoá platform folder không dùng (giữ `android`, `ios`; bỏ web/macOS/linux/windows). Nâng CI pin 3.38.9 → 3.44.5. Thay `widget_test.dart` mặc định. `analysis_options.yaml` chế độ nghiêm (làm ngay khi chưa có code cũ phải sửa; thứ gì analyzer bắt được thì đừng viết lại trong `validate.dart`). Thêm step `dart tools/validate.dart` vào CI.
-→ *Verify:* `flutter build apk --debug` pass; CI xanh.
+Project hiện chỉ có `android/` và `web/` (chưa từng sinh `ios/` — **không tạo thêm**). Xoá `web/`. Nâng CI pin 3.38.9 → 3.44.5 (CI hiện nhiều khả năng đang đỏ vì pubspec đòi `sdk: ^3.10.8` mà 3.38.9 mang Dart cũ hơn → `flutter pub get` fail). Thay `widget_test.dart` mặc định bằng smoke test tối thiểu. `analysis_options.yaml` chế độ nghiêm — **một file duy nhất ở root, KHÔNG tạo file riêng cho `lib/components/`** (§0.4d).
+Step `dart tools/validate.dart` **chuyển sang cuối Phase 1**, thêm cùng lúc với script. Không dùng guard `if exists` — skip im lặng là phản mục tiêu.
+→ *Verify:* `flutter build apk --debug` pass; `flutter analyze` 0 issue; CI xanh.
 
 **Phase 1 — Xương sống + scripts**
 Model + index loader, pipeline `index.json` + `sources/*.json` (§5.0), `registry.dart`, 5 script, 3 seed (1 single-file, 1 multi-file, 1 paint dùng `ui.Gradient.sweep`).
@@ -569,12 +629,14 @@ Model + index loader, pipeline `index.json` + `sources/*.json` (§5.0), `registr
 - Sửa tay `index.json` cho lệch README → validate **FAIL** (chứng minh artifact sync check chạy thật)
 - Tạo file `_orphan.dart` không ai import → validate **FAIL**
 - `validate.dart --fix` khôi phục đúng block `files:`
+- Các test âm tính còn lại theo bảng §0.4b (portability / entry / schema `stale` / registry sync / origin-license) → tất cả phải FAIL đúng chỗ
 - `verify.dart test_x` append đúng dòng + regen
 - `export.dart test_x` ra zip + block paste-ready
+- **Unit test đếm số lần gọi reader của `index_loader` = 1** (reader inject, không gọi thẳng `rootBundle` — §0.4c)
 
 **Phase 2 — App viewer cơ bản**
 Gallery grid 2 cột (load từ `index.json`) + thumbnail widget thật + detail preview stage theo `kind` + tab Info (lazy).
-→ *Verify:* 3 seed hiện đúng thumbnail trên máy Android thật; mở detail render đúng; light/dark không lỗi. **Gallery chỉ đọc đúng 1 asset lúc khởi động** — assert số lần `rootBundle.loadString` trước khi grid render lần đầu.
+→ *Verify:* 3 seed hiện đúng thumbnail trên máy Android thật; mở detail render đúng; light/dark không lỗi. Assert "1 lần load" đã chốt ở Phase 1 (§0.4c); ở đây chỉ xác nhận gallery không phá nó.
 
 **Phase 3 — Carrier switcher**
 `ShaderMask` pipeline cho paint shader, `carrierBuilders` fallback, chip scroll ngang 3 state, lazy carrier `text`, `scale` wire vào switcher.
