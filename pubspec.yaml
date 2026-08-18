@@ -10,6 +10,10 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
+  # App viewer (Phase 2, spec §11). Hive comes in Phase 4 — do not add early.
+  flutter_riverpod: ^3.0.3
+  go_router: ^17.2.5
+  flutter_markdown_plus: ^1.0.5
 
 dev_dependencies:
   flutter_test:
