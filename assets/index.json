@@ -1,8 +1,9 @@
 {
   "_generated": true,
-  "_generated_at": "2026-08-18T15:00:57.426855Z",
+  "_generated_at": "2026-08-18T15:27:20.055675Z",
   "_generated_flutter": "3.44.0",
   "_generated_dart": "3.12.0",
+  "_generated_remote": "https://github.com/Khanq91/snipz",
   "components": [
     {
       "id": "aurora_stack",

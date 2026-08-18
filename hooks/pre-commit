@@ -1,0 +1,11 @@
+#!/bin/sh
+# Snipz pre-commit (spec §10, §12 Phase 5): a commit with invalid frontmatter
+# or stale artifacts must never land. Enable once per clone with:
+#   git config core.hooksPath hooks
+echo "pre-commit: dart tools/validate.dart"
+dart tools/validate.dart || {
+  echo ""
+  echo "pre-commit: validate FAILED — fix the vault (or run"
+  echo "  dart tools/build_index.dart  if artifacts are stale) and retry."
+  exit 1
+}

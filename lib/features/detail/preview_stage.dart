@@ -26,6 +26,7 @@ class PreviewStage extends StatefulWidget {
 class _PreviewStageState extends State<PreviewStage> {
   bool _dark = false;
   bool _effectOn = true;
+  bool _checkerboard = false;
 
   @override
   Widget build(BuildContext context) {
@@ -55,8 +56,8 @@ class _PreviewStageState extends State<PreviewStage> {
           // follow the stage toggle, not the app theme.
           child: Theme(
             data: stageTheme,
-            child: ColoredBox(
-              color: stageTheme.colorScheme.surface,
+            child: _stageBackground(
+              surface: stageTheme.colorScheme.surface,
               child: Padding(
                 padding: const EdgeInsets.all(24),
                 child: ClipRRect(
@@ -71,6 +72,7 @@ class _PreviewStageState extends State<PreviewStage> {
           children: [
             const Text('Stage'),
             const Spacer(),
+            _checkerboardButton(),
             IconButton(
               tooltip: _dark ? 'Switch to light' : 'Switch to dark',
               icon: Icon(_dark ? Icons.light_mode : Icons.dark_mode),
@@ -82,16 +84,39 @@ class _PreviewStageState extends State<PreviewStage> {
     );
   }
 
+  /// Checkerboard reveals transparency (§8.5 common toggles).
+  Widget _stageBackground({required Color surface, required Widget child}) =>
+      _checkerboard
+          ? CustomPaint(
+              painter: const _CheckerboardPainter(),
+              child: child,
+            )
+          : ColoredBox(color: surface, child: child);
+
+  Widget _checkerboardButton() => IconButton(
+    key: const ValueKey('toggle-checkerboard'),
+    tooltip: 'Checkerboard background',
+    isSelected: _checkerboard,
+    icon: const Icon(Icons.grid_on_outlined),
+    onPressed: () => setState(() => _checkerboard = !_checkerboard),
+  );
+
   Widget _effectStage(ComponentDemo demo) {
     return Column(
       children: [
         Expanded(
-          child: _effectOn ? ClipRect(child: demo.builder(context)) : _target(),
+          child: _stageBackground(
+            surface: Theme.of(context).colorScheme.surface,
+            child: _effectOn
+                ? ClipRect(child: demo.builder(context))
+                : _target(),
+          ),
         ),
         _controlBar(
           children: [
             const Text('Effect'),
             const Spacer(),
+            _checkerboardButton(),
             Switch(
               value: _effectOn,
               onChanged: (value) => setState(() => _effectOn = value),
@@ -124,4 +149,27 @@ class _PreviewStageState extends State<PreviewStage> {
     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
     child: Row(children: children),
   );
+}
+
+class _CheckerboardPainter extends CustomPainter {
+  const _CheckerboardPainter();
+
+  static const double _cell = 10;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Paint light = Paint()..color = const Color(0xFFCCCCCC);
+    final Paint dark = Paint()..color = const Color(0xFF999999);
+    for (int y = 0; (y * _cell) < size.height; y++) {
+      for (int x = 0; (x * _cell) < size.width; x++) {
+        canvas.drawRect(
+          Rect.fromLTWH(x * _cell, y * _cell, _cell, _cell),
+          (x + y).isEven ? light : dark,
+        );
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_CheckerboardPainter oldDelegate) => false;
 }

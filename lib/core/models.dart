@@ -273,6 +273,7 @@ class ComponentIndex {
     required this.generatedAt,
     required this.generatedFlutter,
     required this.generatedDart,
+    required this.remoteUrl,
     required this.components,
   });
 
@@ -280,6 +281,7 @@ class ComponentIndex {
     generatedAt: json['_generated_at']! as String,
     generatedFlutter: json['_generated_flutter']! as String,
     generatedDart: json['_generated_dart']! as String,
+    remoteUrl: json['_generated_remote'] as String?,
     components: (json['components']! as List<Object?>)
         .map((c) => ComponentMeta.fromJson(c! as Map<String, Object?>))
         .toList(),
@@ -291,6 +293,10 @@ class ComponentIndex {
   /// "target Flutter version" in settings (decision #2).
   final String generatedFlutter;
   final String generatedDart;
+
+  /// https URL of the repo's `origin`, stamped by build_index.dart — used by
+  /// the share sheet to link GitHub (§8.6). Null when the repo has no remote.
+  final String? remoteUrl;
   final List<ComponentMeta> components;
 }
 

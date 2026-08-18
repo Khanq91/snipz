@@ -125,16 +125,36 @@ const JsonEncoder artifactEncoder = JsonEncoder.withIndent('  ');
 String encodeSources(BuiltComponent c) =>
     '${artifactEncoder.convert(c.sources)}\n';
 
+/// Normalized https URL of remote `origin`, or null when the repo has none.
+/// Stamped into the index so the app's share sheet can link GitHub (§8.6) —
+/// the app cannot run git at runtime.
+String? readGitRemote() {
+  final ProcessResult r = Process.runSync('git', [
+    'config',
+    '--get',
+    'remote.origin.url',
+  ], runInShell: true);
+  if (r.exitCode != 0) return null;
+  String url = (r.stdout as String).trim();
+  if (url.isEmpty) return null;
+  final RegExpMatch? ssh = RegExp(r'^git@([^:]+):(.+)$').firstMatch(url);
+  if (ssh != null) url = 'https://${ssh.group(1)}/${ssh.group(2)}';
+  if (url.endsWith('.git')) url = url.substring(0, url.length - 4);
+  return url;
+}
+
 String encodeIndex(
   List<BuiltComponent> comps, {
   required String generatedAt,
   required FlutterEnv env,
+  String? remote,
 }) =>
     '${artifactEncoder.convert({
       '_generated': true,
       '_generated_at': generatedAt,
       '_generated_flutter': env.flutter,
       '_generated_dart': env.dart,
+      '_generated_remote': remote,
       'components': [for (final BuiltComponent c in comps) c.meta],
     })}\n';
 
@@ -148,6 +168,7 @@ int writeArtifacts(FlutterEnv env) {
       comps,
       generatedAt: DateTime.now().toUtc().toIso8601String(),
       env: env,
+      remote: readGitRemote(),
     ),
   );
   final Set<String> keep = {for (final BuiltComponent c in comps) c.id};
