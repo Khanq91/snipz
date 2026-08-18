@@ -1,6 +1,6 @@
 {
   "_generated": true,
-  "_generated_at": "2026-08-18T08:01:08.738143Z",
+  "_generated_at": "2026-08-18T09:04:39.419974Z",
   "_generated_flutter": "3.44.5",
   "_generated_dart": "3.12.2",
   "components": [
@@ -60,6 +60,49 @@
       ]
     },
     {
+      "id": "blur_text",
+      "title": "Blur Text",
+      "kind": "effect",
+      "tags": [
+        "text",
+        "blur",
+        "reveal",
+        "animated",
+        "stagger"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "blur_text.dart",
+      "files": {
+        "blur_text.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://reactbits.dev/text-animations/blur-text",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-18",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
       "id": "glass_card",
       "title": "Glass Card",
       "kind": "carrier",
@@ -110,6 +153,135 @@
           "note": "initial: analyze + tests clean"
         }
       ]
+    },
+    {
+      "id": "gradient_waves",
+      "title": "Gradient Waves",
+      "kind": "paint",
+      "tags": [
+        "waves",
+        "gradient",
+        "animated",
+        "background",
+        "ocean"
+      ],
+      "paint_source": "painter",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": true,
+      "portability": "single_file",
+      "entry": "gradient_waves.dart",
+      "files": {
+        "gradient_waves.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://reactbits.dev/backgrounds/gradient-waves",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-18",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
+      "id": "particle_field",
+      "title": "Particle Field",
+      "kind": "paint",
+      "tags": [
+        "particles",
+        "animated",
+        "background",
+        "interactive",
+        "starfield"
+      ],
+      "paint_source": "painter",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": true,
+      "portability": "single_file",
+      "entry": "particle_field.dart",
+      "files": {
+        "particle_field.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://reactbits.dev/backgrounds/particles",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-18",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
+      "id": "reveal_list",
+      "title": "Reveal List",
+      "kind": "carrier",
+      "tags": [
+        "list",
+        "scroll",
+        "stagger",
+        "entrance",
+        "selection"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "reveal_list.dart",
+      "files": {
+        "reveal_list.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://reactbits.dev/components/animated-list",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-18",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
     },
     {
       "id": "spectrum_sweep",

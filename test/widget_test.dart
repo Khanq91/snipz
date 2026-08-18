@@ -7,6 +7,7 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart' show ValueKey;
+import 'package:flutter/widgets.dart' show Scrollable;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:snipz/app/app.dart';
@@ -33,15 +34,37 @@ void main() {
     await tester.pump();
   }
 
+  // Scroll the 2-col grid until the tile is fully visible (7+ components no
+  // longer fit the 800x600 test viewport). Fixed pumps, no settling.
+  Future<Finder> revealTile(WidgetTester tester, String id) async {
+    final Finder tile = find.byKey(ValueKey<String>('tile-$id'));
+    // .first: the reveal_list thumbnail mounts a second (nested) Scrollable.
+    await tester.scrollUntilVisible(
+      tile,
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.ensureVisible(tile);
+    await tester.pump();
+    return tile;
+  }
+
   testWidgets('gallery boots with exactly one asset read', (tester) async {
     await pumpApp(tester);
 
     expect(tester.takeException(), isNull);
     expect(reads, ['assets/index.json']);
     expect(find.byKey(const ValueKey<String>('tile-aurora_stack')), findsOne);
-    expect(find.byKey(const ValueKey<String>('tile-glass_card')), findsOne);
-    expect(find.byKey(const ValueKey<String>('tile-spectrum_sweep')), findsOne);
     expect(find.text('Aurora Stack'), findsOneWidget);
+
+    // Last tile alphabetically — reachable by scrolling, still zero extra
+    // asset reads (thumbnails never touch assets/sources/).
+    await revealTile(tester, 'spectrum_sweep');
+    expect(find.byKey(const ValueKey<String>('tile-spectrum_sweep')), findsOne);
+    // Flush the one-shot entrance animations mounted while scrolling past
+    // the reveal_list thumbnail.
+    await tester.pump(const Duration(seconds: 3));
+    expect(reads, ['assets/index.json']);
   });
 
   testWidgets('detail opens without extra reads; Info tab loads lazily', (
@@ -50,7 +73,7 @@ void main() {
     await pumpApp(tester);
 
     // glass_card: static carrier demo — safe to pump without settling.
-    await tester.tap(find.byKey(const ValueKey<String>('tile-glass_card')));
+    await tester.tap(await revealTile(tester, 'glass_card'));
     await tester.pump(const Duration(milliseconds: 400)); // route fade
     await tester.pump();
 
