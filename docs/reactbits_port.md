@@ -7,7 +7,7 @@
 
 ## Bước 0 — ĐỌC SOURCE THẬT, KHÔNG ĐOÁN TỪ TRANG WEB
 
-Repo react-bits đã clone ở máy. Đường dẫn source:
+Repo react-bits đã clone ở máy. Đường dẫn source: D:\project\react-bits
 
 ```
 src/ts-tailwind/<Category>/<ComponentName>/

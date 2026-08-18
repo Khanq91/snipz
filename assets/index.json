@@ -1,8 +1,8 @@
 {
   "_generated": true,
-  "_generated_at": "2026-08-18T09:46:51.385488Z",
-  "_generated_flutter": "3.44.5",
-  "_generated_dart": "3.12.2",
+  "_generated_at": "2026-08-18T13:46:55.583015Z",
+  "_generated_flutter": "3.44.0",
+  "_generated_dart": "3.12.0",
   "components": [
     {
       "id": "aurora_stack",
@@ -103,6 +103,98 @@
       "test_history": []
     },
     {
+      "id": "dither",
+      "title": "Dither Waves",
+      "kind": "paint",
+      "tags": [
+        "dither",
+        "retro",
+        "pixel",
+        "waves",
+        "noise",
+        "animated",
+        "background",
+        "shader"
+      ],
+      "paint_source": "shader",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": true,
+      "portability": "folder_with_assets",
+      "entry": "dither.dart",
+      "files": {
+        "dither.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [
+        "lib/components/dither/dither.frag"
+      ],
+      "deps": {},
+      "origin": "adapted",
+      "source": "https://github.com/DavidHDev/react-bits/blob/main/src/ts-tailwind/Backgrounds/Dither/Dither.tsx",
+      "author": "Khang",
+      "license": "MIT + Commons Clause License Condition v1.0 (react-bits, © David Haz)",
+      "created": "2026-08-18",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
+      "id": "elastic_slider",
+      "title": "Elastic Slider",
+      "kind": "composite",
+      "tags": [
+        "slider",
+        "elastic",
+        "spring",
+        "interactive",
+        "control",
+        "input"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "elastic_slider.dart",
+      "files": {
+        "elastic_slider.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://reactbits.dev/components/elastic-slider",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-18",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
       "id": "glass_card",
       "title": "Glass Card",
       "kind": "carrier",
@@ -153,6 +245,49 @@
           "note": "initial: analyze + tests clean"
         }
       ]
+    },
+    {
+      "id": "gradient_text",
+      "title": "Gradient Text",
+      "kind": "effect",
+      "tags": [
+        "text",
+        "gradient",
+        "animated",
+        "mask",
+        "border"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "gradient_text.dart",
+      "files": {
+        "gradient_text.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://reactbits.dev/text-animations/gradient-text",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-18",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
     },
     {
       "id": "gradient_waves",
@@ -291,6 +426,50 @@
       "test_history": []
     },
     {
+      "id": "pixel_transition",
+      "title": "Pixel Transition",
+      "kind": "effect",
+      "tags": [
+        "pixel",
+        "transition",
+        "reveal",
+        "card",
+        "interactive",
+        "retro"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "pixel_transition.dart",
+      "files": {
+        "pixel_transition.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://reactbits.dev/animations/pixel-transition",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-18",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
       "id": "reveal_list",
       "title": "Reveal List",
       "kind": "carrier",
@@ -384,6 +563,50 @@
           "note": "initial: analyze + tests clean"
         }
       ]
+    },
+    {
+      "id": "text_type",
+      "title": "Text Type",
+      "kind": "effect",
+      "tags": [
+        "text",
+        "typewriter",
+        "typing",
+        "cursor",
+        "animated",
+        "loop"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "text_type.dart",
+      "files": {
+        "text_type.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://reactbits.dev/text-animations/text-type",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-18",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
     }
   ]
 }
