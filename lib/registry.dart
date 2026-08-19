@@ -18,6 +18,8 @@ import 'package:snipz/components/option_wheel/option_wheel_demo.dart';
 import 'package:snipz/components/particle_field/particle_field_demo.dart';
 import 'package:snipz/components/pixel_blast/pixel_blast_demo.dart';
 import 'package:snipz/components/pixel_transition/pixel_transition_demo.dart';
+import 'package:snipz/components/pixel_walker/pixel_walker_demo.dart';
+import 'package:snipz/components/pull_reveal_refresh/pull_reveal_refresh_demo.dart';
 import 'package:snipz/components/reveal_list/reveal_list_demo.dart';
 import 'package:snipz/components/scroll_expand/scroll_expand_demo.dart';
 import 'package:snipz/components/spectrum_sweep/spectrum_sweep_demo.dart';
@@ -42,6 +44,8 @@ final Map<String, ComponentDemo> componentRegistry = <String, ComponentDemo>{
   'particle_field': particleFieldDemo,
   'pixel_blast': pixelBlastDemo,
   'pixel_transition': pixelTransitionDemo,
+  'pixel_walker': pixelWalkerDemo,
+  'pull_reveal_refresh': pullRevealRefreshDemo,
   'reveal_list': revealListDemo,
   'scroll_expand': scrollExpandDemo,
   'spectrum_sweep': spectrumSweepDemo,
