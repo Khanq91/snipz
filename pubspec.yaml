@@ -1,7 +1,7 @@
 name: snipz
 description: "Personal Flutter component vault — the app is just a visual index."
 publish_to: 'none'
-version: 1.1.0+8
+version: 1.1.1+9
 
 environment:
   sdk: ^3.10.8
@@ -41,6 +41,7 @@ flutter:
   # Keep in sync with each component's `shaders_required` frontmatter.
   shaders:
     - lib/components/dither/dither.frag
+    - lib/components/faulty_terminal/faulty_terminal.frag
     - lib/components/gradient_waves/gradient_waves.frag
     - lib/components/morph_slider/morph_slider.frag
     - lib/components/pixel_blast/pixel_blast.frag

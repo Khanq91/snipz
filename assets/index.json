@@ -1,6 +1,6 @@
 {
   "_generated": true,
-  "_generated_at": "2026-08-19T08:51:43.250767Z",
+  "_generated_at": "2026-08-19T09:07:59.259383Z",
   "_generated_flutter": "3.44.5",
   "_generated_dart": "3.12.2",
   "_generated_remote": "https://github.com/Khanq91/snipz",
@@ -328,6 +328,55 @@
       "test_history": []
     },
     {
+      "id": "faulty_terminal",
+      "title": "Faulty Terminal",
+      "kind": "paint",
+      "tags": [
+        "terminal",
+        "crt",
+        "glitch",
+        "scanline",
+        "retro",
+        "hacker",
+        "animated",
+        "background",
+        "shader"
+      ],
+      "paint_source": "shader",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": true,
+      "portability": "folder_with_assets",
+      "entry": "faulty_terminal.dart",
+      "files": {
+        "faulty_terminal.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [
+        "lib/components/faulty_terminal/faulty_terminal.frag"
+      ],
+      "deps": {},
+      "origin": "adapted",
+      "source": "https://github.com/DavidHDev/react-bits/blob/main/src/ts-tailwind/Backgrounds/FaultyTerminal/FaultyTerminal.tsx",
+      "author": "Khang",
+      "license": "MIT + Commons Clause License Condition v1.0 (react-bits, © David Haz)",
+      "created": "2026-08-19",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
       "id": "fluid_glass",
       "title": "Fluid Glass",
       "kind": "effect",
@@ -513,6 +562,51 @@
       "test_history": []
     },
     {
+      "id": "gradual_blur",
+      "title": "Gradual Blur",
+      "kind": "effect",
+      "tags": [
+        "blur",
+        "backdrop",
+        "gradient",
+        "overlay",
+        "scroll",
+        "fade",
+        "frosted"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "gradual_blur.dart",
+      "files": {
+        "gradual_blur.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "adapted",
+      "source": "https://github.com/DavidHDev/react-bits/blob/main/src/ts-tailwind/Animations/GradualBlur/GradualBlur.tsx",
+      "author": "Khang",
+      "license": "MIT + Commons Clause License Condition v1.0 (react-bits, © David Haz)",
+      "created": "2026-08-19",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
       "id": "morph_slider",
       "title": "Morph Slider",
       "kind": "composite",
@@ -679,6 +773,51 @@
       "author": "Khang",
       "license": "MIT",
       "created": "2026-08-18",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
+      "id": "pixel_card",
+      "title": "Pixel Card",
+      "kind": "carrier",
+      "tags": [
+        "pixel",
+        "card",
+        "interactive",
+        "reveal",
+        "shimmer",
+        "retro",
+        "animated"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "pixel_card.dart",
+      "files": {
+        "pixel_card.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "adapted",
+      "source": "https://github.com/DavidHDev/react-bits/blob/main/src/ts-tailwind/Components/PixelCard/PixelCard.tsx",
+      "author": "Khang",
+      "license": "MIT + Commons Clause License Condition v1.0 (react-bits, © David Haz)",
+      "created": "2026-08-19",
       "created_flutter": "3.44.5",
       "created_dart": "3.12.2",
       "created_deps": {},
@@ -1018,6 +1157,94 @@
       "test_history": []
     },
     {
+      "id": "star_border",
+      "title": "Star Border",
+      "kind": "carrier",
+      "tags": [
+        "border",
+        "glow",
+        "button",
+        "star",
+        "animated"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "star_border.dart",
+      "files": {
+        "star_border.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "adapted",
+      "source": "https://github.com/DavidHDev/react-bits/blob/main/src/ts-tailwind/Animations/StarBorder/StarBorder.tsx",
+      "author": "Khang",
+      "license": "MIT + Commons Clause License Condition v1.0 (react-bits, © David Haz)",
+      "created": "2026-08-19",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
+      "id": "stepper",
+      "title": "Step Flow",
+      "kind": "composite",
+      "tags": [
+        "stepper",
+        "steps",
+        "onboarding",
+        "form",
+        "wizard",
+        "transition",
+        "animated"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "stepper.dart",
+      "files": {
+        "stepper.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "adapted",
+      "source": "https://github.com/DavidHDev/react-bits/blob/main/src/ts-tailwind/Components/Stepper/Stepper.tsx",
+      "author": "Khang",
+      "license": "MIT + Commons Clause License Condition v1.0 (react-bits, © David Haz)",
+      "created": "2026-08-19",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
       "id": "text_type",
       "title": "Text Type",
       "kind": "effect",
@@ -1047,6 +1274,49 @@
       "author": "Khang",
       "license": "MIT",
       "created": "2026-08-18",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
+      "id": "true_focus",
+      "title": "True Focus",
+      "kind": "effect",
+      "tags": [
+        "text",
+        "focus",
+        "blur",
+        "frame",
+        "animated"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "true_focus.dart",
+      "files": {
+        "true_focus.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "adapted",
+      "source": "https://github.com/DavidHDev/react-bits/blob/main/src/ts-tailwind/TextAnimations/TrueFocus/TrueFocus.tsx",
+      "author": "Khang",
+      "license": "MIT + Commons Clause License Condition v1.0 (react-bits, © David Haz)",
+      "created": "2026-08-19",
       "created_flutter": "3.44.5",
       "created_dart": "3.12.2",
       "created_deps": {},
