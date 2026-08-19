@@ -56,9 +56,9 @@ ComponentMeta _paintMeta() => ComponentMeta.fromJson({
 late List<String> reads;
 
 Future<void> _pumpApp(WidgetTester tester) async {
-  // Tall viewport so every tile these tests tap is built (GridView.builder
-  // skips off-screen tiles).
-  tester.view.physicalSize = const Size(900, 2400);
+  // Tall viewport so every tile these tests tap is built, up to glass_card
+  // at #9 alphabetically (GridView.builder skips off-screen tiles).
+  tester.view.physicalSize = const Size(900, 3600);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
   reads = <String>[];

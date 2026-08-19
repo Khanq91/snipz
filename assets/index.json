@@ -1,6 +1,6 @@
 {
   "_generated": true,
-  "_generated_at": "2026-08-19T03:15:27.199342Z",
+  "_generated_at": "2026-08-19T03:24:04.987884Z",
   "_generated_flutter": "3.44.5",
   "_generated_dart": "3.12.2",
   "_generated_remote": "https://github.com/Khanq91/snipz",
@@ -313,6 +313,50 @@
       "author": "Khang",
       "license": "MIT",
       "created": "2026-08-18",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
+      "id": "fluid_glass",
+      "title": "Fluid Glass",
+      "kind": "effect",
+      "tags": [
+        "glass",
+        "lens",
+        "magnifier",
+        "refraction",
+        "touch",
+        "navbar"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "fluid_glass.dart",
+      "files": {
+        "fluid_glass.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/DavidHDev/react-bits/blob/main/src/ts-tailwind/Components/FluidGlass/FluidGlass.tsx",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-19",
       "created_flutter": "3.44.5",
       "created_dart": "3.12.2",
       "created_deps": {},

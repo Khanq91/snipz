@@ -9,6 +9,7 @@ import 'package:snipz/components/bounce_cards/bounce_cards_demo.dart';
 import 'package:snipz/components/dither/dither_demo.dart';
 import 'package:snipz/components/dock/dock_demo.dart';
 import 'package:snipz/components/elastic_slider/elastic_slider_demo.dart';
+import 'package:snipz/components/fluid_glass/fluid_glass_demo.dart';
 import 'package:snipz/components/glass_card/glass_card_demo.dart';
 import 'package:snipz/components/gradient_text/gradient_text_demo.dart';
 import 'package:snipz/components/gradient_waves/gradient_waves_demo.dart';
@@ -32,6 +33,7 @@ final Map<String, ComponentDemo> componentRegistry = <String, ComponentDemo>{
   'dither': ditherDemo,
   'dock': dockDemo,
   'elastic_slider': elasticSliderDemo,
+  'fluid_glass': fluidGlassDemo,
   'glass_card': glassCardDemo,
   'gradient_text': gradientTextDemo,
   'gradient_waves': gradientWavesDemo,
