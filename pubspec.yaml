@@ -42,4 +42,5 @@ flutter:
   shaders:
     - lib/components/dither/dither.frag
     - lib/components/gradient_waves/gradient_waves.frag
+    - lib/components/morph_slider/morph_slider.frag
     - lib/components/pixel_blast/pixel_blast.frag

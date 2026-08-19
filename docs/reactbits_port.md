@@ -6,9 +6,10 @@
 ---
 
 ## Bước 0 — ĐỌC SOURCE THẬT, KHÔNG ĐOÁN TỪ TRANG WEB
-
-Repo react-bits đã clone ở máy. Đường dẫn source: D:\project\react-bits
-
+❎: Đường dẫn không dùng ở đây | ✅: Đường dẫn đúng ở máy hiện tại
+Repo react-bits đã clone ở máy. Đường dẫn source: 
+[✅] D:\khang\data\flutterDev\project\react-bits
+[❎] D:\project\react-bits
 ```
 src/ts-tailwind/<Category>/<ComponentName>/
 ```

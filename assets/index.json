@@ -1,10 +1,54 @@
 {
   "_generated": true,
-  "_generated_at": "2026-08-18T15:27:20.055675Z",
-  "_generated_flutter": "3.44.0",
-  "_generated_dart": "3.12.0",
+  "_generated_at": "2026-08-19T03:15:27.199342Z",
+  "_generated_flutter": "3.44.5",
+  "_generated_dart": "3.12.2",
   "_generated_remote": "https://github.com/Khanq91/snipz",
   "components": [
+    {
+      "id": "animated_content",
+      "title": "Animated Content",
+      "kind": "effect",
+      "tags": [
+        "entrance",
+        "scroll",
+        "reveal",
+        "fade",
+        "slide",
+        "wrapper"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "animated_content.dart",
+      "files": {
+        "animated_content.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/DavidHDev/react-bits/blob/main/src/ts-tailwind/Animations/AnimatedContent/AnimatedContent.tsx",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-19",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
     {
       "id": "aurora_stack",
       "title": "Aurora Stack",
@@ -104,6 +148,50 @@
       "test_history": []
     },
     {
+      "id": "bounce_cards",
+      "title": "Bounce Cards",
+      "kind": "composite",
+      "tags": [
+        "cards",
+        "stack",
+        "elastic",
+        "stagger",
+        "entrance",
+        "gallery"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "bounce_cards.dart",
+      "files": {
+        "bounce_cards.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/DavidHDev/react-bits/blob/main/src/ts-tailwind/Components/BounceCards/BounceCards.tsx",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-19",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
       "id": "dither",
       "title": "Dither Waves",
       "kind": "paint",
@@ -137,6 +225,50 @@
       "author": "Khang",
       "license": "MIT + Commons Clause License Condition v1.0 (react-bits, © David Haz)",
       "created": "2026-08-18",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
+      "id": "dock",
+      "title": "Dock",
+      "kind": "composite",
+      "tags": [
+        "dock",
+        "magnify",
+        "spring",
+        "toolbar",
+        "navigation",
+        "interactive"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "dock.dart",
+      "files": {
+        "dock.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/DavidHDev/react-bits/blob/main/src/ts-tailwind/Components/Dock/Dock.tsx",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-19",
       "created_flutter": "3.44.5",
       "created_dart": "3.12.2",
       "created_deps": {},
@@ -337,6 +469,97 @@
       "test_history": []
     },
     {
+      "id": "morph_slider",
+      "title": "Morph Slider",
+      "kind": "composite",
+      "tags": [
+        "slider",
+        "carousel",
+        "shader",
+        "morph",
+        "image",
+        "swipe",
+        "animated"
+      ],
+      "paint_source": "shader",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "folder_with_assets",
+      "entry": "morph_slider.dart",
+      "files": {
+        "morph_slider.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [
+        "lib/components/morph_slider/morph_slider.frag"
+      ],
+      "deps": {},
+      "origin": "adapted",
+      "source": "https://github.com/DavidHDev/react-bits/blob/main/src/ts-tailwind/Components/MorphSlider/MorphSlider.tsx",
+      "author": "Khang",
+      "license": "MIT + Commons Clause License Condition v1.0 (react-bits, © David Haz)",
+      "created": "2026-08-19",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
+      "id": "option_wheel",
+      "title": "Option Wheel",
+      "kind": "composite",
+      "tags": [
+        "picker",
+        "wheel",
+        "select",
+        "arc",
+        "drag",
+        "interactive"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "option_wheel.dart",
+      "files": {
+        "option_wheel.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "adapted",
+      "source": "https://github.com/DavidHDev/react-bits/blob/main/src/ts-tailwind/Components/OptionWheel/OptionWheel.tsx",
+      "author": "Khang",
+      "license": "MIT + Commons Clause License Condition v1.0 (react-bits, © David Haz)",
+      "created": "2026-08-19",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
       "id": "particle_field",
       "title": "Particle Field",
       "kind": "paint",
@@ -514,6 +737,50 @@
       "test_history": []
     },
     {
+      "id": "scroll_expand",
+      "title": "Scroll Expand",
+      "kind": "effect",
+      "tags": [
+        "scroll",
+        "hero",
+        "expand",
+        "clip",
+        "sticky",
+        "media"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "scroll_expand.dart",
+      "files": {
+        "scroll_expand.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/DavidHDev/react-bits/blob/main/src/ts-tailwind/Animations/ScrollExpand/ScrollExpand.tsx",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-19",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
       "id": "spectrum_sweep",
       "title": "Spectrum Sweep",
       "kind": "paint",
@@ -571,6 +838,50 @@
           "note": "initial: analyze + tests clean"
         }
       ]
+    },
+    {
+      "id": "split_flap_text",
+      "title": "Split Flap Text",
+      "kind": "effect",
+      "tags": [
+        "text",
+        "flip",
+        "departure-board",
+        "retro",
+        "mechanical",
+        "animated"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "split_flap_text.dart",
+      "files": {
+        "split_flap_text.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/DavidHDev/react-bits/blob/main/src/ts-tailwind/TextAnimations/SplitFlapText/SplitFlapText.tsx",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-19",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
     },
     {
       "id": "text_type",
