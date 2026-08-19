@@ -696,11 +696,8 @@ class _InfiniteMenuState extends State<InfiniteMenu>
                       border: Border.all(color: Colors.black, width: 5),
                     ),
                     alignment: Alignment.center,
-                    child: const Text('↗',
-                        style: TextStyle(
-                            color: Color(0xFF120F17),
-                            fontSize: 26,
-                            height: 1)),
+                    child: const Icon(Icons.arrow_outward,
+                        color: Color(0xFF120F17), size: 26),
                   ),
                 ),
               ),
@@ -808,11 +805,13 @@ class _InfiniteMenuPainter extends CustomPainter {
       final double discRadius = fs;
       final _V3 center = u.scaled(_sphereRadius * (1 - fs));
 
-      // Tangent frame (targetTo with up (0,1,0); fallback near the poles).
-      _V3 xAxis = _V3.cross(_V3(0, 1, 0), u.scaled(-1));
+      // Tangent frame, oriented so the image reads upright on screen:
+      // local +x -> world +x-ish (screen right), local +y -> world -y-ish
+      // (screen down, since the projection flips y). Fallback at the poles.
+      _V3 xAxis = _V3.cross(_V3(0, 1, 0), u);
       if (xAxis.length < 1e-6) xAxis = _V3(1, 0, 0);
       xAxis = xAxis.normalized();
-      final _V3 yAxis = _V3.cross(u.scaled(-1), xAxis).normalized();
+      final _V3 yAxis = _V3.cross(xAxis, u).normalized();
 
       // Backface cull against the actual view ray.
       final _V3 toCam = _V3(0, 0, cameraZ) - center;
