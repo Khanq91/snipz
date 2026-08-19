@@ -1,6 +1,6 @@
 {
   "_generated": true,
-  "_generated_at": "2026-08-19T04:22:22.615250Z",
+  "_generated_at": "2026-08-19T08:51:43.250767Z",
   "_generated_flutter": "3.44.5",
   "_generated_dart": "3.12.2",
   "_generated_remote": "https://github.com/Khanq91/snipz",
@@ -775,7 +775,7 @@
       "platforms_initial": [
         "android"
       ],
-      "version": "1.0.0",
+      "version": "1.0.1",
       "latest_known_good": null,
       "last_verified": null,
       "status": null,
@@ -819,7 +819,7 @@
       "platforms_initial": [
         "android"
       ],
-      "version": "1.0.0",
+      "version": "1.0.1",
       "latest_known_good": null,
       "last_verified": null,
       "status": null,

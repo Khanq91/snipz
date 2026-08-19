@@ -12,7 +12,160 @@ import 'morph_slider.dart';
 final ComponentDemo morphSliderDemo = ComponentDemo(
   id: 'morph_slider',
   builder: (context) => const _MorphSliderShowcase(),
+  // Grid thumbnails must not run the shader/ticker or decode images (§9.2):
+  // static mock of the "Dusk" slide — gradient, caption chip, arrows, dots.
+  thumbnailBuilder: (context) => const _MorphSliderThumb(),
 );
+
+/// Static stand-in for the gallery tile: recreates the resting look of the
+/// slider (first "Dusk" scene + its chrome) with plain boxes — no shader, no
+/// image decode, no ticker. Designed at a fixed 340x430 and scaled to fit.
+class _MorphSliderThumb extends StatelessWidget {
+  const _MorphSliderThumb();
+
+  @override
+  Widget build(BuildContext context) {
+    return ColoredBox(
+      color: const Color(0xFF060010),
+      child: Center(
+        child: FittedBox(
+          fit: BoxFit.contain,
+          child: SizedBox(
+            width: 340,
+            height: 430,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: <Widget>[
+                    // The "Dusk" scene gradient from _paintItems.
+                    const DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: <Color>[
+                            Color(0xFF1A0533),
+                            Color(0xFF5227FF),
+                            Color(0xFFFF6D3A),
+                          ],
+                        ),
+                      ),
+                    ),
+                    // Soft discs standing in for the scene's blurred features.
+                    Positioned(
+                      top: 50,
+                      left: 30,
+                      child: _softDisc(140, const Color(0x995227FF)),
+                    ),
+                    Positioned(
+                      bottom: 110,
+                      right: 20,
+                      child: _softDisc(120, const Color(0x8CFF6D3A)),
+                    ),
+                    // Prev/next arrows, same chrome as _roundButton.
+                    Align(
+                      alignment: Alignment.center,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: <Widget>[
+                            _arrow(Icons.chevron_left),
+                            _arrow(Icons.chevron_right),
+                          ],
+                        ),
+                      ),
+                    ),
+                    // Caption chip ("Dusk"), as in _buildCaption.
+                    Positioned(
+                      left: 20,
+                      bottom: 44,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0x6B0A0A0C),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Text(
+                          'Dusk',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.15,
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Indicator dots: first one active/elongated.
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      bottom: 18,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          _dot(22, 0.95),
+                          _dot(8, 0.35),
+                          _dot(8, 0.35),
+                          _dot(8, 0.35),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  static Widget _softDisc(double size, Color color) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: RadialGradient(
+          colors: <Color>[color, color.withValues(alpha: 0)],
+        ),
+      ),
+    );
+  }
+
+  static Widget _arrow(IconData icon) {
+    return Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        color: const Color(0x660C0C0E),
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.white24),
+      ),
+      child: Icon(icon, size: 22, color: Colors.white),
+    );
+  }
+
+  static Widget _dot(double width, double alpha) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      width: width,
+      height: 8,
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: alpha),
+        borderRadius: BorderRadius.circular(4),
+      ),
+    );
+  }
+}
 
 /// Four procedurally painted "photos" (no assets/network in the vault) fed
 /// to the slider as [MemoryImage]s. In a real app pass any [ImageProvider]

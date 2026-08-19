@@ -9,6 +9,31 @@ import 'elastic_slider.dart';
 final ComponentDemo elasticSliderDemo = ComponentDemo(
   id: 'elastic_slider',
   builder: (context) => const _ElasticSliderShowcase(),
+  // Thumbnail: two real sliders at rest — their controllers only run while
+  // touched, so nothing ticks in the grid. No live readout text.
+  thumbnailBuilder: (context) => const ColoredBox(
+    color: Color(0xFF060010),
+    child: Center(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            ElasticSlider(initialValue: 62, fillColor: Color(0xFFB19EEF)),
+            SizedBox(height: 28),
+            ElasticSlider(
+              initialValue: 30,
+              showValueLabel: false,
+              leftIcon:
+                  Icon(Icons.volume_mute, size: 16, color: Colors.white70),
+              rightIcon:
+                  Icon(Icons.volume_up, size: 16, color: Colors.white70),
+            ),
+          ],
+        ),
+      ),
+    ),
+  ),
 );
 
 /// Two configurations: the plain default, and a stepped volume slider with

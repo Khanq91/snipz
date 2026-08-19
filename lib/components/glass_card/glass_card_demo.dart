@@ -9,6 +9,10 @@ import 'glass_card.dart';
 final ComponentDemo glassCardDemo = ComponentDemo(
   id: 'glass_card',
   builder: (context) => const _GlassCardShowcase(),
+  // Thumbnail: the real card (already static — blur, no ticker) over the
+  // same circles, but designed at a fixed 360x460 and scaled to the tile so
+  // the copy inside the card never wraps.
+  thumbnailBuilder: (context) => const _GlassCardThumbnail(),
 );
 
 /// GlassCard only reads as glass over a busy backdrop, so the demo paints
@@ -73,6 +77,75 @@ class _GlassCardShowcase extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+    );
+  }
+}
+
+/// Grid tile: same composition as the showcase but at a fixed design size
+/// with shorter copy, scaled down whole — no text wrapping at tile size.
+/// The card itself is genuinely static, so the real widget is used.
+class _GlassCardThumbnail extends StatelessWidget {
+  const _GlassCardThumbnail();
+
+  @override
+  Widget build(BuildContext context) {
+    return ColoredBox(
+      color: const Color(0xFF10121C),
+      child: FittedBox(
+        fit: BoxFit.contain,
+        child: SizedBox(
+          width: 360,
+          height: 460,
+          child: ClipRect(
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                Positioned(
+                  top: -40,
+                  left: -30,
+                  child: _GlassCardShowcase._circle(const Color(0xFF7C4DFF), 220),
+                ),
+                Positioned(
+                  bottom: -60,
+                  right: -20,
+                  child: _GlassCardShowcase._circle(const Color(0xFF00E5FF), 260),
+                ),
+                Positioned(
+                  top: 120,
+                  right: 40,
+                  child: _GlassCardShowcase._circle(const Color(0xFFFF6E40), 140),
+                ),
+                const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(32),
+                    child: GlassCard(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Glass Card',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 22,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            'Blur + tint + hairline border.',
+                            style: TextStyle(color: Colors.white70, fontSize: 14),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

@@ -37,7 +37,7 @@ created_deps: []
 platforms_initial: [android]
 
 # --- COMPONENT VERSION ---
-version: 1.0.0
+version: 1.0.1
 
 # --- DERIVED (computed from Test History by verify.dart, do not hand-edit) ---
 latest_known_good: null
@@ -119,6 +119,9 @@ bob khi đi. `PixelSprite.clawd({color})` là sprite mặc định.
 
 ## Changelog
 
+- **1.0.1** (2026-08-19) — độ trồi của mascot theo `progress` tuyến tính
+  (bỏ ease): chân chạm đất đúng lúc progress = 1, tự nó thành chỉ báo "đủ
+  ngưỡng refresh" khi ghép với pull_reveal_refresh.
 - **1.0.0** (2026-08-19) — created
 
 ## Test History

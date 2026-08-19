@@ -9,6 +9,9 @@ import 'animated_content.dart';
 final ComponentDemo animatedContentDemo = ComponentDemo(
   id: 'animated_content',
   builder: (context) => const _AnimatedContentShowcase(),
+  // Static mock: two settled feed cards + one frozen mid-entrance (offset,
+  // faded, scaled) — evokes the scroll-in effect without any controller.
+  thumbnailBuilder: (context) => const _AnimatedContentThumbnail(),
 );
 
 /// A scrolling feed: every card animates in once, the first time it enters
@@ -60,6 +63,64 @@ class _AnimatedContentShowcase extends StatelessWidget {
             },
           );
         },
+      ),
+    );
+  }
+}
+
+/// Static thumbnail — designed at 360x460 and scaled down by [FittedBox].
+/// The third card is frozen mid-entrance (translated, faded, slightly
+/// scaled), mimicking what [AnimatedContent] looks like halfway through.
+class _AnimatedContentThumbnail extends StatelessWidget {
+  const _AnimatedContentThumbnail();
+
+  @override
+  Widget build(BuildContext context) {
+    return ColoredBox(
+      color: const Color(0xFF060010),
+      child: FittedBox(
+        fit: BoxFit.contain,
+        child: ClipRect(
+          child: SizedBox(
+            width: 360,
+            height: 460,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  const _FeedCard(
+                    label: 'Slides up (default)',
+                    icon: Icons.arrow_upward,
+                    color: Color(0xFF5227FF),
+                  ),
+                  const SizedBox(height: 20),
+                  const _FeedCard(
+                    label: 'From the left',
+                    icon: Icons.arrow_forward,
+                    color: Color(0xFF7C4DFF),
+                  ),
+                  const SizedBox(height: 20),
+                  // The "animating" card: still sliding in from below.
+                  Opacity(
+                    opacity: 0.45,
+                    child: Transform.translate(
+                      offset: const Offset(0, 24),
+                      child: Transform.scale(
+                        scale: 0.94,
+                        child: const _FeedCard(
+                          label: 'Scale + fade',
+                          icon: Icons.zoom_out_map,
+                          color: Color(0xFFFF6D00),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

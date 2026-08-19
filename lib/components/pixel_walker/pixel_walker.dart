@@ -330,8 +330,10 @@ class _PixelWalkerPainter extends CustomPainter {
 
     _paintSkyline(canvas, size, w, cell, t, skylineBaseY, eased);
     _paintClouds(canvas, size, w, cell, t, skylineBaseY, eased);
+    // Độ trồi của mascot dùng reveal TUYẾN TÍNH (không ease): chân chỉ chạm
+    // đất đúng lúc progress = 1 → tự nó là chỉ báo "đủ ngưỡng để refresh".
     _paintSprite(canvas, size, sprite, spriteCell, spriteW, spriteH, feetY, t,
-        w.walking, eased);
+        w.walking, eased, reveal);
   }
 
   void _paintSkyline(Canvas canvas, Size size, PixelWalker w, double cell,
@@ -409,7 +411,7 @@ class _PixelWalkerPainter extends CustomPainter {
 
   void _paintSprite(Canvas canvas, Size size, PixelSprite sprite,
       double spriteCell, double spriteW, double spriteH, double feetY,
-      double t, bool walking, double eased) {
+      double t, bool walking, double eased, double reveal) {
     final int frameCount = sprite.frames.length;
     final int fi = walking && frameCount > 1 ? (t * 7).floor() % frameCount : 0;
     final List<String> frame = sprite.frames[fi];
@@ -417,7 +419,7 @@ class _PixelWalkerPainter extends CustomPainter {
         ? (fi % 4 == 1 ? 0.09 : -0.09)
         : 0.0;
     final double bob = walking && fi.isOdd ? -spriteCell * 0.35 : 0.0;
-    final double rise = (1 - eased) * (spriteH + spriteCell);
+    final double rise = (1 - reveal) * (spriteH + spriteCell);
 
     canvas.save();
     canvas.translate(size.width / 2, feetY + rise + bob);

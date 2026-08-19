@@ -1,8 +1,9 @@
 // App-level smoke test. Uses the REAL committed artifacts (read from disk,
 // synchronously — deterministic under the fake-async test clock) through a
 // counting reader, extending the §0.4c guarantee to the app layer: gallery
-// startup costs exactly one asset read, sources load only when the Info tab
-// opens. No pumpAndSettle anywhere — aurora_stack animates forever.
+// startup costs exactly one asset read, sources load only when the Info page
+// (behind the detail overflow menu) opens. No pumpAndSettle anywhere —
+// aurora_stack animates forever.
 
 import 'dart:io';
 
@@ -74,7 +75,7 @@ void main() {
     expect(reads, ['assets/index.json']);
   });
 
-  testWidgets('detail opens without extra reads; Info tab loads lazily', (
+  testWidgets('detail opens without extra reads; Info page loads lazily', (
     tester,
   ) async {
     await pumpApp(tester);
@@ -85,13 +86,17 @@ void main() {
     await tester.pump();
 
     expect(tester.takeException(), isNull);
-    expect(find.text('Preview'), findsOneWidget);
+    expect(find.byKey(const ValueKey<String>('detail-menu')), findsOneWidget);
     // Preview alone must not touch assets/sources/ (§5.0 lazy rule).
     expect(reads, ['assets/index.json']);
 
-    await tester.tap(find.text('Info'));
-    await tester.pump(); // start tab transition
-    await tester.pump(const Duration(milliseconds: 400)); // finish it
+    // Info is a separate page behind the app-bar overflow menu.
+    await tester.tap(find.byKey(const ValueKey<String>('detail-menu')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300)); // menu open
+    await tester.tap(find.byKey(const ValueKey<String>('menu-info')));
+    await tester.pump(); // start route push
+    await tester.pump(const Duration(milliseconds: 400)); // route fade
     await tester.pump();
 
     expect(tester.takeException(), isNull);

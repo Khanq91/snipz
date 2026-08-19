@@ -9,6 +9,41 @@ import 'dock.dart';
 final ComponentDemo dockDemo = ComponentDemo(
   id: 'dock',
   builder: (context) => const _DockShowcase(),
+  // Real Dock frozen at rest: its spring Ticker only starts on touch, and the
+  // gallery wraps thumbnails in IgnorePointer — so nothing ever ticks here.
+  thumbnailBuilder: (context) => const ColoredBox(
+    color: Color(0xFF060010),
+    child: Center(
+      child: FittedBox(
+        fit: BoxFit.contain,
+        child: Padding(
+          padding: EdgeInsets.all(24),
+          child: Dock(
+            items: <DockItemData>[
+              DockItemData(
+                icon: Icon(Icons.home_rounded, color: Colors.white, size: 22),
+                label: 'Home',
+              ),
+              DockItemData(
+                icon:
+                    Icon(Icons.archive_rounded, color: Colors.white, size: 22),
+                label: 'Archive',
+              ),
+              DockItemData(
+                icon: Icon(Icons.person_rounded, color: Colors.white, size: 22),
+                label: 'Profile',
+              ),
+              DockItemData(
+                icon:
+                    Icon(Icons.settings_rounded, color: Colors.white, size: 22),
+                label: 'Settings',
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  ),
 );
 
 /// Bottom dock — press and slide a finger across the bar to feel the

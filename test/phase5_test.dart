@@ -1,8 +1,10 @@
 // Phase 5 verify (roadmap §12): share block is paste-ready (deps, import,
-// file list, GitHub link); Files tab only for multi-file components and it
-// opens the Code tab on the tapped file; Code stays lazy until visible;
-// checkerboard toggle works. (The pre-commit block and on-device frame pacing
-// are verified outside flutter test — see the phase checklist.)
+// file list, GitHub link); Files menu entry only for multi-file components
+// and its page opens the Code page on the tapped file; Code stays lazy until
+// its page is pushed; checkerboard toggle works. Code/Info/Files live behind
+// the detail overflow menu (key 'detail-menu') as separate routes — there are
+// no swipeable tabs. (The pre-commit block and on-device frame pacing are
+// verified outside flutter test — see the phase checklist.)
 
 import 'dart:io';
 
@@ -85,6 +87,19 @@ Future<void> _openDetail(WidgetTester tester, String id) async {
   await tester.pump();
 }
 
+Future<void> _openMenu(WidgetTester tester) async {
+  await tester.tap(find.byKey(const ValueKey('detail-menu')));
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 300)); // menu open animation
+}
+
+Future<void> _tapAndRoute(WidgetTester tester, Finder target) async {
+  await tester.tap(target);
+  await tester.pump(); // start route push
+  await tester.pump(const Duration(milliseconds: 400)); // route fade
+  await tester.pump();
+}
+
 void main() {
   test('share block is paste-ready: deps, files, import, keys, link', () {
     final String block = buildShareBlock(
@@ -152,44 +167,40 @@ void main() {
     expect(block, isNot(contains('Scale hint')));
   });
 
-  testWidgets('single-file component has no Files tab; Code is lazy', (
+  testWidgets('single-file component has no Files menu item; Code is lazy', (
     tester,
   ) async {
     await _pumpApp(tester);
     await _openDetail(tester, 'glass_card');
 
-    expect(find.text('Files'), findsNothing);
-    expect(find.text('Code'), findsOneWidget);
-    // Preview alone must not load sources (§5.0).
+    await _openMenu(tester);
+    expect(find.byKey(const ValueKey('menu-files')), findsNothing);
+    expect(find.byKey(const ValueKey('menu-code')), findsOneWidget);
+    // Preview + open menu alone must not load sources (§5.0).
     expect(reads, ['assets/index.json']);
 
-    await tester.tap(find.text('Code'));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 400));
-    await tester.pump();
+    await _tapAndRoute(tester, find.byKey(const ValueKey('menu-code')));
     expect(reads, ['assets/index.json', 'assets/sources/glass_card.json']);
     expect(find.byKey(const ValueKey('code-view')), findsOneWidget);
   });
 
-  testWidgets('Files tab lists roles and opens the tapped file in Code', (
+  testWidgets('Files page lists roles and opens the tapped file in Code', (
     tester,
   ) async {
     await _pumpApp(tester);
     await _openDetail(tester, 'aurora_stack');
 
-    expect(find.text('Files'), findsOneWidget);
-    await tester.tap(find.text('Files'));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 400));
-    await tester.pump();
+    await _openMenu(tester);
+    expect(find.byKey(const ValueKey('menu-files')), findsOneWidget);
+    await _tapAndRoute(tester, find.byKey(const ValueKey('menu-files')));
 
     expect(find.byKey(const ValueKey('file-aurora_stack.dart')), findsOne);
-    await tester.tap(find.byKey(const ValueKey('file-_noise_layer.dart')));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 400));
-    await tester.pump();
+    await _tapAndRoute(
+      tester,
+      find.byKey(const ValueKey('file-_noise_layer.dart')),
+    );
 
-    // Landed on the Code tab with the tapped file selected.
+    // Landed on the Code page with the tapped file selected.
     final SelectableText code = tester.widget(
       find.byKey(const ValueKey('code-view')),
     );

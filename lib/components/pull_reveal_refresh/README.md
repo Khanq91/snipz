@@ -37,7 +37,7 @@ created_deps: []
 platforms_initial: [android]
 
 # --- COMPONENT VERSION ---
-version: 1.0.0
+version: 1.0.1
 
 # --- DERIVED (computed from Test History by verify.dart, do not hand-edit) ---
 latest_known_good: null
@@ -132,6 +132,10 @@ PullRevealRefresh(
 
 ## Changelog
 
+- **1.0.1** (2026-08-19) — fix: kéo ngược lên khi list ngắn hơn viewport
+  không thu được header (clamping physics báo overscroll dương, không có
+  ScrollUpdate); giờ thu dần khi chưa buông tay và disarm khi xuống dưới
+  ngưỡng — đúng hành vi bản gốc.
 - **1.0.0** (2026-08-19) — created
 
 ## Test History

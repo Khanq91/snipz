@@ -9,6 +9,10 @@ import 'scroll_expand.dart';
 final ComponentDemo scrollExpandDemo = ComponentDemo(
   id: 'scroll_expand',
   builder: (context) => const _ScrollExpandShowcase(),
+  // Thumbnail tĩnh: mock trạng thái collapsed (progress 0) — card sunset
+  // bo góc inset giữa nền đen, title + scroll hint đè lên. Không scroll
+  // surface, không ticker.
+  thumbnailBuilder: (context) => const _ScrollExpandThumbnail(),
 );
 
 /// A procedural "poster" stands in for the hero image (no assets in the
@@ -51,6 +55,77 @@ class _ScrollExpandShowcase extends StatelessWidget {
             child: const Text('Explore'),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Thumbnail cho gallery grid: dựng ở khổ cố định 360×460 rồi FittedBox thu
+/// về ô tile — tái hiện frame đầu của ScrollExpand (media là card inset
+/// 42%×58% bo góc 24, title lớn ở giữa, hint dưới đáy) bằng widget tĩnh.
+class _ScrollExpandThumbnail extends StatelessWidget {
+  const _ScrollExpandThumbnail();
+
+  @override
+  Widget build(BuildContext context) {
+    return ColoredBox(
+      color: const Color(0xFF0E0D0B),
+      child: FittedBox(
+        fit: BoxFit.contain,
+        child: SizedBox(
+          width: 360,
+          height: 460,
+          child: Stack(
+            fit: StackFit.expand,
+            children: <Widget>[
+              // Card media collapsed: 42% × 58% của stage, bo góc startRadius.
+              Center(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(24),
+                  child: const SizedBox(
+                    width: 360 * 0.42,
+                    height: 460 * 0.58,
+                    child: _SunsetPoster(),
+                  ),
+                ),
+              ),
+              const Center(
+                child: Text(
+                  'Beyond the\nHorizon',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 40,
+                    fontWeight: FontWeight.w700,
+                    height: 1,
+                    letterSpacing: -1.2,
+                    shadows: <Shadow>[
+                      Shadow(
+                        offset: Offset(0, 2),
+                        blurRadius: 24,
+                        color: Color(0x73000000),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const Positioned(
+                left: 0,
+                right: 0,
+                bottom: 20,
+                child: Text(
+                  'scroll to expand',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 13,
+                    letterSpacing: 0.3,
+                    color: Color(0x8CFFFFFF),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

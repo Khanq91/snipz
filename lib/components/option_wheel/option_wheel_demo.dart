@@ -10,6 +10,33 @@ import 'option_wheel.dart';
 final ComponentDemo optionWheelDemo = ComponentDemo(
   id: 'option_wheel',
   builder: (context) => const _OptionWheelShowcase(),
+  // Real wheel frozen at rest (its ticker only runs while spinning) — no
+  // status text, designed at a fixed 360x460 so nothing overlaps at tile size.
+  thumbnailBuilder: (context) => ColoredBox(
+    color: const Color(0xFF060010),
+    child: FittedBox(
+      fit: BoxFit.contain,
+      child: SizedBox(
+        width: 360,
+        height: 460,
+        child: OptionWheel(
+          items: const <String>[
+            'House',
+            'Techno',
+            'Jazz',
+            'Lo-Fi',
+            'Synthwave',
+            'Trance',
+            'Funk',
+          ],
+          initialIndex: 2,
+          fontSize: 44,
+          inset: 28,
+          draggable: false,
+        ),
+      ),
+    ),
+  ),
 );
 
 /// The original genre picker: drag vertically (or tap an entry) to spin;

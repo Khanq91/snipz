@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:snipz/features/detail/code_screen.dart';
 import 'package:snipz/features/detail/detail_screen.dart';
+import 'package:snipz/features/detail/files_screen.dart';
+import 'package:snipz/features/detail/info_screen.dart';
 import 'package:snipz/features/gallery/gallery_screen.dart';
 import 'package:snipz/features/settings/settings_screen.dart';
 
@@ -18,6 +21,26 @@ GoRouter buildRouter() => GoRouter(
       path: '/component/:id',
       pageBuilder: (context, state) =>
           _fadePage(state, DetailScreen(id: state.pathParameters['id']!)),
+    ),
+    GoRoute(
+      path: '/component/:id/code',
+      pageBuilder: (context, state) => _fadePage(
+        state,
+        CodeScreen(
+          id: state.pathParameters['id']!,
+          initialFile: state.uri.queryParameters['file'],
+        ),
+      ),
+    ),
+    GoRoute(
+      path: '/component/:id/info',
+      pageBuilder: (context, state) =>
+          _fadePage(state, InfoScreen(id: state.pathParameters['id']!)),
+    ),
+    GoRoute(
+      path: '/component/:id/files',
+      pageBuilder: (context, state) =>
+          _fadePage(state, FilesScreen(id: state.pathParameters['id']!)),
     ),
     GoRoute(
       path: '/settings',

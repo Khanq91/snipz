@@ -9,6 +9,11 @@ import 'fluid_glass.dart';
 final ComponentDemo fluidGlassDemo = ComponentDemo(
   id: 'fluid_glass',
   builder: (context) => const _FluidGlassShowcase(),
+  // Thumbnail: static mock of the lens look — poster gradient, hand-painted
+  // rim/sheen and a scaled-up copy of the headline faking the magnification.
+  // No RawMagnifier, no ticker, and no SegmentedButton labels that wrap at
+  // tile size.
+  thumbnailBuilder: (context) => const _FluidGlassThumbnail(),
 );
 
 /// Drag a finger anywhere: the glass glides after it and magnifies the
@@ -69,6 +74,162 @@ class _FluidGlassShowcaseState extends State<_FluidGlassShowcase> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Static stand-in for the grid: the poster's gradient + circles, the
+/// headline, and a fake lens — a ClipOval holding the same headline scaled
+/// 1.35x (the "magnified" view) under a radial sheen, ringed by a bright rim.
+class _FluidGlassThumbnail extends StatelessWidget {
+  const _FluidGlassThumbnail();
+
+  static const TextStyle _headline = TextStyle(
+    color: Colors.white,
+    fontSize: 44,
+    fontWeight: FontWeight.w800,
+    letterSpacing: -1,
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    // Designed at a fixed 360x460 and scaled to the tile, so nothing wraps.
+    return ColoredBox(
+      color: const Color(0xFF060010),
+      child: FittedBox(
+        fit: BoxFit.contain,
+        child: SizedBox(
+          width: 360,
+          height: 460,
+          child: ClipRect(
+            child: DecoratedBox(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: <Color>[Color(0xFF1A0533), Color(0xFF5227FF)],
+                ),
+              ),
+              child: Stack(
+                children: <Widget>[
+                  for (int i = 0; i < 3; i++)
+                    Align(
+                      alignment: Alignment(-0.8 + i * 0.8, -0.9 + (i % 2) * 1.8),
+                      child: Container(
+                        width: 140.0 + i * 40,
+                        height: 140.0 + i * 40,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: const Color(0xFFFF6D3A)
+                              .withValues(alpha: 0.12 + i * 0.05),
+                        ),
+                      ),
+                    ),
+                  const Align(
+                    alignment: Alignment(0, -0.35),
+                    child: Text('React Bits', style: _headline),
+                  ),
+                  Align(
+                    alignment: const Alignment(0, 0.45),
+                    child: Text(
+                      List<String>.generate(
+                        3,
+                        (i) => 'drag the glass over this fine print',
+                      ).join('\n'),
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Colors.white54,
+                        fontSize: 11,
+                        height: 1.8,
+                      ),
+                    ),
+                  ),
+                  // Lens hư cấu: cùng headline phóng 1.35x bên trong ClipOval.
+                  Align(
+                    alignment: const Alignment(0, -0.35),
+                    child: Container(
+                      width: 170,
+                      height: 170,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: const Color(0xB3FFFFFF),
+                          width: 1.6,
+                        ),
+                        boxShadow: const <BoxShadow>[
+                          BoxShadow(
+                            color: Color(0x40000000),
+                            blurRadius: 12,
+                            offset: Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      child: ClipOval(
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: <Widget>[
+                            const DecoratedBox(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: <Color>[
+                                    Color(0xFF2A0B4D),
+                                    Color(0xFF5227FF),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            Center(
+                              child: Transform.scale(
+                                scale: 1.35,
+                                child: const Text(
+                                  'React Bits',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.clip,
+                                  softWrap: false,
+                                  style: _headline,
+                                ),
+                              ),
+                            ),
+                            // Sheen + bottom shade, same as _GlassRimPainter.
+                            const DecoratedBox(
+                              decoration: BoxDecoration(
+                                gradient: RadialGradient(
+                                  center: Alignment(-0.45, -0.55),
+                                  radius: 1,
+                                  colors: <Color>[
+                                    Color(0x3DFFFFFF),
+                                    Color(0x00FFFFFF),
+                                  ],
+                                  stops: <double>[0, 0.75],
+                                ),
+                              ),
+                            ),
+                            const DecoratedBox(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.bottomCenter,
+                                  end: Alignment.topCenter,
+                                  colors: <Color>[
+                                    Color(0x24000000),
+                                    Color(0x00000000),
+                                  ],
+                                  stops: <double>[0, 0.4],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

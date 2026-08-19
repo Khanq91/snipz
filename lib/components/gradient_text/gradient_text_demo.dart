@@ -9,6 +9,50 @@ import 'gradient_text.dart';
 final ComponentDemo gradientTextDemo = ComponentDemo(
   id: 'gradient_text',
   builder: (context) => const _GradientTextShowcase(),
+  // Thumbnail: the real widgets frozen via `animate: false` (ticker never
+  // starts, gradient stays at phase 0); FittedBox scales the fixed layout
+  // down so the headline never wraps at tile size.
+  thumbnailBuilder: (context) => const ColoredBox(
+    color: Color(0xFF060010),
+    child: Center(
+      child: Padding(
+        padding: EdgeInsets.all(20),
+        child: FittedBox(
+          fit: BoxFit.contain,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              GradientText(
+                animate: false,
+                child: Text(
+                  'Gradient Text',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 36,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              SizedBox(height: 24),
+              GradientText(
+                animate: false,
+                showBorder: true,
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Text(
+                  'bordered pill',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  ),
 );
 
 /// Plain masked headline (the default), a bordered pill (original

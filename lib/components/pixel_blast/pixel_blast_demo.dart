@@ -14,10 +14,21 @@ final ComponentDemo pixelBlastDemo = ComponentDemo(
     color: Color(0xFF060010),
     child: PixelBlast(),
   ),
-  // Grid thumbnails must not run tickers (§9.2) — frozen frame.
+  // Grid thumbnails must not run tickers (§9.2) — frozen frame. Defaults
+  // freeze at uTime 0 with edgeFade eating most of a small tile, which came
+  // out near-black; instead: timeOffset picks a lively FBM slice, scale (§9.1
+  // detail density) gives the small tile real pattern variation, higher
+  // patternDensity lights more pixels, and edgeFade only kisses the borders.
   thumbnailBuilder: (context) => const ColoredBox(
     color: Color(0xFF060010),
-    child: PixelBlast(animate: false, enableRipples: false),
+    child: PixelBlast(
+      animate: false,
+      enableRipples: false,
+      timeOffset: 42,
+      scale: 2.5,
+      patternDensity: 1.5,
+      edgeFade: 0.12,
+    ),
   ),
   // No hand-built carriers: this paint satisfies the §2.3 shader contract.
   // One FragmentShader is reused and reconfigured per tick. transparent:false

@@ -9,7 +9,51 @@ import 'text_type.dart';
 final ComponentDemo textTypeDemo = ComponentDemo(
   id: 'text_type',
   builder: (context) => const _TextTypeShowcase(),
+  // Thumbnail tĩnh: mock hai dòng đã gõ xong + cursor đứng yên (không dùng
+  // TextType thật vì cursor của nó luôn blink bằng AnimationController).
+  thumbnailBuilder: (context) => const _TextTypeThumbnail(),
 );
+
+/// Thumbnail cho gallery grid: hai dòng của demo ở trạng thái "gõ xong" —
+/// dòng trắng đậm với cursor `|`, dòng xanh với cursor `▍` — thu về ô tile
+/// bằng FittedBox. Thuần Text, không timer/ticker.
+class _TextTypeThumbnail extends StatelessWidget {
+  const _TextTypeThumbnail();
+
+  @override
+  Widget build(BuildContext context) {
+    return const ColoredBox(
+      color: Color(0xFF060010),
+      child: Center(
+        child: FittedBox(
+          fit: BoxFit.contain,
+          child: Padding(
+            padding: EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  'Text typing effect |',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 28,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(height: 20),
+                Text(
+                  'per-sentence colors ▍',
+                  style: TextStyle(color: Color(0xFF40FFAA), fontSize: 18),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 /// The looping multi-sentence default plus a variable-speed, per-sentence
 /// colored variant; restart from outside via `GlobalKey<TextTypeState>`.

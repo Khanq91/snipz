@@ -215,13 +215,21 @@ class _PullRevealRefreshState extends State<PullRevealRefresh>
     final bool busy =
         _mode == PullRevealMode.refreshing || _mode == PullRevealMode.settling;
 
-    if (n is OverscrollNotification &&
-        !busy &&
-        n.overscroll < 0 &&
-        n.dragDetails != null) {
-      // ClampingScrollPhysics: list đứng ở 0, mình tự cộng dồn độ kéo.
-      _bounceMode = false;
-      _onPulled(-n.overscroll);
+    if (n is OverscrollNotification && !busy && n.dragDetails != null) {
+      if (n.overscroll < 0) {
+        // ClampingScrollPhysics: list đứng ở 0, mình tự cộng dồn độ kéo.
+        _bounceMode = false;
+        _onPulled(-n.overscroll);
+      } else if (_extent.value > 0 &&
+          (_mode == PullRevealMode.dragging ||
+              _mode == PullRevealMode.armed)) {
+        // Kéo ngược lên khi list KHÔNG cuộn được (ngắn hơn viewport):
+        // clamping physics báo overscroll dương thay vì ScrollUpdate —
+        // thu header dần, xuống dưới ngưỡng thì disarm (hủy refresh).
+        _setExtent(_extent.value - n.overscroll);
+        _updateArm();
+        if (_extent.value <= 0) _setMode(PullRevealMode.idle);
+      }
       return false;
     }
 
