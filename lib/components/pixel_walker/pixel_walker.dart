@@ -135,7 +135,9 @@ class PixelWalker extends StatefulWidget {
 
 class _PixelWalkerState extends State<PixelWalker>
     with SingleTickerProviderStateMixin {
-  late final Ticker _ticker = createTicker(_onTick);
+  // Tạo trong initState (không lazy) — lazy thì lần đụng đầu tiên có thể là
+  // dispose(), lúc đó createTicker tra cứu TickerMode trên cây đã deactivate.
+  late final Ticker _ticker;
   final _RepaintTrigger _repaint = _RepaintTrigger();
 
   // Thời gian animation tích lũy qua các lần start/stop ticker.
@@ -156,6 +158,7 @@ class _PixelWalkerState extends State<PixelWalker>
   @override
   void initState() {
     super.initState();
+    _ticker = createTicker(_onTick);
     _rebuildLayout();
     if (widget.walking) _ticker.start();
   }
