@@ -15,9 +15,10 @@ final ComponentDemo pixelWalkerDemo = ComponentDemo(
   ),
 );
 
-/// Cảnh trong khung header 200px + điều khiển trực tiếp hai param chính:
-/// kéo slider `progress` để thấy hiệu ứng hiện dần (mascot trồi lên, dither
-/// dày dần), bật `walking` để mascot bước và skyline trôi parallax.
+/// Cảnh trong khung header 200px + điều khiển trực tiếp các param chính:
+/// nút đổi `scene` (thành phố / thành phố đêm) và `sprite` (Clawd / mèo Miu),
+/// kéo slider `progress` để thấy hiệu ứng hiện dần, bật `walking` để mascot
+/// bước và các layer trôi parallax.
 class _PixelWalkerShowcase extends StatefulWidget {
   const _PixelWalkerShowcase();
 
@@ -29,11 +30,18 @@ class _PixelWalkerShowcaseState extends State<_PixelWalkerShowcase> {
   double _progress = 1.0;
   double _scale = 1.0;
   bool _walking = true;
+  PixelWalkerScene _scene = PixelWalkerScene.city;
+  bool _miu = false;
 
   @override
   Widget build(BuildContext context) {
-    return ColoredBox(
-      color: const Color(0xFF0E0D0B),
+    final bool night = _scene == PixelWalkerScene.nightCity;
+    // Mỗi scene một tông nền/skyline — component chỉ nhận màu, không tự đoán.
+    final Color bg = night ? const Color(0xFF0A0D16) : const Color(0xFF0E0D0B);
+    // Material thay vì ColoredBox: SwitchListTile vẽ ink lên Material gần
+    // nhất — ColoredBox chen giữa sẽ che nó (assertion ở debug mode).
+    return Material(
+      color: bg,
       child: Column(
         children: <Widget>[
           SizedBox(
@@ -43,6 +51,11 @@ class _PixelWalkerShowcaseState extends State<_PixelWalkerShowcase> {
               progress: _progress,
               walking: _walking,
               scale: _scale,
+              scene: _scene,
+              sprite: _miu ? PixelSprite.miu() : null,
+              skylineColor: night
+                  ? const Color(0xFF93A1BE)
+                  : const Color(0xFFB9B4AE),
             ),
           ),
           const Divider(height: 1, color: Colors.white12),
@@ -50,6 +63,52 @@ class _PixelWalkerShowcaseState extends State<_PixelWalkerShowcase> {
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: <Widget>[
+                const Text(
+                  'background',
+                  style: TextStyle(color: Colors.white54),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: <Widget>[
+                    _PickChip(
+                      label: 'Thành phố',
+                      selected: !night,
+                      onTap: () =>
+                          setState(() => _scene = PixelWalkerScene.city),
+                    ),
+                    _PickChip(
+                      label: 'Đêm — cao tầng, núi, mây',
+                      selected: night,
+                      onTap: () =>
+                          setState(() => _scene = PixelWalkerScene.nightCity),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'pixel art',
+                  style: TextStyle(color: Colors.white54),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: <Widget>[
+                    _PickChip(
+                      label: 'Clawd (bọ cam)',
+                      selected: !_miu,
+                      onTap: () => setState(() => _miu = false),
+                    ),
+                    _PickChip(
+                      label: 'Miu (mèo)',
+                      selected: _miu,
+                      onTap: () => setState(() => _miu = true),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
                 SwitchListTile(
                   title: const Text(
                     'walking',
@@ -80,6 +139,42 @@ class _PixelWalkerShowcaseState extends State<_PixelWalkerShowcase> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Chip chọn 1-trong-n, tự style để không phụ thuộc theme app.
+class _PickChip extends StatelessWidget {
+  const _PickChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: selected ? const Color(0xFFE8875C) : Colors.white10,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: selected ? const Color(0xFF1A120C) : Colors.white70,
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ),
     );
   }

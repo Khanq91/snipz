@@ -117,6 +117,8 @@ class _PullRevealRefreshShowcase extends StatefulWidget {
 class _PullRevealRefreshShowcaseState
     extends State<_PullRevealRefreshShowcase> {
   int _refreshCount = 0;
+  PixelWalkerScene _scene = PixelWalkerScene.city;
+  bool _miu = false;
 
   Future<void> _fakeLoad() async {
     await Future<void>.delayed(const Duration(seconds: 3));
@@ -125,7 +127,11 @@ class _PullRevealRefreshShowcaseState
 
   @override
   Widget build(BuildContext context) {
-    const Color bg = Color(0xFF0E0D0B);
+    final bool night = _scene == PixelWalkerScene.nightCity;
+    final Color bg = night ? const Color(0xFF0A0D16) : const Color(0xFF0E0D0B);
+    final Color tile = night
+        ? const Color(0xFF151A28)
+        : const Color(0xFF1A1917);
     return ColoredBox(
       color: bg,
       child: PullRevealRefresh(
@@ -137,6 +143,11 @@ class _PullRevealRefreshShowcaseState
             progress: status.progress,
             walking: status.isRefreshing,
             backgroundColor: bg,
+            scene: _scene,
+            sprite: _miu ? PixelSprite.miu() : null,
+            skylineColor: night
+                ? const Color(0xFF93A1BE)
+                : const Color(0xFFB9B4AE),
           );
         },
         child: ListView(
@@ -151,19 +162,41 @@ class _PullRevealRefreshShowcaseState
               'Kéo xuống để refresh — đã refresh $_refreshCount lần',
               style: const TextStyle(color: Colors.white38, fontSize: 13),
             ),
+            const SizedBox(height: 12),
+            // Đổi cảnh/mascot của header ngay trong ngữ cảnh dùng thật —
+            // chạm để xoay vòng giá trị.
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: <Widget>[
+                _CycleChip(
+                  label: night ? 'Cảnh: đêm' : 'Cảnh: thành phố',
+                  onTap: () => setState(
+                    () => _scene = night
+                        ? PixelWalkerScene.city
+                        : PixelWalkerScene.nightCity,
+                  ),
+                ),
+                _CycleChip(
+                  label: _miu ? 'Mascot: Miu (mèo)' : 'Mascot: Clawd',
+                  onTap: () => setState(() => _miu = !_miu),
+                ),
+              ],
+            ),
             const SizedBox(height: 16),
-            for (final (String title, String subtitle) in const <(String, String)>[
-              ('Tính khả thi tính năng ứng dụng', 'Khanq91/noctis'),
-              ('UI/UX audit và redesign proposal', 'Khanq91/noctis'),
-              ('Kiểm tra hiện trạng dự án', 'Khanq91/Muzicz'),
-              ('Port pull-to-refresh sang Flutter', 'Khanq91/Snipz'),
-              ('Dựng pixel walker scene', 'Khanq91/Snipz'),
-            ])
+            for (final (String title, String subtitle)
+                in const <(String, String)>[
+                  ('Tính khả thi tính năng ứng dụng', 'Khanq91/noctis'),
+                  ('UI/UX audit và redesign proposal', 'Khanq91/noctis'),
+                  ('Kiểm tra hiện trạng dự án', 'Khanq91/Muzicz'),
+                  ('Port pull-to-refresh sang Flutter', 'Khanq91/Snipz'),
+                  ('Dựng pixel walker scene', 'Khanq91/Snipz'),
+                ])
               Padding(
                 padding: const EdgeInsets.only(bottom: 12),
                 child: DecoratedBox(
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1A1917),
+                    color: tile,
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: ListTile(
@@ -179,6 +212,44 @@ class _PullRevealRefreshShowcaseState
                   ),
                 ),
               ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Nút pill nhỏ tự style (không phụ thuộc theme) — chạm để xoay vòng giá trị.
+class _CycleChip extends StatelessWidget {
+  const _CycleChip({required this.label, required this.onTap});
+
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white10,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.white12),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Text(
+              label,
+              style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(width: 6),
+            const Icon(Icons.swap_horiz, size: 16, color: Colors.white38),
           ],
         ),
       ),
