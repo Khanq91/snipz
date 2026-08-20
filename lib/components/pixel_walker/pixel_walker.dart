@@ -75,15 +75,17 @@ class PixelSprite {
   }
 
   /// Mascot cua "Cáu": front-facing kiểu Clawd — thân bè nguyên khối, 2 mắt
-  /// lồi trên cuống, 3 cặp chân, 2 càng lớn thay phiên giơ lên ở frame bước
-  /// (cáu nhưng vô hại); chân gần như không nhấc, đúng chất meme.
+  /// lồi 2×2 trên cuống ([eyeWhite] lòng trắng + [eye] đồng tử lé vào trong),
+  /// 3 cặp chân, 2 càng lớn thay phiên giơ lên ở frame bước (cáu nhưng vô
+  /// hại); chân gần như không nhấc, đúng chất meme.
   factory PixelSprite.crab({
     Color body = const Color(0xFFE0654B),
+    Color eyeWhite = const Color(0xFFF2EAD8),
     Color eye = const Color(0xFF2A140E),
   }) {
     return PixelSprite(
       frames: _crabFrames,
-      palette: <String, Color>{'X': body, 'E': eye},
+      palette: <String, Color>{'X': body, 'W': eyeWhite, 'E': eye},
     );
   }
 
@@ -283,11 +285,13 @@ const List<List<String>> _duckFrames = <List<String>>[
   ],
 ];
 
-// Cua 16×9: front-facing — mắt E trên cuống, thân 8 ô tách rời 2 càng (khối
-// 3 ô kiểu chữ C, kìm há ra ngoài) nối bằng cánh tay 1 hàng; frame bước thay
-// phiên giơ hẳn một càng lên ngang mắt, chân chỉ xoè nhẹ — "cáu nhưng ngáo".
+// Cua 16×10: front-facing — mắt lồi 2×2 (W lòng trắng, E đồng tử lé vào
+// trong) trên cuống, thân 8 ô tách rời 2 càng (khối kiểu chữ C, kìm há ra
+// ngoài) nối bằng cánh tay 1 hàng; frame bước thay phiên giơ hẳn một càng
+// lên ngang mắt, chân chỉ xoè nhẹ — "cáu nhưng ngáo".
 const List<String> _crabStand = <String>[
-  '......E..E......',
+  '.....WW..WW.....',
+  '.....WE..EW.....',
   '......X..X......',
   '....XXXXXXXX....',
   'XX..XXXXXXXX..XX',
@@ -301,9 +305,10 @@ const List<String> _crabStand = <String>[
 const List<List<String>> _crabFrames = <List<String>>[
   _crabStand,
   <String>[
-    'XX....E..E......',
-    '.X....X..X......',
-    'XXX.XXXXXXXX....',
+    'XX...WW..WW.....',
+    '.X...WE..EW.....',
+    'XXX...X..X......',
+    '..XXXXXXXXXX....',
     '....XXXXXXXX..XX',
     '....XXXXXXXXXXX.',
     '....XXXXXXXX..XX',
@@ -313,9 +318,10 @@ const List<List<String>> _crabFrames = <List<String>>[
   ],
   _crabStand,
   <String>[
-    '......E..E....XX',
-    '......X..X....X.',
-    '....XXXXXXXX.XXX',
+    '.....WW..WW...XX',
+    '.....WE..EW...X.',
+    '......X..X...XXX',
+    '....XXXXXXXXXX..',
     'XX..XXXXXXXX....',
     '.XXXXXXXXXXX....',
     'XX..XXXXXXXX....',

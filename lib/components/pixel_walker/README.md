@@ -37,7 +37,7 @@ created_deps: []
 platforms_initial: [android]
 
 # --- COMPONENT VERSION ---
-version: 1.2.0
+version: 1.2.1
 
 # --- DERIVED (computed from Test History by verify.dart, do not hand-edit) ---
 latest_known_good: null
@@ -122,7 +122,7 @@ bob khi đi. Sáu sprite có sẵn:
 | `PixelSprite.miu({body, stripe})` | 16×11 | Mèo nhìn nghiêng, sọc lưng, đuôi vẫy theo nhịp |
 | `PixelSprite.capy({body, dark, eye})` | 18×10 | Capybara mặt đơ, cục gạch biết đi, chân đảo chéo |
 | `PixelSprite.duck({body, beak, eye})` | 14×10 | Vịt lạch bạch, mỏ bè, đuôi hất lên khi sải chân |
-| `PixelSprite.crab({body, eye})` | 16×9 | Cua "cáu nhưng ngáo": mắt cuống, càng thay phiên giơ lên |
+| `PixelSprite.crab({body, eyeWhite, eye})` | 16×10 | Cua "cáu nhưng ngáo": mắt lồi 2×2 lé vào trong, càng thay phiên giơ lên |
 | `PixelSprite.axolotl({body, accent, eye})` | 18×10 | Axolotl hồng, quạt mang sau gáy rung, đuôi lượn theo nhịp |
 
 Muốn mascot khác chỉ cần tự vẽ ma trận ký tự — không đụng code vẽ.
@@ -145,6 +145,9 @@ Parallax của `nightCity` (chậm → nhanh): sao/trăng đứng yên, núi 2.2
 
 ## Changelog
 
+- **1.2.1** (2026-08-20) — cua Cáu: mắt 1 ô màu tối (chìm trên nền tối) →
+  mắt lồi 2×2 có lòng trắng `eyeWhite` + đồng tử lé vào trong; khung 16×9 →
+  16×10.
 - **1.2.0** (2026-08-20) — thêm 4 mascot theo thứ tự đề xuất: capybara Capy
   (18×10, mặt đơ), vịt Quạc (14×10, lạch bạch, đuôi hất), cua Cáu (16×9,
   front-facing, càng thay phiên giơ lên kiểu "cáu nhưng ngáo"), axolotl Axo
