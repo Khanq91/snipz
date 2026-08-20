@@ -118,7 +118,17 @@ class _PullRevealRefreshShowcaseState
     extends State<_PullRevealRefreshShowcase> {
   int _refreshCount = 0;
   PixelWalkerScene _scene = PixelWalkerScene.city;
-  bool _miu = false;
+  int _mascot = 0;
+
+  // null = Clawd mặc định; 4 con mới theo thứ tự Capy → Vịt → Cua → Axolotl.
+  static final List<(String, PixelSprite?)> _mascots = <(String, PixelSprite?)>[
+    ('Clawd', null),
+    ('Miu (mèo)', PixelSprite.miu()),
+    ('Capy (capybara)', PixelSprite.capy()),
+    ('Quạc (vịt)', PixelSprite.duck()),
+    ('Cáu (cua)', PixelSprite.crab()),
+    ('Axo (axolotl)', PixelSprite.axolotl()),
+  ];
 
   Future<void> _fakeLoad() async {
     await Future<void>.delayed(const Duration(seconds: 3));
@@ -144,7 +154,7 @@ class _PullRevealRefreshShowcaseState
             walking: status.isRefreshing,
             backgroundColor: bg,
             scene: _scene,
-            sprite: _miu ? PixelSprite.miu() : null,
+            sprite: _mascots[_mascot].$2,
             skylineColor: night
                 ? const Color(0xFF93A1BE)
                 : const Color(0xFFB9B4AE),
@@ -178,8 +188,9 @@ class _PullRevealRefreshShowcaseState
                   ),
                 ),
                 _CycleChip(
-                  label: _miu ? 'Mascot: Miu (mèo)' : 'Mascot: Clawd',
-                  onTap: () => setState(() => _miu = !_miu),
+                  label: 'Mascot: ${_mascots[_mascot].$1}',
+                  onTap: () =>
+                      setState(() => _mascot = (_mascot + 1) % _mascots.length),
                 ),
               ],
             ),

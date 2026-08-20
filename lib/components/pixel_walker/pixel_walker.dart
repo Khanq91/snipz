@@ -46,6 +46,61 @@ class PixelSprite {
     );
   }
 
+  /// Mascot capybara "Capy": cục gạch biết đi nhìn nghiêng, lưng ngang, mõm
+  /// vuông mũi sẫm, tai tròn nhỏ, mắt 1 ô, chân ngắn chìm dưới thân — vibe
+  /// mặt đơ, lừ đừ. [dark] tô tai/mũi/chân.
+  factory PixelSprite.capy({
+    Color body = const Color(0xFFC49A6A),
+    Color dark = const Color(0xFF7E5B38),
+    Color eye = const Color(0xFF241A12),
+  }) {
+    return PixelSprite(
+      frames: _capyFrames,
+      palette: <String, Color>{'X': body, 'S': dark, 'E': eye},
+    );
+  }
+
+  /// Mascot vịt "Quạc": đầu tròn nhô trước, mỏ bè 2 ô, thân bầu đuôi hất,
+  /// chân mảnh bàn bè — frame lẻ đuôi hất lên + chân sải, cộng tilt/bob của
+  /// painter thành dáng lạch bạch. [beak] tô mỏ + chân.
+  factory PixelSprite.duck({
+    Color body = const Color(0xFFF2DE96),
+    Color beak = const Color(0xFFE8963F),
+    Color eye = const Color(0xFF241A12),
+  }) {
+    return PixelSprite(
+      frames: _duckFrames,
+      palette: <String, Color>{'X': body, 'B': beak, 'E': eye},
+    );
+  }
+
+  /// Mascot cua "Cáu": front-facing kiểu Clawd — thân bè nguyên khối, 2 mắt
+  /// lồi trên cuống, 3 cặp chân, 2 càng lớn thay phiên giơ lên ở frame bước
+  /// (cáu nhưng vô hại); chân gần như không nhấc, đúng chất meme.
+  factory PixelSprite.crab({
+    Color body = const Color(0xFFE0654B),
+    Color eye = const Color(0xFF2A140E),
+  }) {
+    return PixelSprite(
+      frames: _crabFrames,
+      palette: <String, Color>{'X': body, 'E': eye},
+    );
+  }
+
+  /// Mascot axolotl "Axo": nhìn nghiêng, đầu to vuông bo với 3 nhánh mang
+  /// [accent] xoè sau gáy, thân ngắn, đuôi dài lượn lên/xuống theo nhịp,
+  /// mang rung 1 ô ở frame bước — mềm, hiền, hơi fantasy.
+  factory PixelSprite.axolotl({
+    Color body = const Color(0xFFF2BFC9),
+    Color accent = const Color(0xFFD9758F),
+    Color eye = const Color(0xFF3A2430),
+  }) {
+    return PixelSprite(
+      frames: _axoFrames,
+      palette: <String, Color>{'X': body, 'S': accent, 'E': eye},
+    );
+  }
+
   final List<List<String>> frames;
   final Map<String, Color> palette;
 
@@ -137,6 +192,180 @@ const List<List<String>> _miuFrames = <List<String>>[
     '..XXXXXXXXXX....',
     '....XX..XX......',
     '....XX..XX......',
+  ],
+];
+
+// Capy 18×10: thân dài lưng ngang, đầu liền thân, mõm vuông chóp mũi S,
+// tai S trên đỉnh, chân S ngắn — frame bước chỉ đảo chéo 2 cặp chân.
+const List<String> _capyStand = <String>[
+  '............S..S..',
+  '...........XXXXXX.',
+  '...........XXXEXXX',
+  '..XXXXXXXXXXXXXXXS',
+  '.XXXXXXXXXXXXXXXXS',
+  '.XXXXXXXXXXXXXXXX.',
+  '.XXXXXXXXXXXXXXX..',
+  '..XXXXXXXXXXXXXX..',
+  '...SS.......SS....',
+  '...SS.......SS....',
+];
+
+const List<List<String>> _capyFrames = <List<String>>[
+  _capyStand,
+  <String>[
+    '............S..S..',
+    '...........XXXXXX.',
+    '...........XXXEXXX',
+    '..XXXXXXXXXXXXXXXS',
+    '.XXXXXXXXXXXXXXXXS',
+    '.XXXXXXXXXXXXXXXX.',
+    '.XXXXXXXXXXXXXXX..',
+    '..XXXXXXXXXXXXXX..',
+    '..SS.........SS...',
+    '..SS.........SS...',
+  ],
+  _capyStand,
+  <String>[
+    '............S..S..',
+    '...........XXXXXX.',
+    '...........XXXEXXX',
+    '..XXXXXXXXXXXXXXXS',
+    '.XXXXXXXXXXXXXXXXS',
+    '.XXXXXXXXXXXXXXXX.',
+    '.XXXXXXXXXXXXXXX..',
+    '..XXXXXXXXXXXXXX..',
+    '....SS.....SS.....',
+    '....SS.....SS.....',
+  ],
+];
+
+// Vịt 14×10: đầu tròn nhô trước, mỏ B bè 2 ô, thân bầu, đuôi hất 1 ô sau
+// lưng (frame sải hất lên 1 hàng), chân B mảnh + bàn bè.
+const List<String> _duckStand = <String>[
+  '........XXXX..',
+  '........XXEX..',
+  '........XXXXBB',
+  '........XXXX..',
+  '.X......XXXX..',
+  '.XXXXXXXXXXX..',
+  '..XXXXXXXXXXX.',
+  '..XXXXXXXXXX..',
+  '....B....B....',
+  '...BB...BB....',
+];
+
+const List<List<String>> _duckFrames = <List<String>>[
+  _duckStand,
+  <String>[
+    '........XXXX..',
+    '........XXEX..',
+    '........XXXXBB',
+    '.X......XXXX..',
+    '........XXXX..',
+    '.XXXXXXXXXXX..',
+    '..XXXXXXXXXXX.',
+    '..XXXXXXXXXX..',
+    '...B......B...',
+    '..BB.....BB...',
+  ],
+  _duckStand,
+  <String>[
+    '........XXXX..',
+    '........XXEX..',
+    '........XXXXBB',
+    '........XXXX..',
+    '.X......XXXX..',
+    '.XXXXXXXXXXX..',
+    '..XXXXXXXXXXX.',
+    '..XXXXXXXXXX..',
+    '.....B..B.....',
+    '....BB..BB....',
+  ],
+];
+
+// Cua 16×9: front-facing — mắt E trên cuống, thân 8 ô tách rời 2 càng (khối
+// 3 ô kiểu chữ C, kìm há ra ngoài) nối bằng cánh tay 1 hàng; frame bước thay
+// phiên giơ hẳn một càng lên ngang mắt, chân chỉ xoè nhẹ — "cáu nhưng ngáo".
+const List<String> _crabStand = <String>[
+  '......E..E......',
+  '......X..X......',
+  '....XXXXXXXX....',
+  'XX..XXXXXXXX..XX',
+  '.XXXXXXXXXXXXXX.',
+  'XX..XXXXXXXX..XX',
+  '....XXXXXXXX....',
+  '....XX.XX.XX....',
+  '....XX.XX.XX....',
+];
+
+const List<List<String>> _crabFrames = <List<String>>[
+  _crabStand,
+  <String>[
+    'XX....E..E......',
+    '.X....X..X......',
+    'XXX.XXXXXXXX....',
+    '....XXXXXXXX..XX',
+    '....XXXXXXXXXXX.',
+    '....XXXXXXXX..XX',
+    '....XXXXXXXX....',
+    '....XX.XX.XX....',
+    '...XX..XX..XX...',
+  ],
+  _crabStand,
+  <String>[
+    '......E..E....XX',
+    '......X..X....X.',
+    '....XXXXXXXX.XXX',
+    'XX..XXXXXXXX....',
+    '.XXXXXXXXXXX....',
+    'XX..XXXXXXXX....',
+    '....XXXXXXXX....',
+    '....XX.XX.XX....',
+    '...XX..XX..XX...',
+  ],
+];
+
+// Axo 18×10: đầu to vuông bo bên phải, quạt mang S 7 ô xoè sau gáy (rung 1 ô
+// ở frame sải), thân ngắn, đuôi S dài phía sau cong lên/xuống theo nhịp.
+const List<String> _axoStand = <String>[
+  '.........S.S......',
+  '........SSXXXXXX..',
+  '........SSXXXXEX..',
+  '.........SXXXXXX..',
+  '..........XXXXXX..',
+  '....XXXXXXXXXXXX..',
+  '.SXXXXXXXXXXXXXX..',
+  'SS..XXXXXXXXXX....',
+  '.....XX......XX...',
+  '....XXX.....XXX...',
+];
+
+const List<List<String>> _axoFrames = <List<String>>[
+  _axoStand,
+  <String>[
+    '........S.S.......',
+    '........SSXXXXXX..',
+    '........SSXXXXEX..',
+    '.........SXXXXXX..',
+    '..........XXXXXX..',
+    '....XXXXXXXXXXXX..',
+    '.SXXXXXXXXXXXXXX..',
+    '.SS.XXXXXXXXXX....',
+    '....XX.......XX...',
+    '...XXX......XXX...',
+  ],
+  _axoStand,
+  <String>[
+    '.........S.S......',
+    '........SSXXXXXX..',
+    '........SSXXXXEX..',
+    '.........SXXXXXX..',
+    '..........XXXXXX..',
+    'S...XXXXXXXXXXXX..',
+    '.SXXXXXXXXXXXXXX..',
+    '....XXXXXXXXXX....',
+    '......XX....XX....',
+    '.....XXX...XXX....',
   ],
 ];
 

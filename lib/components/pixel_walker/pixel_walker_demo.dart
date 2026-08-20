@@ -16,9 +16,9 @@ final ComponentDemo pixelWalkerDemo = ComponentDemo(
 );
 
 /// Cảnh trong khung header 200px + điều khiển trực tiếp các param chính:
-/// nút đổi `scene` (thành phố / thành phố đêm) và `sprite` (Clawd / mèo Miu),
-/// kéo slider `progress` để thấy hiệu ứng hiện dần, bật `walking` để mascot
-/// bước và các layer trôi parallax.
+/// nút đổi `scene` (thành phố / thành phố đêm) và `sprite` (6 mascot: Clawd,
+/// Miu, Capy, Quạc, Cáu, Axo), kéo slider `progress` để thấy hiệu ứng hiện
+/// dần, bật `walking` để mascot bước và các layer trôi parallax.
 class _PixelWalkerShowcase extends StatefulWidget {
   const _PixelWalkerShowcase();
 
@@ -31,7 +31,18 @@ class _PixelWalkerShowcaseState extends State<_PixelWalkerShowcase> {
   double _scale = 1.0;
   bool _walking = true;
   PixelWalkerScene _scene = PixelWalkerScene.city;
-  bool _miu = false;
+  int _mascot = 0;
+
+  // null = Clawd mặc định (tô bằng mascotColor); thứ tự 4 con mới theo đề
+  // xuất: Capy → Vịt → Cua → Axolotl.
+  static final List<(String, PixelSprite?)> _mascots = <(String, PixelSprite?)>[
+    ('Clawd (bọ cam)', null),
+    ('Miu (mèo)', PixelSprite.miu()),
+    ('Capy (capybara)', PixelSprite.capy()),
+    ('Quạc (vịt)', PixelSprite.duck()),
+    ('Cáu (cua)', PixelSprite.crab()),
+    ('Axo (axolotl)', PixelSprite.axolotl()),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +63,7 @@ class _PixelWalkerShowcaseState extends State<_PixelWalkerShowcase> {
               walking: _walking,
               scale: _scale,
               scene: _scene,
-              sprite: _miu ? PixelSprite.miu() : null,
+              sprite: _mascots[_mascot].$2,
               skylineColor: night
                   ? const Color(0xFF93A1BE)
                   : const Color(0xFFB9B4AE),
@@ -96,16 +107,12 @@ class _PixelWalkerShowcaseState extends State<_PixelWalkerShowcase> {
                   spacing: 8,
                   runSpacing: 8,
                   children: <Widget>[
-                    _PickChip(
-                      label: 'Clawd (bọ cam)',
-                      selected: !_miu,
-                      onTap: () => setState(() => _miu = false),
-                    ),
-                    _PickChip(
-                      label: 'Miu (mèo)',
-                      selected: _miu,
-                      onTap: () => setState(() => _miu = true),
-                    ),
+                    for (int i = 0; i < _mascots.length; i++)
+                      _PickChip(
+                        label: _mascots[i].$1,
+                        selected: _mascot == i,
+                        onTap: () => setState(() => _mascot = i),
+                      ),
                   ],
                 ),
                 const SizedBox(height: 8),
