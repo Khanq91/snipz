@@ -1,11 +1,13 @@
 /// PixelWalker
 /// Origin: reimplemented — dựng lại cảnh pull-to-refresh của app Claude Code
-/// mobile (mascot pixel đi qua skyline thành phố dither) từ video demo.
+/// mobile (mascot pixel đi qua skyline thành phố dither) từ video demo;
+/// scene `nightCity` + mascot mèo Miu là phần tự chế thêm.
 /// Deps: flutter only
 /// Flutter: 3.44.5
 /// Entry file. Copy the whole folder into another project and import this file.
 library;
 
+import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -25,7 +27,23 @@ class PixelSprite {
   /// Mascot mặc định: con bọ cam kiểu Clawd — thân vuông bo, 2 hốc mắt,
   /// 3 cặp chân, 2 frame bước.
   factory PixelSprite.clawd({Color color = const Color(0xFFE8875C)}) {
-    return PixelSprite(frames: _clawdFrames, palette: <String, Color>{'X': color});
+    return PixelSprite(
+      frames: _clawdFrames,
+      palette: <String, Color>{'X': color},
+    );
+  }
+
+  /// Mascot mèo "Miu" (tự chế): nhìn nghiêng bước sang phải, tai nhọn, mắt
+  /// khe dọc, sọc lưng + chóp đuôi màu [stripe], đuôi vẫy theo nhịp bước —
+  /// 4 frame (đứng / sải chân / đứng / thu chân).
+  factory PixelSprite.miu({
+    Color body = const Color(0xFFEBD3A0),
+    Color stripe = const Color(0xFFC9884A),
+  }) {
+    return PixelSprite(
+      frames: _miuFrames,
+      palette: <String, Color>{'X': body, 'S': stripe},
+    );
   }
 
   final List<List<String>> frames;
@@ -77,11 +95,64 @@ const List<List<String>> _clawdFrames = <List<String>>[
   ],
 ];
 
+const List<String> _miuStand = <String>[
+  '..........X....X',
+  '..........XX..XX',
+  '..S.......XXXXXX',
+  '.X........XXX.XX',
+  '.X........XXX.XX',
+  '.XXXSXSXSXXXXXXX',
+  '..XXSXSXSXXXXXXX',
+  '..XXXXXXXXXX....',
+  '..XXXXXXXXXX....',
+  '...XX....XX.....',
+  '...XX....XX.....',
+];
+
+const List<List<String>> _miuFrames = <List<String>>[
+  _miuStand,
+  <String>[
+    '..........X....X',
+    '..........XX..XX',
+    'S.........XXXXXX',
+    '.X........XXX.XX',
+    '.X........XXX.XX',
+    '.XXXSXSXSXXXXXXX',
+    '..XXSXSXSXXXXXXX',
+    '..XXXXXXXXXX....',
+    '..XXXXXXXXXX....',
+    '..XX.....XX.....',
+    '.XX........XX...',
+  ],
+  _miuStand,
+  <String>[
+    '..........X....X',
+    '..........XX..XX',
+    '.S........XXXXXX',
+    '.X........XXX.XX',
+    '.X........XXX.XX',
+    '.XXXSXSXSXXXXXXX',
+    '..XXSXSXSXXXXXXX',
+    '..XXXXXXXXXX....',
+    '..XXXXXXXXXX....',
+    '....XX..XX......',
+    '....XX..XX......',
+  ],
+];
+
+/// Bố cục cảnh nền. [city] là cảnh gốc (skyline dither trung tính + mây);
+/// [nightCity] là thành phố đêm: nhà cao tầng cửa sổ sáng đèn, dãy núi
+/// parallax phía xa, sao + trăng khuyết, mây. Cả hai đều procedural — không
+/// asset ngoài.
+enum PixelWalkerScene { city, nightCity }
+
 /// Cảnh pixel-art neo đáy: mascot đứng giữa, skyline thành phố + mây vẽ bằng
 /// dither procedural. [progress] 0→1 hiện dần cảnh (mascot trồi lên từ mép
 /// dưới, dither dày dần); [walking] bật chu kỳ bước đi + skyline/mây trôi
-/// ngang (parallax). Sinh ra cho vùng header pull-to-refresh nhưng dùng được
-/// làm empty-state/loading bất kỳ.
+/// ngang (parallax); [scene] chọn bố cục nền ([PixelWalkerScene.city] mặc
+/// định, [PixelWalkerScene.nightCity] thêm núi + sao + trăng + cửa sổ đèn).
+/// Sinh ra cho vùng header pull-to-refresh nhưng dùng được làm
+/// empty-state/loading bất kỳ.
 ///
 /// Không expose factory `Shader`: cảnh nhiều layer + sprite animation không
 /// biểu diễn được bằng một `ui.Gradient`/`ImageShader` (xem README Caveats).
@@ -90,10 +161,13 @@ class PixelWalker extends StatefulWidget {
     super.key,
     this.progress = 1.0,
     this.walking = false,
+    this.scene = PixelWalkerScene.city,
     this.scale = 1.0,
     this.sprite,
     this.mascotColor = const Color(0xFFE8875C),
     this.skylineColor = const Color(0xFFB9B4AE),
+    this.windowColor = const Color(0xFFF2C069),
+    this.starColor = const Color(0xFFC7D3E6),
     this.backgroundColor = Colors.transparent,
     this.speed = 1.0,
     this.seed = 7,
@@ -106,6 +180,9 @@ class PixelWalker extends StatefulWidget {
   /// không ticker nào chạy (an toàn để giữ trong cây widget lâu dài).
   final bool walking;
 
+  /// Bố cục cảnh nền; mặc định [PixelWalkerScene.city] — đúng cảnh gốc.
+  final PixelWalkerScene scene;
+
   /// Mật độ chi tiết: 1.0 → ô dither 3px, ô mascot 6px. Tăng khi render vùng
   /// lớn (fullscreen ~1.5–2.0) để pixel không quá mịn, giảm khi nhét vào ô
   /// nhỏ. Đây là kích thước ô lưới, không phải scale transform.
@@ -117,8 +194,15 @@ class PixelWalker extends StatefulWidget {
   /// Màu mascot mặc định (chỉ dùng khi [sprite] null).
   final Color mascotColor;
 
-  /// Màu dither của skyline; mây dùng cùng màu ở opacity thấp hơn.
+  /// Màu dither của skyline; mây dùng cùng màu ở opacity thấp hơn, núi của
+  /// [PixelWalkerScene.nightCity] dùng cùng màu ở 60%.
   final Color skylineColor;
+
+  /// Màu cửa sổ sáng đèn trên toà nhà (chỉ [PixelWalkerScene.nightCity]).
+  final Color windowColor;
+
+  /// Màu sao + trăng khuyết (chỉ [PixelWalkerScene.nightCity]).
+  final Color starColor;
 
   /// Nền vẽ dưới cảnh; mặc định trong suốt để đặt lên nền app.
   final Color backgroundColor;
@@ -144,16 +228,23 @@ class _PixelWalkerState extends State<PixelWalker>
   double _timeSec = 0;
   double _timeBase = 0;
 
-  // Bố cục skyline/mây cho một chu kỳ, sinh từ seed.
+  // Bố cục skyline/mây/núi cho một chu kỳ, sinh từ seed (núi rỗng khi scene
+  // không có núi).
   late Int16List _heights;
   late Int16List _antennae;
   late List<_CloudSpec> _clouds;
   int _period = 1;
+  late Int16List _mountains;
+  int _mountPeriod = 1;
 
   // Buffer điểm tái dùng giữa các frame (không cấp phát trong paint).
   final _PointSink _skySink = _PointSink();
   final _PointSink _cloudSink = _PointSink();
   final _PointSink _spriteSink = _PointSink();
+  // Sao/trăng/núi vẽ tuần tự nên dùng chung một sink; cửa sổ cần sink riêng
+  // vì được gom trong cùng pass với _skySink.
+  final _PointSink _fxSink = _PointSink();
+  final _PointSink _windowSink = _PointSink();
 
   @override
   void initState() {
@@ -166,7 +257,7 @@ class _PixelWalkerState extends State<PixelWalker>
   @override
   void didUpdateWidget(PixelWalker old) {
     super.didUpdateWidget(old);
-    if (widget.seed != old.seed) _rebuildLayout();
+    if (widget.seed != old.seed || widget.scene != old.scene) _rebuildLayout();
     if (widget.walking != old.walking) {
       if (widget.walking) {
         _ticker.start();
@@ -191,19 +282,21 @@ class _PixelWalkerState extends State<PixelWalker>
   }
 
   void _rebuildLayout() {
+    final bool night = widget.scene == PixelWalkerScene.nightCity;
     int r = (widget.seed * 2654435761) & 0x7fffffff;
     int next(int lo, int hi) {
       r = (r * 1103515245 + 12345) & 0x7fffffff;
       return lo + r % (hi - lo + 1);
     }
 
-    // Skyline: dựng cột chiều cao cho một chu kỳ ~96 ô.
+    // Skyline: dựng cột chiều cao cho một chu kỳ ~96 ô. Scene đêm dùng tháp
+    // cao & mảnh hơn (nhà cao tầng) với khoảng hở hẹp.
     final List<int> heights = <int>[];
     final List<int> antennae = <int>[];
     while (heights.length < 96) {
-      final int gap = next(3, 9);
-      final int width = next(6, 16);
-      final int height = next(4, 13);
+      final int gap = night ? next(3, 8) : next(3, 9);
+      final int width = night ? next(5, 10) : next(6, 16);
+      final int height = night ? next(8, 20) : next(4, 13);
       for (int i = 0; i < gap; i++) {
         heights.add(0);
         antennae.add(0);
@@ -217,6 +310,28 @@ class _PixelWalkerState extends State<PixelWalker>
     _heights = Int16List.fromList(heights);
     _antennae = Int16List.fromList(antennae);
     _period = _heights.length;
+
+    // Núi (chỉ scene đêm): ridge một chu kỳ 160 ô = max của 5 đỉnh tam giác,
+    // khoảng cách tính wrap-around để trôi liền mạch.
+    if (night) {
+      const int mp = 160;
+      final Int16List m = Int16List(mp);
+      for (int k = 0; k < 5; k++) {
+        final int px = next(0, mp - 1);
+        final int ph = next(12, 24);
+        final double slope = next(30, 65) / 100;
+        for (int i = 0; i < mp; i++) {
+          final int dx = (i - px).abs();
+          final int h = (ph - math.min(dx, mp - dx) * slope).round();
+          if (h > m[i]) m[i] = h;
+        }
+      }
+      _mountains = m;
+      _mountPeriod = mp;
+    } else {
+      _mountains = Int16List(0);
+      _mountPeriod = 1;
+    }
 
     // Mây: vài blob rải trên một chu kỳ dài hơn skyline (parallax chậm).
     _clouds = <_CloudSpec>[
@@ -277,6 +392,7 @@ class _PointSink {
   }
 
   bool get isEmpty => _len == 0;
+  bool get isNotEmpty => _len > 0;
 
   Float32List get view => Float32List.sublistView(_buf, 0, _len);
 }
@@ -328,17 +444,56 @@ class _PixelWalkerPainter extends CustomPainter {
     // Chân trời: đáy skyline ngang tầm đầu mascot (như bản gốc).
     final double skylineBaseY = feetY - spriteH * 0.9 + (1 - eased) * 3 * cell;
 
-    _paintSkyline(canvas, size, w, cell, t, skylineBaseY, eased);
-    _paintClouds(canvas, size, w, cell, t, skylineBaseY, eased);
+    if (w.scene == PixelWalkerScene.nightCity) {
+      // Đêm: sao/trăng tĩnh sau cùng, rồi núi (parallax chậm nhất), mây, và
+      // toà nhà vẽ SAU mây để tháp cao che mây → có chiều sâu.
+      _paintStars(canvas, size, w, cell, skylineBaseY, eased);
+      _paintMoon(canvas, size, w, cell, skylineBaseY, eased);
+      _paintMountains(canvas, size, w, cell, t, skylineBaseY, eased);
+      _paintClouds(
+        canvas,
+        size,
+        w,
+        cell,
+        t,
+        skylineBaseY,
+        eased,
+        bandCells: 26,
+      );
+      _paintSkyline(canvas, size, w, cell, t, skylineBaseY, eased, night: true);
+    } else {
+      _paintSkyline(canvas, size, w, cell, t, skylineBaseY, eased);
+      _paintClouds(canvas, size, w, cell, t, skylineBaseY, eased);
+    }
     // Độ trồi của mascot dùng reveal TUYẾN TÍNH (không ease): chân chỉ chạm
     // đất đúng lúc progress = 1 → tự nó là chỉ báo "đủ ngưỡng để refresh".
-    _paintSprite(canvas, size, sprite, spriteCell, spriteW, spriteH, feetY, t,
-        w.walking, eased, reveal);
+    _paintSprite(
+      canvas,
+      size,
+      sprite,
+      spriteCell,
+      spriteW,
+      spriteH,
+      feetY,
+      t,
+      w.walking,
+      eased,
+      reveal,
+    );
   }
 
-  void _paintSkyline(Canvas canvas, Size size, PixelWalker w, double cell,
-      double t, double baseY, double eased) {
+  void _paintSkyline(
+    Canvas canvas,
+    Size size,
+    PixelWalker w,
+    double cell,
+    double t,
+    double baseY,
+    double eased, {
+    bool night = false,
+  }) {
     final _PointSink sink = state._skySink..clear();
+    final _PointSink windows = state._windowSink..clear();
     final double scroll = t * 9.0;
     final int first = scroll.floor();
     final double frac = scroll - first;
@@ -354,28 +509,51 @@ class _PixelWalkerPainter extends CustomPainter {
       for (int y = 0; y < h + extra; y++) {
         final double py = baseY - y * cell - cell / 2;
         if (py < 0) break;
+        // Cửa sổ sáng đèn: chỉ scene đêm, trong thân toà (không dính mép
+        // trên); nhân eased để đèn "bật dần" theo độ kéo.
+        if (night && y < h - 1 && _hash(wx, y, w.seed ^ 0xa11) < 0.10 * eased) {
+          windows.add(sx, py);
+          continue;
+        }
+        // Đêm dày dither hơn cho silhouette đặc.
         final double density = y >= h
-            ? 0.30
+            ? (night ? 0.35 : 0.30)
             : y >= h - 2
-                ? 0.38
-                : 0.62;
+            ? (night ? 0.50 : 0.38)
+            : (night ? 0.78 : 0.62);
         if (_hash(wx, y, w.seed) < density * eased) sink.add(sx, py);
       }
     }
-    if (sink.isEmpty) return;
-    _dotPaint
-      ..strokeWidth = cell
-      ..color = w.skylineColor.withValues(alpha: w.skylineColor.a * eased);
-    canvas.drawRawPoints(ui.PointMode.points, sink.view, _dotPaint);
+    if (sink.isNotEmpty) {
+      _dotPaint
+        ..strokeWidth = cell
+        ..color = w.skylineColor.withValues(alpha: w.skylineColor.a * eased);
+      canvas.drawRawPoints(ui.PointMode.points, sink.view, _dotPaint);
+    }
+    if (windows.isNotEmpty) {
+      _dotPaint
+        ..strokeWidth = cell
+        ..color = w.windowColor.withValues(alpha: w.windowColor.a * eased);
+      canvas.drawRawPoints(ui.PointMode.points, windows.view, _dotPaint);
+    }
   }
 
-  void _paintClouds(Canvas canvas, Size size, PixelWalker w, double cell,
-      double t, double baseY, double eased) {
+  void _paintClouds(
+    Canvas canvas,
+    Size size,
+    PixelWalker w,
+    double cell,
+    double t,
+    double baseY,
+    double eased, {
+    int bandCells = 19,
+  }) {
     final _PointSink sink = state._cloudSink..clear();
     const int periodCells = 160;
     final double scroll = t * 3.0;
-    // Đỉnh cao nhất skyline có thể chạm 13 + antenna 4 ô — mây bay trên đó.
-    final double cloudBandY = baseY - 19 * cell;
+    // Mây bay trên đỉnh skyline: city đỉnh chạm 13 + antenna 4 ô → band 19;
+    // nightCity tháp tới 20 + antenna → caller đẩy band lên 26.
+    final double cloudBandY = baseY - bandCells * cell;
 
     for (final _CloudSpec c in state._clouds) {
       double pos = (c.start - scroll) % periodCells;
@@ -405,13 +583,127 @@ class _PixelWalkerPainter extends CustomPainter {
     if (sink.isEmpty) return;
     _dotPaint
       ..strokeWidth = cell
-      ..color = w.skylineColor.withValues(alpha: w.skylineColor.a * eased * 0.55);
+      ..color = w.skylineColor.withValues(
+        alpha: w.skylineColor.a * eased * 0.55,
+      );
     canvas.drawRawPoints(ui.PointMode.points, sink.view, _dotPaint);
   }
 
-  void _paintSprite(Canvas canvas, Size size, PixelSprite sprite,
-      double spriteCell, double spriteW, double spriteH, double feetY,
-      double t, bool walking, double eased, double reveal) {
+  void _paintMountains(
+    Canvas canvas,
+    Size size,
+    PixelWalker w,
+    double cell,
+    double t,
+    double baseY,
+    double eased,
+  ) {
+    if (state._mountains.isEmpty) return;
+    final _PointSink sink = state._fxSink..clear();
+    // Trôi chậm nhất trong các layer động — núi ở xa nhất.
+    final double scroll = t * 2.2;
+    final int first = scroll.floor();
+    final double frac = scroll - first;
+    final int cols = (size.width / cell).ceil() + 1;
+
+    for (int i = 0; i <= cols; i++) {
+      final int wx = first + i;
+      final double sx = (i - frac) * cell + cell / 2;
+      final int h = state._mountains[wx % state._mountPeriod];
+      for (int y = 0; y < h; y++) {
+        final double py = baseY - y * cell - cell / 2;
+        if (py < 0) break;
+        // Mép ridge dày hơn hẳn để đường núi đọc được sau các toà nhà.
+        final double density = y >= h - 2 ? 0.60 : 0.40;
+        if (_hash(wx, y, w.seed ^ 0x3d17) < density * eased) sink.add(sx, py);
+      }
+    }
+    if (sink.isEmpty) return;
+    _dotPaint
+      ..strokeWidth = cell
+      ..color = w.skylineColor.withValues(
+        alpha: w.skylineColor.a * eased * 0.60,
+      );
+    canvas.drawRawPoints(ui.PointMode.points, sink.view, _dotPaint);
+  }
+
+  void _paintStars(
+    Canvas canvas,
+    Size size,
+    PixelWalker w,
+    double cell,
+    double baseY,
+    double eased,
+  ) {
+    // Sao neo theo màn hình (xa vô cực — không parallax), rải trên lưới ô
+    // bằng hash: 2 tầng sáng/mờ vẽ thành 2 lượt vì khác alpha.
+    final int cols = (size.width / cell).ceil();
+    final int rows = (baseY / cell).floor();
+    for (int tier = 0; tier < 2; tier++) {
+      final _PointSink sink = state._fxSink..clear();
+      final double lo = tier == 0 ? 0.008 : 0.0;
+      final double hi = tier == 0 ? 0.024 : 0.008;
+      for (int cy = 0; cy < rows; cy++) {
+        for (int cx = 0; cx <= cols; cx++) {
+          final double v = _hash(cx, cy, w.seed ^ 0x57a5);
+          if (v >= lo && v < hi) {
+            sink.add(cx * cell + cell / 2, cy * cell + cell / 2);
+          }
+        }
+      }
+      if (sink.isEmpty) continue;
+      _dotPaint
+        ..strokeWidth = cell
+        ..color = w.starColor.withValues(
+          alpha: w.starColor.a * eased * (tier == 0 ? 0.25 : 0.85),
+        );
+      canvas.drawRawPoints(ui.PointMode.points, sink.view, _dotPaint);
+    }
+  }
+
+  void _paintMoon(
+    Canvas canvas,
+    Size size,
+    PixelWalker w,
+    double cell,
+    double baseY,
+    double eased,
+  ) {
+    final _PointSink sink = state._fxSink..clear();
+    // Trăng khuyết dither: đĩa bán kính 3.6 ô trừ đĩa "cắn" lệch trên-phải.
+    // Neo theo baseY để trăng mọc cùng cảnh lúc reveal; snap vào lưới ô.
+    final double cx = (size.width * 0.78 / cell).floor() * cell + cell / 2;
+    final double cy = ((baseY - 22 * cell) / cell).floor() * cell + cell / 2;
+    for (int dy = -4; dy <= 4; dy++) {
+      for (int dx = -4; dx <= 4; dx++) {
+        if (dx * dx + dy * dy > 3.6 * 3.6) continue;
+        final double bx = dx - 1.6, by = dy + 1.2;
+        if (bx * bx + by * by < 3.1 * 3.1) continue;
+        if (_hash(dx + 8, dy + 8, w.seed ^ 0x300d) < 0.9) {
+          sink.add(cx + dx * cell, cy + dy * cell);
+        }
+      }
+    }
+    if (sink.isEmpty) return;
+    _dotPaint
+      ..strokeWidth = cell
+      ..color = w.starColor.withValues(alpha: w.starColor.a * eased * 0.9);
+    canvas.drawRawPoints(ui.PointMode.points, sink.view, _dotPaint);
+  }
+
+  void _paintSprite(
+    Canvas canvas,
+    Size size,
+    PixelSprite sprite,
+    double spriteCell,
+    double spriteW,
+    double spriteH,
+    double feetY,
+    double t,
+    bool walking,
+    double eased,
+    double reveal,
+  ) {
     final int frameCount = sprite.frames.length;
     final int fi = walking && frameCount > 1 ? (t * 7).floor() % frameCount : 0;
     final List<String> frame = sprite.frames[fi];
