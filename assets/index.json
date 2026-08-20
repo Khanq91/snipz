@@ -1,6 +1,6 @@
 {
   "_generated": true,
-  "_generated_at": "2026-08-20T09:47:43.809515Z",
+  "_generated_at": "2026-08-20T10:45:22.300190Z",
   "_generated_flutter": "3.44.5",
   "_generated_dart": "3.12.2",
   "_generated_remote": "https://github.com/Khanq91/snipz",
@@ -935,7 +935,11 @@
         "header",
         "animated",
         "night",
-        "cat"
+        "cat",
+        "capybara",
+        "duck",
+        "crab",
+        "axolotl"
       ],
       "paint_source": "painter",
       "carriers_verified": [],
@@ -961,7 +965,7 @@
       "platforms_initial": [
         "android"
       ],
-      "version": "1.1.0",
+      "version": "1.2.1",
       "latest_known_good": null,
       "last_verified": null,
       "status": null,

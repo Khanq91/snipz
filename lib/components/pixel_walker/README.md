@@ -3,7 +3,7 @@
 id: pixel_walker
 title: Pixel Walker
 kind: paint
-tags: [pixel, sprite, dither, skyline, mascot, refresh, header, animated, night, cat]
+tags: [pixel, sprite, dither, skyline, mascot, refresh, header, animated, night, cat, capybara, duck, crab, axolotl]
 
 # --- TAXONOMY (§2) ---
 paint_source: painter
@@ -37,7 +37,7 @@ created_deps: []
 platforms_initial: [android]
 
 # --- COMPONENT VERSION ---
-version: 1.1.0
+version: 1.2.1
 
 # --- DERIVED (computed from Test History by verify.dart, do not hand-edit) ---
 latest_known_good: null
@@ -54,10 +54,11 @@ dither procedural (hash 2D, không asset). `progress` 0→1 hiện dần cảnh
 (mascot trồi lên từ mép dưới); `walking` bật chu kỳ bước đi + các layer trôi
 parallax. Hai scene: `city` (mặc định — cảnh gốc, dither trung tính) và
 `nightCity` (thành phố đêm: nhà cao tầng cửa sổ sáng đèn, dãy núi parallax
-phía xa, sao + trăng khuyết). Hai mascot có sẵn: bọ cam Clawd (mặc định) và
-mèo Miu (`PixelSprite.miu()`); thay hình tuỳ ý qua param `sprite`. Sinh ra
-làm header pull-to-refresh (ghép với `pull_reveal_refresh`) nhưng đứng độc
-lập được — empty state, loading, splash.
+phía xa, sao + trăng khuyết). Sáu mascot có sẵn: bọ cam Clawd (mặc định),
+mèo Miu, capybara Capy, vịt Quạc, cua Cáu, axolotl Axo — thay hình tuỳ ý qua
+param `sprite`. Sinh ra làm header pull-to-refresh (ghép với
+`pull_reveal_refresh`) nhưng đứng độc lập được — empty state, loading,
+splash.
 
 ## Port notes
 
@@ -71,8 +72,9 @@ lập được — empty state, loading, splash.
 - Tự thêm: `progress` (hiện dần theo độ kéo), `seed` (đổi bố cục skyline),
   `scale` (mật độ ô).
 - Tự chế thêm (không có trong bản gốc): scene `nightCity` (cao tầng + cửa sổ
-  đèn + núi + sao/trăng, vẫn 100% procedural) và mascot mèo Miu (16×11 ô,
-  4 frame, 2 màu body/sọc).
+  đèn + núi + sao/trăng, vẫn 100% procedural) và 5 mascot ngoài Clawd: mèo
+  Miu, capybara Capy, vịt Quạc, cua Cáu, axolotl Axo — đều là pixel-art tự
+  vẽ, 4 frame, palette 1–3 màu.
 
 ## Install
 
@@ -112,10 +114,18 @@ SizedBox(
 | `seed` | `int` | `7` | Bố cục skyline/mây/núi khác (deterministic) |
 
 `PixelSprite(frames, palette)` — frame 0 là pose đứng; frame lẻ được nghiêng +
-bob khi đi. Có sẵn hai sprite: `PixelSprite.clawd({color})` (mặc định, bọ cam
-12×10) và `PixelSprite.miu({body, stripe})` (mèo nhìn nghiêng 16×11, sọc lưng
-+ đuôi vẫy theo nhịp bước). Muốn mascot khác chỉ cần tự vẽ ma trận ký tự —
-không đụng code vẽ.
+bob khi đi. Sáu sprite có sẵn:
+
+| Factory | Kích cỡ | Nhân vật |
+|---|---|---|
+| `PixelSprite.clawd({color})` | 12×10 | Bọ cam mặc định, front-facing, 3 cặp chân |
+| `PixelSprite.miu({body, stripe})` | 16×11 | Mèo nhìn nghiêng, sọc lưng, đuôi vẫy theo nhịp |
+| `PixelSprite.capy({body, dark, eye})` | 18×10 | Capybara mặt đơ, cục gạch biết đi, chân đảo chéo |
+| `PixelSprite.duck({body, beak, eye})` | 14×10 | Vịt lạch bạch, mỏ bè, đuôi hất lên khi sải chân |
+| `PixelSprite.crab({body, eyeWhite, eye})` | 16×10 | Cua "cáu nhưng ngáo": mắt lồi 2×2 lé vào trong, càng thay phiên giơ lên |
+| `PixelSprite.axolotl({body, accent, eye})` | 18×10 | Axolotl hồng, quạt mang sau gáy rung, đuôi lượn theo nhịp |
+
+Muốn mascot khác chỉ cần tự vẽ ma trận ký tự — không đụng code vẽ.
 
 Parallax của `nightCity` (chậm → nhanh): sao/trăng đứng yên, núi 2.2, mây
 3.0, toà nhà 9.0 (cùng city). Toà nhà vẽ đè lên mây để tháp cao có chiều sâu.
@@ -135,6 +145,13 @@ Parallax của `nightCity` (chậm → nhanh): sao/trăng đứng yên, núi 2.2
 
 ## Changelog
 
+- **1.2.1** (2026-08-20) — cua Cáu: mắt 1 ô màu tối (chìm trên nền tối) →
+  mắt lồi 2×2 có lòng trắng `eyeWhite` + đồng tử lé vào trong; khung 16×9 →
+  16×10.
+- **1.2.0** (2026-08-20) — thêm 4 mascot theo thứ tự đề xuất: capybara Capy
+  (18×10, mặt đơ), vịt Quạc (14×10, lạch bạch, đuôi hất), cua Cáu (16×9,
+  front-facing, càng thay phiên giơ lên kiểu "cáu nhưng ngáo"), axolotl Axo
+  (18×10, quạt mang rung, đuôi lượn). Demo có picker đủ 6 mascot.
 - **1.1.0** (2026-08-20) — thêm scene `nightCity` (nhà cao tầng cửa sổ sáng
   đèn, núi parallax, sao + trăng khuyết — vẫn procedural, không asset) chọn
   qua param `scene`; thêm mascot mèo `PixelSprite.miu()`; params mới
@@ -156,8 +173,9 @@ Tích hợp component `PixelWalker` vào project này.
 **Context**
 - Chức năng: cảnh pixel-art (mascot đi bộ + skyline dither parallax) điều
   khiển bằng `progress`/`walking`, dựng lại từ pull-to-refresh của app Claude
-  Code mobile; `scene` chọn cảnh `city`/`nightCity`, mascot có sẵn Clawd và
-  mèo Miu (`sprite: PixelSprite.miu()`).
+  Code mobile; `scene` chọn cảnh `city`/`nightCity`, mascot có sẵn 6 con qua
+  `sprite`: Clawd (mặc định), `miu()`, `capy()`, `duck()`, `crab()`,
+  `axolotl()`.
 - Public API: xem bảng API trong README.
 - Portability: single_file — copy cả `pixel_walker/` (1 file), import duy
   nhất `pixel_walker.dart`.
