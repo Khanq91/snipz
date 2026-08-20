@@ -21,6 +21,7 @@ import 'package:snipz/components/option_wheel/option_wheel_demo.dart';
 import 'package:snipz/components/particle_field/particle_field_demo.dart';
 import 'package:snipz/components/pixel_blast/pixel_blast_demo.dart';
 import 'package:snipz/components/pixel_card/pixel_card_demo.dart';
+import 'package:snipz/components/pixel_loader/pixel_loader_demo.dart';
 import 'package:snipz/components/pixel_transition/pixel_transition_demo.dart';
 import 'package:snipz/components/pixel_walker/pixel_walker_demo.dart';
 import 'package:snipz/components/pull_reveal_refresh/pull_reveal_refresh_demo.dart';
@@ -54,6 +55,7 @@ final Map<String, ComponentDemo> componentRegistry = <String, ComponentDemo>{
   'particle_field': particleFieldDemo,
   'pixel_blast': pixelBlastDemo,
   'pixel_card': pixelCardDemo,
+  'pixel_loader': pixelLoaderDemo,
   'pixel_transition': pixelTransitionDemo,
   'pixel_walker': pixelWalkerDemo,
   'pull_reveal_refresh': pullRevealRefreshDemo,

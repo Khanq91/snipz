@@ -1,8 +1,8 @@
 {
   "_generated": true,
-  "_generated_at": "2026-08-20T10:45:22.300190Z",
-  "_generated_flutter": "3.44.5",
-  "_generated_dart": "3.12.2",
+  "_generated_at": "2026-08-20T12:31:00.865381Z",
+  "_generated_flutter": "3.44.0",
+  "_generated_dart": "3.12.0",
   "_generated_remote": "https://github.com/Khanq91/snipz",
   "components": [
     {
@@ -865,6 +865,53 @@
       "created": "2026-08-19",
       "created_flutter": "3.44.5",
       "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
+      "id": "pixel_loader",
+      "title": "Pixel Loader",
+      "kind": "effect",
+      "tags": [
+        "pixel",
+        "loading",
+        "loader",
+        "mascot",
+        "sprite",
+        "splash",
+        "reveal",
+        "retro",
+        "animated"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": true,
+      "portability": "single_file",
+      "entry": "pixel_loader.dart",
+      "files": {
+        "pixel_loader.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": null,
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-20",
+      "created_flutter": "3.44.0",
+      "created_dart": "3.12.0",
       "created_deps": {},
       "platforms_initial": [
         "android"
