@@ -46,7 +46,7 @@ created_deps: []
 platforms_initial: [android]
 
 # --- COMPONENT VERSION ---
-version: 1.0.0
+version: 1.2.0
 
 # --- DERIVED (computed from Test History by verify.dart, do not hand-edit) ---
 latest_known_good: null
@@ -124,10 +124,16 @@ setShape/setExpression/setLook), `BloubBotPainter`, `botStates`,
   màu (đây là hành vi gốc của bloub, không phải bug).
 - Mỗi frame có một `saveLayer` (lỗ mắt) — rẻ trên Impeller, nhưng đừng đặt
   hàng chục con chạy sống cùng lúc; bản đứng im (`frozenAt`) thì thoải mái.
-- Các state decor (alert, notify, exclaim, play, orbit, swirl, burst, comet),
-  expression + shape customizer: chưa có ở bản này — vào ở các version sau.
+- Expression + shape customizer: chưa có ở bản này — vào ở version sau.
+- SVG động chỉ cho avatar nghỉ (thân đứng im) — state morph thân sẽ nặng
+  ~2.5KB path/frame, đúng giới hạn upstream đã đo.
 
 ## Changelog
 
+- `1.2.0` — decor states: alert, notify, exclaim, play, orbit, swirl, burst,
+  comet — arc ellipse 3D chia front/back theo z, bánh xe màu HSL, particles
+  xoáy vào sau thân, pastille + notch trên chu vi.
+- `1.1.0` — SVG export: still bất kỳ state nào + animated SVG avatar nghỉ
+  (CSS keyframes 2 mắt, loop alternate không mối nối).
 - `1.0.0` — created: engine + painter + 7 body states (idle, thinking, wink,
   wide, sleep, egg, hexagon), gaze drift + blink calendar + breath.

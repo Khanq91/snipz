@@ -1,7 +1,7 @@
 name: snipz
 description: "Personal Flutter component vault — the app is just a visual index."
 publish_to: 'none'
-version: 1.2.1+19
+version: 1.2.2+20
 
 environment:
   sdk: ^3.10.8

@@ -543,9 +543,11 @@ class BloubBotEngine {
       dots: dots,
       dotsBehind: pose.dotsBehind,
       // States declare arcs in resting-ball-radius units; the engine alone
-      // knows the viewBox scale, so it rasterizes. (Renderer lands with the
-      // decor states — until then poses declare no arcs.)
-      arcs: const [],
+      // knows the viewBox scale, so it rasterizes.
+      arcs: [
+        for (final BotArcSpec a in pose.arcs)
+          if (a.opacity > 0.01) botArcRender(a.seed, a.t, r, a.id, a.opacity),
+      ],
       notif: notif,
       notch: notch,
     );
