@@ -17,12 +17,14 @@
 | A | `shape_morph` — vector shape morphing | component mới (kind `composite`) | patch | S |
 | B | `bloub_bot` — avatar bot morph 15 trạng thái | component mới (kind `composite`), 3 phase | patch × 3 | L |
 | C | Quy ước "sample(t) thuần" cho component animation | sửa `docs/AUTHORING_PROMPT.md` + mở rộng `ComponentDemo` | (đi kèm D) | S |
-| D | Viewer: freeze, state board, deep link, share PNG | 4 tính năng trong `features/detail` + router | minor | M |
+| D | Viewer: freeze, state board, deep link + share PNG | D1–D3 một PR; **D4 share PNG tách nhánh/PR riêng** (đã chốt) | minor × 2 | M |
+| E | Export SVG & **SVG động** từ `bloub_bot` (§5) | serializer thuần Dart trong component + nút share ở demo | patch | S–M |
 
-**Thứ tự đề xuất: A → B1 → C+D → B2 → B3.** A nhỏ, kiểm chứng phần toán lõi
-(radial profile + Catmull-Rom trên `Canvas`) trước khi port cả engine. C viết
-*sau khi* đã có A/B1 làm bằng chứng sống (quy ước rút từ code thật, không phải
-lý thuyết suông). D cần `variants` mà C định nghĩa.
+**Thứ tự đề xuất: A → B1 → C+D1–D3 → D4 → E1 → B2 → B3.** A nhỏ, kiểm chứng
+phần toán lõi (radial profile + Catmull-Rom trên `Canvas`) trước khi port cả
+engine. C viết *sau khi* đã có A/B1 làm bằng chứng sống (quy ước rút từ code
+thật, không phải lý thuyết suông). D cần `variants` mà C định nghĩa. D4 đi
+nhánh riêng nên chen được bất kỳ lúc nào sau C. E1 chỉ cần B1 (chi tiết §5).
 
 ### Ba quyết định nền tảng (áp cho mọi mục)
 
@@ -50,7 +52,10 @@ regenerate được.
 
 ### Những gì KHÔNG lấy
 
-- **Export GIF/MP4, capture** — nặng, ngoài mục đích vault. Thay bằng share PNG (mục D).
+- **Export GIF/MP4** — ngoài scope đợt này. Ghi nhận cho sau: bloub **tự viết**
+  encoder GIF (LZW, không lib) nên port sang Dart cũng không cần dep — chỉ mở
+  lại nếu cần avatar động cho nơi từ chối SVG (Discord/Slack). Export
+  **SVG / SVG động** thì LẤY — thành hạng mục E (§5).
 - **i18n (fr/en/zh)** — vault cá nhân.
 - **Timeline editor / Customizer UI** như một màn hình app — giá trị của chúng
   vào qua *param của component* + demo controls, không thành feature viewer.
@@ -380,8 +385,9 @@ việc đụng vào từng con.
 
 ## 4. Hạng mục D — Viewer: freeze, state board, deep link, share PNG
 
-Bốn tính năng nhỏ, cùng một PR, bump **minor** (năng lực mới của viewer).
-Tương đương bloub: `#planche` → state board; `#etat=orbit&stop` → deep link.
+Bốn tính năng nhỏ: D1–D3 chung một PR, **D4 tách nhánh/PR riêng** (đã chốt);
+mỗi PR bump **minor** (năng lực mới của viewer). Tương đương bloub:
+`#planche` → state board; `#etat=orbit&stop` → deep link.
 
 ### D1. Nút freeze trong `PreviewStage`
 
@@ -410,7 +416,7 @@ Tương đương bloub: `#planche` → state board; `#etat=orbit&stop` → deep 
   `state.uri.queryParameters` (route code). `DetailScreen` truyền
   `initialVariant`/`initialFrozen` xuống `PreviewStage`.
 
-### D4. Share PNG từ preview
+### D4. Share PNG từ preview *(đã chốt: tách nhánh/PR riêng, không gộp D1–D3)*
 
 - `RepaintBoundary(key)` bọc **riêng phần stage** (không dính control bar),
   menu 3-chấm thêm "Share image": `boundary.toImage(pixelRatio: 3)` → PNG
@@ -428,17 +434,79 @@ Tương đương bloub: `#planche` → state board; `#etat=orbit&stop` → deep 
 
 ---
 
-## 5. Trình tự giao hàng (mỗi dòng = 1 commit/PR, version từ `1.1.7+15`)
+## 5. Hạng mục E — Export SVG & SVG động từ `bloub_bot`
+
+**Trả lời câu hỏi "có tạo được SVG / animated SVG như repo không": CÓ, cả
+hai** — và ranh giới khả thi của mình trùng khớp với ranh giới của chính bloub.
+
+### Repo gốc thực sự export gì (đã đọc `ui/export.ts`, `ui/anime.ts`, `ui/capture.ts`)
+
+| Format | Cơ chế | Phạm vi |
+|---|---|---|
+| PNG 1024 | rasterize SVG qua canvas | avatar nghỉ |
+| **SVG tĩnh** | serialize thẳng DOM đang hiển thị (SVG vốn tự chứa: fill hex literal, không CSS var) + viewBox chặt `ceil(R·max_radius·1.08)` | avatar nghỉ |
+| **SVG động** | thay `transform="matrix(…)"` của 2 mắt trong `<mask>` bằng class, nhúng `<style>` **CSS `@keyframes`**: 90 khoá (30 khoá/s × 3s) ma trận lấy từ `engine.sample`; `transform-box: view-box; transform-origin: 0 0` (bắt buộc, không thì mắt văng khỏi bóng); `animation-direction: alternate` → loop không mối nối (drift không tuần hoàn, chơi xuôi rồi ngược tự khớp; chớp mắt ngược vẫn là chớp mắt). Browser nội suy giữa các khoá → mượt theo tần số màn hình. | **CHỈ avatar nghỉ** — thân đứng im, chỉ mắt sống |
+| GIF động | encoder LZW **tự viết** | tồn tại chỉ vì avatar Discord/Slack từ chối SVG |
+| Cycle GIF/MP4 | rasterize từng frame | cycle — SVG động bị loại **có đo đạc**: thân morph mỗi frame, path ~2.5 KB → 600 frame ≈ 1.5 MB chưa tính arcs |
+
+### Port sang snipz — vì sao gần như miễn phí
+
+Engine của ta (D2) trả `BotFrame` = đúng dữ liệu mà template Vue của bloub đổ
+ra SVG (điểm silhouette, capsule + ma trận mắt, arcs, gradient spec). Thêm một
+file `_svg.dart` trong folder `bloub_bot`: **thuần build chuỗi, zero dep, chạy
+được trong unit test** — template Vue + `svgAutonome` của bloub chính là spec
+markup (mask thân trắng/mắt đen, path lót `paper`, rect `ink`, defs gradient,
+arcs front/back). Làm tròn 2 chữ số (bản sao `r2`) cho nhẹ file.
+
+```dart
+/// SVG tĩnh của BẤT KỲ state nào, đóng băng tại t (rộng hơn repo gốc,
+/// vốn chỉ export từ view Personnaliser). ~3–6 KB.
+String bloubBotSvg({required BloubBotState state, required double t, ...});
+
+/// SVG động của avatar nghỉ — đúng cơ chế + đúng giới hạn của repo.
+/// ~15–20 KB (90 khoá × 2 mắt, mỗi khoá một ma trận text).
+String bloubBotAnimatedSvg({int keysPerSec = 30, double seconds = 3, ...});
+```
+
+Nút share nằm trong `bloub_bot_demo.dart` (demo miễn luật, dùng share_plus có
+sẵn: ghi `.svg` vào `Directory.systemTemp` rồi share). Không cần route viewer.
+
+### Giới hạn phải nói trước (kế thừa nguyên xi từ repo)
+
+1. **SVG động chỉ cho thân đứng im** (idle; thêm expression/shape khi B3 xong).
+   State morph thân và cycle: không làm — lý do size như bảng trên, bloub đã đo.
+2. **App snipz không render file `.svg`** (không có flutter_svg, không thêm) —
+   file SVG là để dùng NGOÀI: browser, **GitHub README (CSS animation trong
+   `<img>` có chạy)**, web. Figma/Illustrator nhận bản tĩnh; bản động vào đó
+   sẽ đứng im.
+3. **Mắt export ĐẶC màu `paper`**, không phải lỗ trong suốt — chủ đích của
+   bloub ("don't fix this into transparency"): nền tối vẫn thấy mắt.
+4. Khung export chặt hơn viewBox màn hình (không thì avatar teo trong crop
+   tròn của ảnh đại diện) — port cả hằng `MARGE = 1.08`.
+
+### Phase & test
+
+- **E1 (ngay sau B1):** SVG tĩnh cho 7 state thân + SVG động idle-neutral.
+- **E2 (tự khắc khi B2/B3 xong):** serializer đọc `BotFrame` nên arcs/notif tự
+  vào khi B2 thêm chúng; SVG động thêm expression/shape khi B3 có.
+- Test: markup tất định (2 lần chạy ra cùng chuỗi), đếm số khoá keyframes,
+  smoke-parse XML.
+
+---
+
+## 6. Trình tự giao hàng (mỗi dòng = 1 commit/PR, version từ `1.1.7+15`)
 
 | # | Nội dung | Version | Kiểm trước khi chốt |
 |---|----------|---------|---------------------|
 | 0 | Tài liệu kế hoạch này (`docs/`) | không bump (docs-only) | — |
 | 1 | A — `shape_morph` | `1.1.8+16` | `dart tools/validate.dart`, `flutter analyze`, `flutter test` |
 | 2 | B1 — `bloub_bot` lõi + 7 state | `1.1.9+17` | như trên + dart test engine |
-| 3 | C + D — quy ước + 4 tính năng viewer | `1.2.0+18` | như trên + thử deep link, share PNG trên Android |
-| 4 | B2 — decor states (alert…comet) | `1.2.1+19` | so planche với bloub |
-| 5 | B3 — expressions + skins + eyefit | `1.2.2+20` | như trên |
-| (6) | B4 — gaze cử chỉ / cycles player | tuỳ chọn, bàn sau | — |
+| 3 | C + D1–D3 — quy ước + freeze/board/deep-link | `1.2.0+18` | như trên + thử deep link trên Android |
+| 4 | D4 — share PNG (**nhánh/PR riêng**) | `1.3.0+19` | thử share trên Android thật |
+| 5 | E1 — export SVG tĩnh + SVG động idle | `1.3.1+20` | mở `.svg` bằng browser, dán thử vào GitHub README |
+| 6 | B2 — decor states (alert…comet) | `1.3.2+21` | so planche với bloub |
+| 7 | B3 — expressions + skins + eyefit (E2 tự theo) | `1.3.3+22` | như trên |
+| (8) | B4 — gaze cử chỉ / cycles player | tuỳ chọn, bàn sau | — |
 
 Số version cụ thể sẽ trượt theo thứ tự merge thực tế — quy tắc là: component
 mới/port = patch, năng lực viewer = minor, build number luôn +1 (CLAUDE.md).
@@ -447,7 +515,7 @@ registry + regenerate `assets/`.
 
 ---
 
-## 6. Rủi ro & câu hỏi mở
+## 7. Rủi ro & quyết định
 
 **Rủi ro kỹ thuật**
 
@@ -461,11 +529,13 @@ registry + regenerate `assets/`.
 - Bảng vendor theo D3 gắn với một commit bloub — upstream đổi số đo thì bảng
   lệch; chấp nhận (vault vốn snapshot-based), đã ghi hash để regenerate.
 
-**Cần Khang chốt trước khi code**
+**Đã chốt (Khang, 2026-08-21)**
 
-1. **Tên component:** `bloub_bot` (giữ dấu vết nguồn) hay tên riêng của vault
-   (vd `blob_bot`, `orbit_bot`)? Đề xuất: `bloub_bot` — frontmatter đằng nào
-   cũng ghi nguồn.
-2. **Phạm vi B1 duyệt như trên?** (7 state trước, decor sau) — hay muốn có
-   `orbit` ngay từ B1 cho "wow" (thêm ~1 phase nhỏ của `_decor`)?
-3. **D4 share PNG** để trong PR viewer hay tách riêng nếu muốn PR nhỏ hơn?
+1. Tên component: **`bloub_bot`**.
+2. Phạm vi B1: **7 state thân trước, decor để B2** — như bảng phase.
+3. D4 share PNG: **tách nhánh/PR riêng**, không gộp với C+D1–D3.
+
+**Còn chờ chốt**
+
+4. Hạng mục E (export SVG/SVG động, §5): đã xác nhận khả thi — gật thì chạy
+   theo trình tự bảng §6; không thì bỏ hàng 5, các mục khác không xê dịch.
