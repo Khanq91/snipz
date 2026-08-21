@@ -59,6 +59,9 @@ class _BloubBotShowcaseState extends State<_BloubBotShowcase> {
   BloubBotState _state = BloubBotState.idle;
   bool _playing = false;
   Timer? _timer;
+  String _expression = kBotDefaultExpression;
+  String _shape = kBotDefaultShape;
+  String _color = kBotDefaultColor;
 
   @override
   void dispose() {
@@ -93,7 +96,75 @@ class _BloubBotShowcaseState extends State<_BloubBotShowcase> {
               // paper matches the stage background so the eye holes read as
               // truly pierced
               paper: scheme.surface,
+              ink: Color(botColorById[_color]!.argb),
+              expression: _expression,
+              shape: _shape,
             ),
+          ),
+        ),
+        // Customizer rows: shape morphs, expression glides, color is
+        // immediate — exactly the upstream Personnaliser's three knobs.
+        SizedBox(
+          height: 40,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            children: [
+              for (final BotShape s in kBotShapes)
+                Padding(
+                  padding: const EdgeInsets.only(right: 6),
+                  child: ChoiceChip(
+                    label: Text(s.id),
+                    visualDensity: VisualDensity.compact,
+                    selected: _shape == s.id,
+                    onSelected: (_) => setState(() => _shape = s.id),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        SizedBox(
+          height: 40,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            children: [
+              for (final BotExpression e in kBotExpressions)
+                Padding(
+                  padding: const EdgeInsets.only(right: 6),
+                  child: ChoiceChip(
+                    label: Text(e.id),
+                    visualDensity: VisualDensity.compact,
+                    selected: _expression == e.id,
+                    onSelected: (_) => setState(() => _expression = e.id),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        SizedBox(
+          height: 34,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            children: [
+              for (final BotColor c in kBotColors)
+                Padding(
+                  padding: const EdgeInsets.only(right: 10),
+                  child: GestureDetector(
+                    onTap: () => setState(() => _color = c.id),
+                    child: CircleAvatar(
+                      radius: 13,
+                      backgroundColor:
+                          _color == c.id ? scheme.primary : Colors.transparent,
+                      child: CircleAvatar(
+                        radius: 10,
+                        backgroundColor: Color(c.argb),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
           ),
         ),
         Padding(
@@ -139,7 +210,12 @@ class _BloubBotShowcaseState extends State<_BloubBotShowcase> {
                 icon: const Icon(Icons.file_download_outlined),
                 onPressed: () => _shareSvg(
                   'bloub_bot_${_state.name}.svg',
-                  bloubBotSvg(state: _state),
+                  bloubBotSvg(
+                    state: _state,
+                    expression: _expression,
+                    shape: _shape,
+                    inkArgb: botColorById[_color]!.argb,
+                  ),
                 ),
               ),
               IconButton(
@@ -147,7 +223,11 @@ class _BloubBotShowcaseState extends State<_BloubBotShowcase> {
                 icon: const Icon(Icons.animation),
                 onPressed: () => _shareSvg(
                   'bloub_bot_anime.svg',
-                  bloubBotAnimatedSvg(),
+                  bloubBotAnimatedSvg(
+                    expression: _expression,
+                    shape: _shape,
+                    inkArgb: botColorById[_color]!.argb,
+                  ),
                 ),
               ),
             ],

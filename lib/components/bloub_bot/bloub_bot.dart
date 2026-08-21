@@ -10,16 +10,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
 import '_engine.dart';
+import '_expressions.dart';
 import '_painter.dart';
+import '_skins.dart';
 import '_states.dart';
 
 export '_decor.dart';
 export '_engine.dart';
+export '_expressions.dart';
+export '_eyefit.dart';
 export '_face.dart';
 export '_math.dart';
 export '_painter.dart';
 export '_profiles.dart';
 export '_shape.dart';
+export '_skins.dart';
 export '_states.dart';
 export '_svg.dart';
 
@@ -42,6 +47,8 @@ class BloubBot extends StatefulWidget {
     this.paper,
     this.frozenAt,
     this.animate = true,
+    this.expression,
+    this.shape,
   });
 
   /// Side of the square the bot renders in, logical pixels.
@@ -67,13 +74,29 @@ class BloubBot extends StatefulWidget {
   /// Stop the internal ticker from outside (the frame freezes where it is).
   final bool animate;
 
+  /// Resting expression id ([kBotExpressions]: neutre, heureux, colere,
+  /// triste…). Only the resting face wears it (`baseFace` states); changes
+  /// glide. Null or unknown = the measured neutral.
+  final String? expression;
+
+  /// Customizer shape id ([kBotShapes]: cercle, galet, squircle, capsule,
+  /// triangle, hexagone, nuage, goutte). Replaces the body only on resting
+  /// (`baseBody`) states — elsewhere the silhouette IS the animation.
+  /// Changes morph; the eye-offset table keeps the face inside the outline.
+  final String? shape;
+
   @override
   State<BloubBot> createState() => _BloubBotState();
 }
 
 class _BloubBotState extends State<BloubBot>
     with SingleTickerProviderStateMixin {
-  late final BloubBotEngine _engine = BloubBotEngine(initial: widget.state);
+  late final BloubBotEngine _engine = BloubBotEngine(
+    initial: widget.state,
+    shape: widget.shape == null ? null : botShapeById[widget.shape!]?.radii,
+    expression:
+        widget.expression == null ? null : botExpressionById[widget.expression!],
+  );
   late final Ticker _ticker = createTicker(_tick);
 
   /// Scene clock, seconds. Delta is clamped so an app resumed from the
@@ -106,6 +129,19 @@ class _BloubBotState extends State<BloubBot>
     super.didUpdateWidget(old);
     if (widget.state != old.state) {
       _engine.setState(widget.state, _clock);
+    }
+    if (widget.shape != old.shape) {
+      // dated: the engine morphs to the new shape instead of jumping
+      _engine.setShape(
+          widget.shape == null ? null : botShapeById[widget.shape!]?.radii,
+          _clock);
+    }
+    if (widget.expression != old.expression) {
+      _engine.setExpression(
+          widget.expression == null
+              ? null
+              : botExpressionById[widget.expression!],
+          _clock);
     }
     final double? frozen = widget.frozenAt;
     if (frozen != null) {

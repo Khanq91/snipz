@@ -56,9 +56,10 @@ void main() {
   });
 
   test('tight export frame is the default for the animated avatar', () {
-    // rest avatar exports in the profile-picture crop frame, stills of the
-    // catalog keep the full screen frame (rings live there later)
-    expect(bloubBotAnimatedSvg(), contains('viewBox="-108 -108 216 216"'));
+    // rest avatar exports in the profile-picture crop frame (sized for the
+    // widest customizer shape), stills of the catalog keep the full screen
+    // frame (the rings live there)
+    expect(bloubBotAnimatedSvg(), contains('viewBox="-125 -125 250 250"'));
     expect(bloubBotSvg(), contains('viewBox="-158 -158 316 316"'));
   });
 }

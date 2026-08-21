@@ -8,7 +8,9 @@
 
 import '_decor.dart';
 import '_engine.dart';
+import '_expressions.dart';
 import '_shape.dart';
+import '_skins.dart';
 import '_states.dart';
 
 /// Half side of the tight export frame, in viewBox units. Tighter than the
@@ -16,8 +18,10 @@ import '_states.dart';
 /// states' rings, which do not exist at rest — keeping it would export an
 /// image 63% empty, a tiny ball inside a profile-picture crop. 8% margin so
 /// circular crops (Discord/Slack/GitHub) do not bite the silhouette.
-/// Recompute from the widest customizer shape when skins land.
-const double kBotDemiCadre = 108;
+/// ceil(100 x 1.15 x 1.08): the widest customizer shape is the squircle,
+/// whose peak radius is normalized to 1.15. One frame for all eight shapes —
+/// per-shape recropping would undo their to-the-eye weight normalization.
+const double kBotDemiCadre = 125;
 
 const double _tension = 1 / 6;
 
@@ -230,9 +234,14 @@ String bloubBotSvg({
   double demiFrame = kBotDemiViewbox,
   int inkArgb = 0xFF0A0A0C,
   int paperArgb = 0xFFF9F9F9,
+  String? expression,
+  String? shape,
 }) {
-  final BotFrame frame =
-      BloubBotEngine(initial: state).sample(at ?? botStatePoses[state]!);
+  final BotFrame frame = BloubBotEngine(
+    initial: state,
+    shape: shape == null ? null : botShapeById[shape]?.radii,
+    expression: expression == null ? null : botExpressionById[expression],
+  ).sample(at ?? botStatePoses[state]!);
   return bloubBotFrameSvg(frame,
       size: size,
       demiFrame: demiFrame,
@@ -268,8 +277,13 @@ String bloubBotAnimatedSvg({
   int paperArgb = 0xFFF9F9F9,
   int keysPerSec = kBotAnimKeysPerSec,
   double seconds = kBotAnimSeconds,
+  String? expression,
+  String? shape,
 }) {
-  final BloubBotEngine engine = BloubBotEngine();
+  final BloubBotEngine engine = BloubBotEngine(
+    shape: shape == null ? null : botShapeById[shape]?.radii,
+    expression: expression == null ? null : botExpressionById[expression],
+  );
   final int frames = (keysPerSec * seconds).round();
   final double step = 1 / keysPerSec;
 

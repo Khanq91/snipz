@@ -18,11 +18,14 @@ files:
   - bloub_bot.dart: "entry, public API"
   - _decor.dart: "required by bloub_bot.dart"
   - _engine.dart: "required by bloub_bot.dart"
+  - _expressions.dart: "required by bloub_bot.dart"
+  - _eyefit.dart: "required by bloub_bot.dart"
   - _face.dart: "required by bloub_bot.dart"
   - _math.dart: "required by bloub_bot.dart"
   - _painter.dart: "required by bloub_bot.dart"
   - _profiles.dart: "required by bloub_bot.dart"
   - _shape.dart: "required by bloub_bot.dart"
+  - _skins.dart: "required by bloub_bot.dart"
   - _states.dart: "required by bloub_bot.dart"
   - _svg.dart: "required by bloub_bot.dart"
 vendored_from: null
@@ -46,7 +49,7 @@ created_deps: []
 platforms_initial: [android]
 
 # --- COMPONENT VERSION ---
-version: 1.2.0
+version: 1.3.0
 
 # --- DERIVED (computed from Test History by verify.dart, do not hand-edit) ---
 latest_known_good: null
@@ -113,6 +116,8 @@ BloubBot(size: 120, frozenAt: botStatePoses[BloubBotState.wink]!)
 | `paper` | `Color?` | theme `surface` | Màu nền PHÍA SAU widget — mắt là lỗ lót màu này, phải khớp nền thật |
 | `frozenAt` | `double?` | `null` | Đóng băng tại t giây trong state — không ticker, ảnh tất định |
 | `animate` | `bool` | `true` | Tắt ticker từ ngoài |
+| `expression` | `String?` | `neutre` | 1 trong 16 expression nghỉ (`kBotExpressions`) — chỉ state `baseFace` mặc; đổi là glide |
+| `shape` | `String?` | `cercle` | 1 trong 8 hình customizer (`kBotShapes`) — chỉ thay thân state `baseBody`; đổi là morph, bảng eyefit giữ mặt trong biên |
 
 Tầng thấp hơn cho ai muốn tự lái: `BloubBotEngine` (sample/setState/reset/
 setShape/setExpression/setLook), `BloubBotPainter`, `botStates`,
@@ -124,12 +129,18 @@ setShape/setExpression/setLook), `BloubBotPainter`, `botStates`,
   màu (đây là hành vi gốc của bloub, không phải bug).
 - Mỗi frame có một `saveLayer` (lỗ mắt) — rẻ trên Impeller, nhưng đừng đặt
   hàng chục con chạy sống cùng lúc; bản đứng im (`frozenAt`) thì thoải mái.
-- Expression + shape customizer: chưa có ở bản này — vào ở version sau.
 - SVG động chỉ cho avatar nghỉ (thân đứng im) — state morph thân sẽ nặng
   ~2.5KB path/frame, đúng giới hạn upstream đã đo.
+- Bảng eyefit là OUTPUT của solver upstream (chạy `npx tsx` trên checkout
+  bloub, script trong lịch sử commit) — thêm shape mới thì phải chạy lại
+  solver, không tự chế offset bằng tay.
 
 ## Changelog
 
+- `1.3.0` — customizer: 8 shapes (morph mượt, chỉ thay thân `baseBody`),
+  16 expressions nghỉ (glide, tilt đối gương), 12 màu; bảng eyefit vendor từ
+  solver gốc (116 entries) giữ mặt nằm trong biên các hình hẹp; SVG export
+  nhận `expression`/`shape`, khung crop 125 theo hình rộng nhất.
 - `1.2.0` — decor states: alert, notify, exclaim, play, orbit, swirl, burst,
   comet — arc ellipse 3D chia front/back theo z, bánh xe màu HSL, particles
   xoáy vào sau thân, pastille + notch trên chu vi.

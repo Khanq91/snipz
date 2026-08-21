@@ -6,6 +6,7 @@
 import 'dart:math' as math;
 
 import '_decor.dart';
+import '_eyefit.dart';
 import '_face.dart';
 import '_math.dart';
 import '_shape.dart';
@@ -149,16 +150,6 @@ BotPose _blendPose(BotPose a, BotPose b, double t) {
     notif: t < 0.5 ? a.notif : b.notif,
     dotsBehind: t < 0.5 ? a.dotsBehind : b.dotsBehind,
   );
-}
-
-/// Eye-center offset for a given (shape, state, expression). It is READ from
-/// a table and interpolated, never re-solved per frame — solving per frame
-/// produced visible motion artefacts in seven upstream attempts. While no
-/// customizer shape replaces the body, zero is the exact value; the table
-/// itself ships with the customizer phase.
-({double x, double y}) _eyeOffsetTable(
-    List<double>? radii, BloubBotState state, String? expressionId) {
-  return const (x: 0, y: 0);
 }
 
 /// The engine. All external state enters through DATED setters — never a
@@ -333,8 +324,8 @@ class BloubBotEngine {
     ({double x, double y}) byShape(List<double>? radii) => onAxis(
           _exprAt,
           shapeMorph,
-          _eyeOffsetTable(radii, state, _exprPrev?.id),
-          _eyeOffsetTable(radii, state, _expr?.id),
+          botEyeOffset(radii, state, _exprPrev?.id),
+          botEyeOffset(radii, state, _expr?.id),
         );
 
     // then the shape axis
