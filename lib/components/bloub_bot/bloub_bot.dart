@@ -97,7 +97,10 @@ class _BloubBotState extends State<BloubBot>
     expression:
         widget.expression == null ? null : botExpressionById[widget.expression!],
   );
-  late final Ticker _ticker = createTicker(_tick);
+  // Created eagerly in initState, never lazily: frozen thumbnails never start
+  // the ticker, so a lazy field's first touch would be dispose() — where
+  // createTicker's TickerMode ancestor lookup hits a deactivated tree.
+  late final Ticker _ticker;
 
   /// Scene clock, seconds. Delta is clamped so an app resumed from the
   /// background does not jump forward.
@@ -108,6 +111,7 @@ class _BloubBotState extends State<BloubBot>
   @override
   void initState() {
     super.initState();
+    _ticker = createTicker(_tick);
     final double? frozen = widget.frozenAt;
     if (frozen != null) {
       _frame = _engine.sample(frozen);
