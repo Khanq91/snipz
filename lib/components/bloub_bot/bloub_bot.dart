@@ -21,6 +21,7 @@ export '_painter.dart';
 export '_profiles.dart';
 export '_shape.dart';
 export '_states.dart';
+export '_svg.dart';
 
 /// A morphing bot avatar: one filled shape that morphs between states, two
 /// eyes that are REAL HOLES in the body, living on a sphere. Use it as an

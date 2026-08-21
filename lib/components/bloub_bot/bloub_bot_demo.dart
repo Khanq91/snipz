@@ -2,8 +2,10 @@
 // also serves as the copy-paste usage reference (§6).
 
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:snipz/core/component_demo.dart';
 
 import 'bloub_bot.dart';
@@ -127,10 +129,45 @@ class _BloubBotShowcaseState extends State<_BloubBotShowcase> {
                   _scheduleNext();
                 },
               ),
+              const SizedBox(width: 12),
+              // SVG exports: the still works for ANY state; the animated one
+              // is the resting avatar (body still, eyes alive) — same
+              // boundary the upstream app measured. Both are plain strings
+              // from the pure engine; share_plus hands the file out.
+              IconButton(
+                tooltip: 'Share SVG (${_state.name})',
+                icon: const Icon(Icons.file_download_outlined),
+                onPressed: () => _shareSvg(
+                  'bloub_bot_${_state.name}.svg',
+                  bloubBotSvg(state: _state),
+                ),
+              ),
+              IconButton(
+                tooltip: 'Share animated SVG (rest)',
+                icon: const Icon(Icons.animation),
+                onPressed: () => _shareSvg(
+                  'bloub_bot_anime.svg',
+                  bloubBotAnimatedSvg(),
+                ),
+              ),
             ],
           ),
         ),
       ],
     );
+  }
+
+  Future<void> _shareSvg(String name, String markup) async {
+    try {
+      final File file = File('${Directory.systemTemp.path}/$name');
+      await file.writeAsString(markup);
+      await SharePlus.instance.share(
+        ShareParams(files: [XFile(file.path, mimeType: 'image/svg+xml')]),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.maybeOf(context)
+          ?.showSnackBar(SnackBar(content: Text('Share failed: $e')));
+    }
   }
 }
