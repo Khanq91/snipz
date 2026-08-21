@@ -29,10 +29,18 @@ const Map<Carrier, double> carrierScaleHint = {
 enum _ChipState { verified, untested, failed, unavailable }
 
 class CarrierSwitcher extends StatefulWidget {
-  const CarrierSwitcher({super.key, required this.meta, required this.demo});
+  const CarrierSwitcher({
+    super.key,
+    required this.meta,
+    required this.demo,
+    this.captureKey,
+  });
 
   final ComponentMeta meta;
   final ComponentDemo demo;
+
+  /// Marks the stage area (chips excluded) for the PNG capture.
+  final GlobalKey? captureKey;
 
   @override
   State<CarrierSwitcher> createState() => _CarrierSwitcherState();
@@ -63,7 +71,12 @@ class _CarrierSwitcherState extends State<CarrierSwitcher> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Expanded(child: ClipRect(child: _stage(context))),
+        Expanded(
+          child: RepaintBoundary(
+            key: widget.captureKey,
+            child: ClipRect(child: _stage(context)),
+          ),
+        ),
         _chipRow(),
       ],
     );

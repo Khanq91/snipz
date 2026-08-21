@@ -2,11 +2,17 @@
 //   paint             -> carrier switcher (Phase 3)
 //   carrier/composite -> padded frame + local light/dark toggle
 //   effect            -> sample target + effect on/off toggle
-// Common to all kinds: checkerboard, freeze (TickerMode) and — when the demo
-// declares variants — a variant chip row (bloub-style state switching, with
-// `?variant=&frozen=` deep links).
+// Common to all kinds: checkerboard, freeze (TickerMode), share-as-PNG, and
+// — when the demo declares variants — a variant chip row (bloub-style state
+// switching, with `?variant=&frozen=` deep links).
+
+import 'dart:io';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:snipz/app/theme.dart';
 import 'package:snipz/core/component_demo.dart';
 import 'package:snipz/core/models.dart';
@@ -42,6 +48,46 @@ class _PreviewStageState extends State<PreviewStage> {
   bool _checkerboard = false;
   late bool _frozen = widget.initialFrozen;
   late String? _variantId = widget.initialVariantId;
+
+  /// Marks the stage CONTENT for the PNG capture — control bars and chip
+  /// rows stay outside the boundary on purpose.
+  final GlobalKey _captureKey = GlobalKey();
+
+  /// Captures the stage as a PNG and hands it to the share sheet. The frame
+  /// currently painted is what ships — freeze first for a deterministic
+  /// shot.
+  Future<void> _shareImage() async {
+    final ScaffoldMessengerState? messenger =
+        ScaffoldMessenger.maybeOf(context);
+    try {
+      final RenderRepaintBoundary boundary = _captureKey.currentContext!
+          .findRenderObject()! as RenderRepaintBoundary;
+      // 3x: crisp on any recipient screen without exporting a poster.
+      final ui.Image image = await boundary.toImage(pixelRatio: 3);
+      final ByteData? bytes =
+          await image.toByteData(format: ui.ImageByteFormat.png);
+      image.dispose();
+      if (bytes == null) {
+        throw StateError('PNG encoding returned no data');
+      }
+      final File file = File(
+          '${Directory.systemTemp.path}/snipz_${widget.meta.id}.png');
+      await file.writeAsBytes(bytes.buffer.asUint8List());
+      await SharePlus.instance.share(ShareParams(
+        subject: 'Snipz: ${widget.meta.title}',
+        files: [XFile(file.path, mimeType: 'image/png')],
+      ));
+    } catch (e) {
+      messenger?.showSnackBar(SnackBar(content: Text('Share failed: $e')));
+    }
+  }
+
+  Widget _shareButton() => IconButton(
+    key: const ValueKey('share-image'),
+    tooltip: 'Share as PNG',
+    icon: const Icon(Icons.photo_camera_outlined),
+    onPressed: _shareImage,
+  );
 
   DemoVariant? _variantOf(ComponentDemo demo) {
     final String? id = _variantId;
@@ -87,11 +133,20 @@ class _PreviewStageState extends State<PreviewStage> {
       Expanded(
         child: TickerMode(
           enabled: !_frozen,
-          child: CarrierSwitcher(meta: widget.meta, demo: demo),
+          child: CarrierSwitcher(
+            meta: widget.meta,
+            demo: demo,
+            captureKey: _captureKey,
+          ),
         ),
       ),
       _controlBar(
-        children: [const Text('Paint'), const Spacer(), _freezeButton()],
+        children: [
+          const Text('Paint'),
+          const Spacer(),
+          _shareButton(),
+          _freezeButton(),
+        ],
       ),
     ],
   );
@@ -105,15 +160,18 @@ class _PreviewStageState extends State<PreviewStage> {
         Expanded(
           // Theme wraps the demo so components reading Theme.of(context)
           // follow the stage toggle, not the app theme.
-          child: Theme(
-            data: stageTheme,
-            child: _stageBackground(
-              surface: stageTheme.colorScheme.surface,
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: _content(demo),
+          child: RepaintBoundary(
+            key: _captureKey,
+            child: Theme(
+              data: stageTheme,
+              child: _stageBackground(
+                surface: stageTheme.colorScheme.surface,
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: _content(demo),
+                  ),
                 ),
               ),
             ),
@@ -124,6 +182,7 @@ class _PreviewStageState extends State<PreviewStage> {
           children: [
             const Text('Stage'),
             const Spacer(),
+            _shareButton(),
             _freezeButton(),
             _checkerboardButton(),
             IconButton(
@@ -195,11 +254,14 @@ class _PreviewStageState extends State<PreviewStage> {
     return Column(
       children: [
         Expanded(
-          child: _stageBackground(
-            surface: Theme.of(context).colorScheme.surface,
-            child: _effectOn
-                ? ClipRect(child: _content(demo))
-                : _target(),
+          child: RepaintBoundary(
+            key: _captureKey,
+            child: _stageBackground(
+              surface: Theme.of(context).colorScheme.surface,
+              child: _effectOn
+                  ? ClipRect(child: _content(demo))
+                  : _target(),
+            ),
           ),
         ),
         if (demo.variants.isNotEmpty) _variantRow(demo),
@@ -207,6 +269,7 @@ class _PreviewStageState extends State<PreviewStage> {
           children: [
             const Text('Effect'),
             const Spacer(),
+            _shareButton(),
             _freezeButton(),
             _checkerboardButton(),
             Switch(
