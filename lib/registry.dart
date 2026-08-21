@@ -4,6 +4,7 @@
 
 import 'package:snipz/components/animated_content/animated_content_demo.dart';
 import 'package:snipz/components/aurora_stack/aurora_stack_demo.dart';
+import 'package:snipz/components/bloub_bot/bloub_bot_demo.dart';
 import 'package:snipz/components/blur_text/blur_text_demo.dart';
 import 'package:snipz/components/bounce_cards/bounce_cards_demo.dart';
 import 'package:snipz/components/dither/dither_demo.dart';
@@ -39,6 +40,7 @@ import 'package:snipz/core/component_demo.dart';
 final Map<String, ComponentDemo> componentRegistry = <String, ComponentDemo>{
   'animated_content': animatedContentDemo,
   'aurora_stack': auroraStackDemo,
+  'bloub_bot': bloubBotDemo,
   'blur_text': blurTextDemo,
   'bounce_cards': bounceCardsDemo,
   'dither': ditherDemo,
