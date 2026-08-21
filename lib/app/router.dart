@@ -4,6 +4,7 @@ import 'package:snipz/features/detail/code_screen.dart';
 import 'package:snipz/features/detail/detail_screen.dart';
 import 'package:snipz/features/detail/files_screen.dart';
 import 'package:snipz/features/detail/info_screen.dart';
+import 'package:snipz/features/detail/states_screen.dart';
 import 'package:snipz/features/gallery/gallery_screen.dart';
 import 'package:snipz/features/settings/settings_screen.dart';
 
@@ -19,8 +20,21 @@ GoRouter buildRouter() => GoRouter(
     ),
     GoRoute(
       path: '/component/:id',
+      // `?variant=<id>&frozen=1` deep-links into one variant, frozen — the
+      // bloub `#etat=orbit&stop` idea; also where the state board lands.
+      pageBuilder: (context, state) => _fadePage(
+        state,
+        DetailScreen(
+          id: state.pathParameters['id']!,
+          initialVariantId: state.uri.queryParameters['variant'],
+          initialFrozen: state.uri.queryParameters['frozen'] == '1',
+        ),
+      ),
+    ),
+    GoRoute(
+      path: '/component/:id/states',
       pageBuilder: (context, state) =>
-          _fadePage(state, DetailScreen(id: state.pathParameters['id']!)),
+          _fadePage(state, StatesScreen(id: state.pathParameters['id']!)),
     ),
     GoRoute(
       path: '/component/:id/code',

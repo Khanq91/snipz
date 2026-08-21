@@ -42,6 +42,30 @@ Dùng `ui.Gradient.sweep` / `ui.Gradient.linear` / `ui.Gradient.radial` / `Image
 
 Nếu paint không shader hóa được (particle động, layer chồng nhiều lớp), nói rõ lý do trong README thay vì cố gượng ép.
 
+## Component có animation — quy ước sample(t)
+
+Áp dụng khi component có chuyển động liên tục (không áp cho animation rời rạc
+kiểu implicit animation của Flutter):
+
+1. **Tách model/painter.** Trạng thái một frame = hàm thuần của thời gian trôi
+   `t` (giây). Painter chỉ vẽ frame, không tự tính giờ. (Tham chiếu:
+   `bloub_bot/_engine.dart` — engine thuần Dart test được không cần widget.)
+2. **Không `Random()` không seed, không `DateTime.now()`** trong đường vẽ.
+   Ngẫu nhiên = PRNG seed cố định hoặc bảng sinh sẵn; "sống động" = loop noise
+   (tổng vài sin chu kỳ nguyên tố cùng nhau) — tất định nhưng không lặp thấy
+   được.
+3. **Expose `double? frozenAt`** — null: chạy sống; có giá trị: render đúng
+   một frame tại t đó, không ticker. Đây là cái cho phép state board,
+   thumbnail rẻ và golden test.
+4. **Chuyển động chạy bằng `Ticker`/`AnimationController`** (dispose đúng, có
+   cờ `animate` tắt từ ngoài; dt clamp ~64ms cho app resume). KHÔNG dùng
+   `Timer`/`Stream` cho animation — nút freeze của viewer dừng ticker qua
+   `TickerMode`, Timer thì nó không dừng được.
+5. Trong `<id>_demo.dart`, nếu component có nhiều trạng thái/biến thể rõ rệt:
+   khai báo `variants` (`DemoVariant` trong `core/component_demo.dart`, kèm
+   `frozenBuilder` khi có `frozenAt`) — viewer tự dựng chip chọn biến thể,
+   state board và deep link `?variant=`.
+
 ## Output — đúng 3 file
 
 **1. `<id>.dart`** — entry, portable. Header comment:

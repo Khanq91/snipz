@@ -16,9 +16,18 @@ import 'package:snipz/features/detail/preview_stage.dart';
 import 'package:snipz/registry.dart';
 
 class DetailScreen extends ConsumerWidget {
-  const DetailScreen({super.key, required this.id});
+  const DetailScreen({
+    super.key,
+    required this.id,
+    this.initialVariantId,
+    this.initialFrozen = false,
+  });
 
   final String id;
+
+  /// From the `?variant=` / `&frozen=1` deep link (router).
+  final String? initialVariantId;
+  final bool initialFrozen;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -45,19 +54,31 @@ class DetailScreen extends ConsumerWidget {
             body: Center(child: Text('Unknown component "$id"')),
           );
         }
-        return _DetailBody(meta: meta, repoUrl: data.remoteUrl);
+        return _DetailBody(
+          meta: meta,
+          repoUrl: data.remoteUrl,
+          initialVariantId: initialVariantId,
+          initialFrozen: initialFrozen,
+        );
       },
     );
   }
 }
 
-enum _DetailAction { code, info, files, share, favorite }
+enum _DetailAction { code, info, files, states, share, favorite }
 
 class _DetailBody extends ConsumerWidget {
-  const _DetailBody({required this.meta, required this.repoUrl});
+  const _DetailBody({
+    required this.meta,
+    required this.repoUrl,
+    this.initialVariantId,
+    this.initialFrozen = false,
+  });
 
   final ComponentMeta meta;
   final String? repoUrl;
+  final String? initialVariantId;
+  final bool initialFrozen;
 
   void _share() {
     SharePlus.instance.share(
@@ -73,6 +94,8 @@ class _DetailBody extends ConsumerWidget {
     final ThemeData theme = Theme.of(context);
     final bool isFavorite = ref.watch(favoritesProvider).contains(meta.id);
     final bool hasFiles = meta.fileCount > 1;
+    final bool hasVariants =
+        componentRegistry[meta.id]?.variants.isNotEmpty ?? false;
     return Scaffold(
       appBar: AppBar(
         title: Text(meta.title),
@@ -98,6 +121,8 @@ class _DetailBody extends ConsumerWidget {
                   context.push('/component/${meta.id}/info');
                 case _DetailAction.files:
                   context.push('/component/${meta.id}/files');
+                case _DetailAction.states:
+                  context.push('/component/${meta.id}/states');
                 case _DetailAction.share:
                   _share();
                 case _DetailAction.favorite:
@@ -130,6 +155,16 @@ class _DetailBody extends ConsumerWidget {
                   child: ListTile(
                     leading: Icon(Icons.folder_outlined),
                     title: Text('Files'),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+              if (hasVariants)
+                const PopupMenuItem(
+                  key: ValueKey('menu-states'),
+                  value: _DetailAction.states,
+                  child: ListTile(
+                    leading: Icon(Icons.grid_view_outlined),
+                    title: Text('States'),
                     contentPadding: EdgeInsets.zero,
                   ),
                 ),
@@ -183,7 +218,12 @@ class _DetailBody extends ConsumerWidget {
                   top: BorderSide(color: theme.dividerColor, width: 0.5),
                 ),
               ),
-              child: PreviewStage(meta: meta, demo: componentRegistry[meta.id]),
+              child: PreviewStage(
+                meta: meta,
+                demo: componentRegistry[meta.id],
+                initialVariantId: initialVariantId,
+                initialFrozen: initialFrozen,
+              ),
             ),
           ),
         ],

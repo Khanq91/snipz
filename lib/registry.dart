@@ -4,6 +4,7 @@
 
 import 'package:snipz/components/animated_content/animated_content_demo.dart';
 import 'package:snipz/components/aurora_stack/aurora_stack_demo.dart';
+import 'package:snipz/components/bloub_bot/bloub_bot_demo.dart';
 import 'package:snipz/components/blur_text/blur_text_demo.dart';
 import 'package:snipz/components/bounce_cards/bounce_cards_demo.dart';
 import 'package:snipz/components/dither/dither_demo.dart';
@@ -27,6 +28,7 @@ import 'package:snipz/components/pixel_walker/pixel_walker_demo.dart';
 import 'package:snipz/components/pull_reveal_refresh/pull_reveal_refresh_demo.dart';
 import 'package:snipz/components/reveal_list/reveal_list_demo.dart';
 import 'package:snipz/components/scroll_expand/scroll_expand_demo.dart';
+import 'package:snipz/components/shape_morph/shape_morph_demo.dart';
 import 'package:snipz/components/spectrum_sweep/spectrum_sweep_demo.dart';
 import 'package:snipz/components/split_flap_text/split_flap_text_demo.dart';
 import 'package:snipz/components/star_border/star_border_demo.dart';
@@ -38,6 +40,7 @@ import 'package:snipz/core/component_demo.dart';
 final Map<String, ComponentDemo> componentRegistry = <String, ComponentDemo>{
   'animated_content': animatedContentDemo,
   'aurora_stack': auroraStackDemo,
+  'bloub_bot': bloubBotDemo,
   'blur_text': blurTextDemo,
   'bounce_cards': bounceCardsDemo,
   'dither': ditherDemo,
@@ -61,6 +64,7 @@ final Map<String, ComponentDemo> componentRegistry = <String, ComponentDemo>{
   'pull_reveal_refresh': pullRevealRefreshDemo,
   'reveal_list': revealListDemo,
   'scroll_expand': scrollExpandDemo,
+  'shape_morph': shapeMorphDemo,
   'spectrum_sweep': spectrumSweepDemo,
   'split_flap_text': splitFlapTextDemo,
   'star_border': starBorderDemo,
