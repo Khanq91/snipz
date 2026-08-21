@@ -13,6 +13,27 @@ final ComponentDemo shapeMorphDemo = ComponentDemo(
   builder: (context) => const _ShapeMorphShowcase(),
   // Thumbnail: one frozen frame mid-morph — no ticker in the gallery grid.
   thumbnailBuilder: (context) => const _ShapeMorphThumbnail(),
+  // The five demo keyframes as variants: ShapeMorph is stateless (time comes
+  // in via t), so live and frozen are the same still frame.
+  variants: [
+    for (final (int i, String label) in const [
+      (0, 'circle'),
+      (1, 'squircle'),
+      (2, 'hexagon'),
+      (3, 'star'),
+      (4, 'blob'),
+    ])
+      DemoVariant(
+        id: label,
+        label: label,
+        builder: (context) => ShapeMorph(
+          shapes: _demoShapes,
+          t: i.toDouble(),
+          color: Theme.of(context).colorScheme.primary,
+          fit: 0.8,
+        ),
+      ),
+  ],
 );
 
 /// The five keyframes the demo cycles through. Built once — every factory

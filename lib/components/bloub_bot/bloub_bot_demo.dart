@@ -19,6 +19,31 @@ final ComponentDemo bloubBotDemo = ComponentDemo(
       paper: Theme.of(context).colorScheme.surface,
     ),
   ),
+  // One variant per catalog state. frozenBuilder samples each state at its
+  // most readable instant (botStatePoses) — the state board renders these
+  // with zero animation loops.
+  variants: [
+    for (final BloubBotState s in botSequence)
+      DemoVariant(
+        id: s.name,
+        label: s.name,
+        builder: (context) => Center(
+          child: BloubBot(
+            size: 220,
+            state: s,
+            paper: Theme.of(context).colorScheme.surface,
+          ),
+        ),
+        frozenBuilder: (context) => Center(
+          child: BloubBot(
+            size: 220,
+            state: s,
+            frozenAt: botStatePoses[s]!,
+            paper: Theme.of(context).colorScheme.surface,
+          ),
+        ),
+      ),
+  ],
 );
 
 class _BloubBotShowcase extends StatefulWidget {

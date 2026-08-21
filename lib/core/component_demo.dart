@@ -30,6 +30,30 @@ class CarrierShaderSpec {
   final bool animated;
 }
 
+/// One named variant/state of a demo — the source of the state board and of
+/// `?variant=` deep links. Components following the sample(t) authoring
+/// convention provide [frozenBuilder] (a deterministic still frame); without
+/// it the board falls back to `TickerMode(enabled: false)` around [builder].
+class DemoVariant {
+  const DemoVariant({
+    required this.id,
+    required this.label,
+    required this.builder,
+    this.frozenBuilder,
+  });
+
+  /// Stable id used in `?variant=` deep links.
+  final String id;
+  final String label;
+
+  /// Live preview of this variant.
+  final WidgetBuilder builder;
+
+  /// Deterministic frozen frame of this variant, if the component supports
+  /// one (sample(t) convention).
+  final WidgetBuilder? frozenBuilder;
+}
+
 /// Runtime demo entry for one component (spec §6). Registered in
 /// lib/registry.dart by tools/new_component.dart. Metadata lives ONLY in the
 /// component's README frontmatter — never here.
@@ -40,6 +64,7 @@ class ComponentDemo {
     this.thumbnailBuilder,
     this.carrierBuilders = const {},
     this.shader,
+    this.variants = const [],
   });
 
   final String id;
@@ -58,4 +83,8 @@ class ComponentDemo {
   /// §2.3 shader contract hook. Non-null means the app can put this paint on
   /// ANY carrier (text included) with no hand-built combinators.
   final CarrierShaderSpec? shader;
+
+  /// Named variants/states, when the component has clearly distinct ones.
+  /// Powers the variant chips, the state board and `?variant=` deep links.
+  final List<DemoVariant> variants;
 }
