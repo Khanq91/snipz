@@ -24,6 +24,7 @@ files:
   - _profiles.dart: "required by bloub_bot.dart"
   - _shape.dart: "required by bloub_bot.dart"
   - _states.dart: "required by bloub_bot.dart"
+  - _svg.dart: "required by bloub_bot.dart"
 vendored_from: null
 assets_required: []
 shaders_required: []
