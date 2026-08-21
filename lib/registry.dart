@@ -27,6 +27,7 @@ import 'package:snipz/components/pixel_walker/pixel_walker_demo.dart';
 import 'package:snipz/components/pull_reveal_refresh/pull_reveal_refresh_demo.dart';
 import 'package:snipz/components/reveal_list/reveal_list_demo.dart';
 import 'package:snipz/components/scroll_expand/scroll_expand_demo.dart';
+import 'package:snipz/components/shape_morph/shape_morph_demo.dart';
 import 'package:snipz/components/spectrum_sweep/spectrum_sweep_demo.dart';
 import 'package:snipz/components/split_flap_text/split_flap_text_demo.dart';
 import 'package:snipz/components/star_border/star_border_demo.dart';
@@ -61,6 +62,7 @@ final Map<String, ComponentDemo> componentRegistry = <String, ComponentDemo>{
   'pull_reveal_refresh': pullRevealRefreshDemo,
   'reveal_list': revealListDemo,
   'scroll_expand': scrollExpandDemo,
+  'shape_morph': shapeMorphDemo,
   'spectrum_sweep': spectrumSweepDemo,
   'split_flap_text': splitFlapTextDemo,
   'star_border': starBorderDemo,

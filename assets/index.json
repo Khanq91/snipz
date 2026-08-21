@@ -1152,6 +1152,52 @@
       "test_history": []
     },
     {
+      "id": "shape_morph",
+      "title": "Shape Morph",
+      "kind": "composite",
+      "tags": [
+        "shape",
+        "morph",
+        "blob",
+        "vector",
+        "path",
+        "clip",
+        "animated",
+        "radial"
+      ],
+      "paint_source": "painter",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "shape_morph.dart",
+      "files": {
+        "shape_morph.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "adapted",
+      "source": "https://github.com/jeremy-prt/bloub",
+      "author": "Khang",
+      "license": "MIT (bloub, © 2026 Jérémy Perret)",
+      "created": "2026-08-21",
+      "created_flutter": "3.47.1",
+      "created_dart": "3.13.1",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
       "id": "spectrum_sweep",
       "title": "Spectrum Sweep",
       "kind": "paint",
