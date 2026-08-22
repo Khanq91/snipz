@@ -1,8 +1,8 @@
 {
   "_generated": true,
-  "_generated_at": "2026-08-21T10:09:58.276361Z",
-  "_generated_flutter": "3.44.5",
-  "_generated_dart": "3.12.2",
+  "_generated_at": "2026-08-22T12:21:34.997461Z",
+  "_generated_flutter": "3.44.0",
+  "_generated_dart": "3.12.0",
   "_generated_remote": "https://github.com/Khanq91/snipz",
   "components": [
     {
@@ -708,6 +708,58 @@
       "status": null,
       "preview": null,
       "file_count": 1,
+      "test_history": []
+    },
+    {
+      "id": "jelly_blob",
+      "title": "Jelly Blob",
+      "kind": "composite",
+      "tags": [
+        "mascot",
+        "blob",
+        "jelly",
+        "character",
+        "moods",
+        "animated",
+        "speech-bubble",
+        "form",
+        "poke"
+      ],
+      "paint_source": "painter",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "folder",
+      "entry": "jelly_blob.dart",
+      "files": {
+        "jelly_blob.dart": "entry, public API",
+        "_engine.dart": "required by jelly_blob.dart",
+        "_geom.dart": "required by jelly_blob.dart",
+        "_painter.dart": "required by jelly_blob.dart",
+        "_palette.dart": "required by jelly_blob.dart",
+        "_speech.dart": "required by jelly_blob.dart"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "adapted",
+      "source": "https://github.com/mortspace/feral-blob",
+      "author": "Khang",
+      "license": "MIT (feral-blob, © mortspace)",
+      "created": "2026-08-22",
+      "created_flutter": "3.44.0",
+      "created_dart": "3.12.0",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 6,
       "test_history": []
     },
     {

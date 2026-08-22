@@ -17,6 +17,7 @@ import 'package:snipz/components/gradient_text/gradient_text_demo.dart';
 import 'package:snipz/components/gradient_waves/gradient_waves_demo.dart';
 import 'package:snipz/components/gradual_blur/gradual_blur_demo.dart';
 import 'package:snipz/components/infinite_menu/infinite_menu_demo.dart';
+import 'package:snipz/components/jelly_blob/jelly_blob_demo.dart';
 import 'package:snipz/components/morph_slider/morph_slider_demo.dart';
 import 'package:snipz/components/option_wheel/option_wheel_demo.dart';
 import 'package:snipz/components/particle_field/particle_field_demo.dart';
@@ -53,6 +54,7 @@ final Map<String, ComponentDemo> componentRegistry = <String, ComponentDemo>{
   'gradient_waves': gradientWavesDemo,
   'gradual_blur': gradualBlurDemo,
   'infinite_menu': infiniteMenuDemo,
+  'jelly_blob': jellyBlobDemo,
   'morph_slider': morphSliderDemo,
   'option_wheel': optionWheelDemo,
   'particle_field': particleFieldDemo,
