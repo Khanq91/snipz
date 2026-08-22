@@ -30,9 +30,9 @@ Future<MemoryPrefsStore> _pumpApp(
   MemoryPrefsStore? store,
 }) async {
   // Tall viewport so the first ~6 rows of the grid (all tiles these tests
-  // assert on, up to glass_card at #9 alphabetically) are actually built —
+  // assert on, up to glass_card wherever it lands alphabetically) are actually built —
   // GridView.builder skips off-screen tiles.
-  tester.view.physicalSize = const Size(900, 3600);
+  tester.view.physicalSize = const Size(900, 9000);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
   final MemoryPrefsStore prefs = store ?? MemoryPrefsStore();

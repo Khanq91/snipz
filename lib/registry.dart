@@ -7,6 +7,17 @@ import 'package:snipz/components/aurora_stack/aurora_stack_demo.dart';
 import 'package:snipz/components/bloub_bot/bloub_bot_demo.dart';
 import 'package:snipz/components/blur_text/blur_text_demo.dart';
 import 'package:snipz/components/bounce_cards/bounce_cards_demo.dart';
+import 'package:snipz/components/calm_breath/calm_breath_demo.dart';
+import 'package:snipz/components/calm_climb/calm_climb_demo.dart';
+import 'package:snipz/components/calm_email/calm_email_demo.dart';
+import 'package:snipz/components/calm_insights/calm_insights_demo.dart';
+import 'package:snipz/components/calm_login/calm_login_demo.dart';
+import 'package:snipz/components/calm_mood/calm_mood_demo.dart';
+import 'package:snipz/components/calm_onboard/calm_onboard_demo.dart';
+import 'package:snipz/components/calm_paywall/calm_paywall_demo.dart';
+import 'package:snipz/components/calm_sleep/calm_sleep_demo.dart';
+import 'package:snipz/components/calm_streak/calm_streak_demo.dart';
+import 'package:snipz/components/calm_welcome/calm_welcome_demo.dart';
 import 'package:snipz/components/dither/dither_demo.dart';
 import 'package:snipz/components/dock/dock_demo.dart';
 import 'package:snipz/components/elastic_slider/elastic_slider_demo.dart';
@@ -44,6 +55,17 @@ final Map<String, ComponentDemo> componentRegistry = <String, ComponentDemo>{
   'bloub_bot': bloubBotDemo,
   'blur_text': blurTextDemo,
   'bounce_cards': bounceCardsDemo,
+  'calm_breath': calmBreathDemo,
+  'calm_climb': calmClimbDemo,
+  'calm_email': calmEmailDemo,
+  'calm_insights': calmInsightsDemo,
+  'calm_login': calmLoginDemo,
+  'calm_mood': calmMoodDemo,
+  'calm_onboard': calmOnboardDemo,
+  'calm_paywall': calmPaywallDemo,
+  'calm_sleep': calmSleepDemo,
+  'calm_streak': calmStreakDemo,
+  'calm_welcome': calmWelcomeDemo,
   'dither': ditherDemo,
   'dock': dockDemo,
   'elastic_slider': elasticSliderDemo,
