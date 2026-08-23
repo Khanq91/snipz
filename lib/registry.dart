@@ -2,6 +2,7 @@
 // codegen). Maintained by tools/new_component.dart, which inserts the import
 // and the map entry in alphabetical order. Keep it sorted by id.
 
+import 'package:snipz/components/additive_creature/additive_creature_demo.dart';
 import 'package:snipz/components/animated_content/animated_content_demo.dart';
 import 'package:snipz/components/aurora_stack/aurora_stack_demo.dart';
 import 'package:snipz/components/bloub_bot/bloub_bot_demo.dart';
@@ -21,15 +22,20 @@ import 'package:snipz/components/calm_welcome/calm_welcome_demo.dart';
 import 'package:snipz/components/claude_thinking/claude_thinking_demo.dart';
 import 'package:snipz/components/dither/dither_demo.dart';
 import 'package:snipz/components/dock/dock_demo.dart';
+import 'package:snipz/components/drum_clock/drum_clock_demo.dart';
 import 'package:snipz/components/elastic_slider/elastic_slider_demo.dart';
 import 'package:snipz/components/faulty_terminal/faulty_terminal_demo.dart';
+import 'package:snipz/components/firefly_swarm/firefly_swarm_demo.dart';
 import 'package:snipz/components/fluid_glass/fluid_glass_demo.dart';
 import 'package:snipz/components/glass_card/glass_card_demo.dart';
 import 'package:snipz/components/gradient_text/gradient_text_demo.dart';
 import 'package:snipz/components/gradient_waves/gradient_waves_demo.dart';
 import 'package:snipz/components/gradual_blur/gradual_blur_demo.dart';
+import 'package:snipz/components/grid_ripple/grid_ripple_demo.dart';
 import 'package:snipz/components/infinite_menu/infinite_menu_demo.dart';
+import 'package:snipz/components/irregular_typewriter/irregular_typewriter_demo.dart';
 import 'package:snipz/components/jelly_blob/jelly_blob_demo.dart';
+import 'package:snipz/components/line_drawing/line_drawing_demo.dart';
 import 'package:snipz/components/morph_slider/morph_slider_demo.dart';
 import 'package:snipz/components/option_wheel/option_wheel_demo.dart';
 import 'package:snipz/components/particle_field/particle_field_demo.dart';
@@ -45,12 +51,14 @@ import 'package:snipz/components/shape_morph/shape_morph_demo.dart';
 import 'package:snipz/components/spectrum_sweep/spectrum_sweep_demo.dart';
 import 'package:snipz/components/split_flap_text/split_flap_text_demo.dart';
 import 'package:snipz/components/star_border/star_border_demo.dart';
+import 'package:snipz/components/starling_flock/starling_flock_demo.dart';
 import 'package:snipz/components/stepper/stepper_demo.dart';
 import 'package:snipz/components/text_type/text_type_demo.dart';
 import 'package:snipz/components/true_focus/true_focus_demo.dart';
 import 'package:snipz/core/component_demo.dart';
 
 final Map<String, ComponentDemo> componentRegistry = <String, ComponentDemo>{
+  'additive_creature': additiveCreatureDemo,
   'animated_content': animatedContentDemo,
   'aurora_stack': auroraStackDemo,
   'bloub_bot': bloubBotDemo,
@@ -70,15 +78,20 @@ final Map<String, ComponentDemo> componentRegistry = <String, ComponentDemo>{
   'claude_thinking': claudeThinkingDemo,
   'dither': ditherDemo,
   'dock': dockDemo,
+  'drum_clock': drumClockDemo,
   'elastic_slider': elasticSliderDemo,
   'faulty_terminal': faultyTerminalDemo,
+  'firefly_swarm': fireflySwarmDemo,
   'fluid_glass': fluidGlassDemo,
   'glass_card': glassCardDemo,
   'gradient_text': gradientTextDemo,
   'gradient_waves': gradientWavesDemo,
   'gradual_blur': gradualBlurDemo,
+  'grid_ripple': gridRippleDemo,
   'infinite_menu': infiniteMenuDemo,
+  'irregular_typewriter': irregularTypewriterDemo,
   'jelly_blob': jellyBlobDemo,
+  'line_drawing': lineDrawingDemo,
   'morph_slider': morphSliderDemo,
   'option_wheel': optionWheelDemo,
   'particle_field': particleFieldDemo,
@@ -94,6 +107,7 @@ final Map<String, ComponentDemo> componentRegistry = <String, ComponentDemo>{
   'spectrum_sweep': spectrumSweepDemo,
   'split_flap_text': splitFlapTextDemo,
   'star_border': starBorderDemo,
+  'starling_flock': starlingFlockDemo,
   'stepper': stepperDemo,
   'text_type': textTypeDemo,
   'true_focus': trueFocusDemo,

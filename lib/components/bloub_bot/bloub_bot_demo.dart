@@ -189,46 +189,58 @@ class _BloubBotShowcaseState extends State<_BloubBotShowcase> {
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          child: Wrap(
+            alignment: WrapAlignment.center,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 12,
+            runSpacing: 4,
             children: [
-              const Text('Play sequence'),
-              Switch(
-                value: _playing,
-                onChanged: (v) {
-                  setState(() => _playing = v);
-                  _scheduleNext();
-                },
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('Play sequence'),
+                  Switch(
+                    value: _playing,
+                    onChanged: (v) {
+                      setState(() => _playing = v);
+                      _scheduleNext();
+                    },
+                  ),
+                ],
               ),
-              const SizedBox(width: 12),
               // SVG exports: the still works for ANY state; the animated one
               // is the resting avatar (body still, eyes alive) — same
               // boundary the upstream app measured. Both are plain strings
               // from the pure engine; share_plus hands the file out.
-              IconButton(
-                tooltip: 'Share SVG (${_state.name})',
-                icon: const Icon(Icons.file_download_outlined),
-                onPressed: () => _shareSvg(
-                  'bloub_bot_${_state.name}.svg',
-                  bloubBotSvg(
-                    state: _state,
-                    expression: _expression,
-                    shape: _shape,
-                    inkArgb: botColorById[_color]!.argb,
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    tooltip: 'Share SVG (${_state.name})',
+                    icon: const Icon(Icons.file_download_outlined),
+                    onPressed: () => _shareSvg(
+                      'bloub_bot_${_state.name}.svg',
+                      bloubBotSvg(
+                        state: _state,
+                        expression: _expression,
+                        shape: _shape,
+                        inkArgb: botColorById[_color]!.argb,
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              IconButton(
-                tooltip: 'Share animated SVG (rest)',
-                icon: const Icon(Icons.animation),
-                onPressed: () => _shareSvg(
-                  'bloub_bot_anime.svg',
-                  bloubBotAnimatedSvg(
-                    expression: _expression,
-                    shape: _shape,
-                    inkArgb: botColorById[_color]!.argb,
+                  IconButton(
+                    tooltip: 'Share animated SVG (rest)',
+                    icon: const Icon(Icons.animation),
+                    onPressed: () => _shareSvg(
+                      'bloub_bot_anime.svg',
+                      bloubBotAnimatedSvg(
+                        expression: _expression,
+                        shape: _shape,
+                        inkArgb: botColorById[_color]!.argb,
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
             ],
           ),

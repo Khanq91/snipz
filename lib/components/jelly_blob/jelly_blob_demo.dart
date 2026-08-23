@@ -165,8 +165,13 @@ class _JellyBlobShowcaseState extends State<_JellyBlobShowcase> {
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(12, 6, 12, 0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          // Wrap, not Row — on a narrow phone the three control groups flow
+          // to a second line instead of pushing the cloud switch off-screen.
+          child: Wrap(
+            spacing: 10,
+            runSpacing: 2,
+            alignment: WrapAlignment.center,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               SegmentedButton<JellyHappyEyes>(
                 style: const ButtonStyle(
@@ -181,28 +186,38 @@ class _JellyBlobShowcaseState extends State<_JellyBlobShowcase> {
                 onSelectionChanged: (s) =>
                     setState(() => _happyEyes = s.first),
               ),
-              const SizedBox(width: 14),
-              for (int i = 0; i < _palettes.length; i++)
-                Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: GestureDetector(
-                    onTap: () => setState(() => _palette = i),
-                    child: CircleAvatar(
-                      radius: 12,
-                      backgroundColor: i == _palette
-                          ? Theme.of(context).colorScheme.primary
-                          : Colors.transparent,
-                      child: CircleAvatar(
-                        radius: 9,
-                        backgroundColor: _palettes[i].$2.bodyMid,
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (int i = 0; i < _palettes.length; i++)
+                    GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () => setState(() => _palette = i),
+                      child: Padding(
+                        padding: const EdgeInsets.all(4),
+                        child: CircleAvatar(
+                          radius: 12,
+                          backgroundColor: i == _palette
+                              ? Theme.of(context).colorScheme.primary
+                              : Colors.transparent,
+                          child: CircleAvatar(
+                            radius: 9,
+                            backgroundColor: _palettes[i].$2.bodyMid,
+                          ),
+                        ),
                       ),
                     ),
+                ],
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('cloud'),
+                  Switch(
+                    value: _speech,
+                    onChanged: (v) => setState(() => _speech = v),
                   ),
-                ),
-              const Text('cloud'),
-              Switch(
-                value: _speech,
-                onChanged: (v) => setState(() => _speech = v),
+                ],
               ),
             ],
           ),

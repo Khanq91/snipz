@@ -45,9 +45,11 @@ void main() {
     final Finder tile = find.byKey(ValueKey<String>('tile-$id'));
     // Target the grid's own scrollable — the filter chip row (horizontal
     // ListView) and nested thumbnail scrollables would otherwise match first.
+    // 400px/drag: 50 drags must cover the whole grid — 53 components in
+    // 2 columns is ~11k px, past the old 200px×50 reach.
     await tester.scrollUntilVisible(
       tile,
-      200,
+      400,
       scrollable: find
           .descendant(of: find.byType(GridView), matching: find.byType(Scrollable))
           .first,
@@ -62,8 +64,10 @@ void main() {
 
     expect(tester.takeException(), isNull);
     expect(reads, ['assets/index.json']);
-    expect(find.byKey(const ValueKey<String>('tile-aurora_stack')), findsOne);
-    expect(find.text('Aurora Stack'), findsOneWidget);
+    // first tile alphabetically — must be built on the boot frame
+    expect(
+        find.byKey(const ValueKey<String>('tile-additive_creature')), findsOne);
+    expect(find.text('Additive Creature'), findsOneWidget);
 
     // Last tile alphabetically — reachable by scrolling, still zero extra
     // asset reads (thumbnails never touch assets/sources/).

@@ -411,7 +411,13 @@ class _CalmSleepScreenState extends State<CalmSleepScreen>
         offset: Offset(0, 18 * (1 - e)),
         child: Transform.scale(
           scale: .98 + .02 * e,
-          child: ClipRRect(
+          child: _CssShadow(
+            radius: 20,
+            shadowOffset: const Offset(0, 16),
+            blur: 32,
+            spread: -22,
+            color: const Color(0xE6020618),
+            child: ClipRRect(
             borderRadius: BorderRadius.circular(20),
             child: BackdropFilter(
               filter: ui.ImageFilter.blur(sigmaX: 3, sigmaY: 3),
@@ -425,14 +431,6 @@ class _CalmSleepScreenState extends State<CalmSleepScreen>
                     colors: [Color(0x1FFFFFFF), Color(0x0EFFFFFF)],
                   ),
                   border: Border.all(color: const Color(0x1FFFFFFF)),
-                  boxShadow: const [
-                    BoxShadow(
-                      offset: Offset(0, 16),
-                      blurRadius: 32,
-                      spreadRadius: -22,
-                      color: Color(0xE6020618),
-                    ),
-                  ],
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -466,6 +464,7 @@ class _CalmSleepScreenState extends State<CalmSleepScreen>
                   ],
                 ),
               ),
+            ),
             ),
           ),
         ),
@@ -900,4 +899,89 @@ class _HillsPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_HillsPainter old) => false;
+}
+
+/// CSS-style outer drop shadow. Flutter's BoxShadow also paints *under* the
+/// box, which shows straight through the translucent glass fills here and
+/// muddies them — CSS clips the border-box region out, so this painter does
+/// the same: blurred rrect shifted/spread, with the box itself cut away.
+class _CssShadow extends StatelessWidget {
+  const _CssShadow({
+    required this.radius,
+    required this.shadowOffset,
+    required this.blur,
+    required this.spread,
+    required this.color,
+    required this.child,
+  });
+
+  final double radius;
+  final Offset shadowOffset;
+  final double blur;
+  final double spread;
+  final Color color;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      painter: _CssShadowPainter(
+        radius: radius,
+        offset: shadowOffset,
+        blur: blur,
+        spread: spread,
+        color: color,
+      ),
+      child: child,
+    );
+  }
+}
+
+class _CssShadowPainter extends CustomPainter {
+  const _CssShadowPainter({
+    required this.radius,
+    required this.offset,
+    required this.blur,
+    required this.spread,
+    required this.color,
+  });
+
+  final double radius;
+  final Offset offset;
+  final double blur;
+  final double spread;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Rect box = Offset.zero & size;
+    final RRect rbox = RRect.fromRectAndRadius(box, Radius.circular(radius));
+    // Keep everything inside the border box unpainted (the CSS behavior).
+    final Path outside = Path()
+      ..addRect(box.inflate(blur * 2 + offset.distance + spread.abs()))
+      ..addRRect(rbox)
+      ..fillType = PathFillType.evenOdd;
+    canvas.save();
+    canvas.clipPath(outside);
+    final RRect shadow = RRect.fromRectAndRadius(
+      box.shift(offset).inflate(spread),
+      Radius.circular((radius + spread).clamp(0, double.infinity)),
+    );
+    canvas.drawRRect(
+      shadow,
+      Paint()
+        ..color = color
+        // CSS blur radius ≈ 2×sigma.
+        ..maskFilter = MaskFilter.blur(BlurStyle.normal, blur / 2),
+    );
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(_CssShadowPainter old) =>
+      old.radius != radius ||
+      old.offset != offset ||
+      old.blur != blur ||
+      old.spread != spread ||
+      old.color != color;
 }

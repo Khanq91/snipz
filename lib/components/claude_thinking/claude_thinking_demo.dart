@@ -62,16 +62,71 @@ class _DemoStage extends StatelessWidget {
   }
 }
 
-/// Default run, painted-glyph fallback, and a custom-verbs/colors take —
-/// the three main configs, on a terminal-dark background.
-class _ClaudeThinkingShowcase extends StatelessWidget {
+/// One (base, highlight) shimmer pair the showcase can dress a line in.
+class _ThinkingTint {
+  const _ThinkingTint(this.base, this.highlight);
+  final Color base;
+  final Color highlight;
+}
+
+const List<_ThinkingTint> _tints = <_ThinkingTint>[
+  _ThinkingTint(Color(0xFFCD694A), Color(0xFFE79475)), // terracotta (default)
+  _ThinkingTint(Color(0xFF5FAFAF), Color(0xFF9FDFDF)), // teal
+  _ThinkingTint(Color(0xFF7CB65C), Color(0xFFB5E39A)), // green
+  _ThinkingTint(Color(0xFF9A7ECC), Color(0xFFC9B3F0)), // violet
+  _ThinkingTint(Color(0xFF5C8FD6), Color(0xFF9FC3F5)), // blue
+  _ThinkingTint(Color(0xFFD6A23E), Color(0xFFF2CD86)), // gold
+];
+
+/// Default run, painted-glyph fallback, and a custom-verbs take — the three
+/// main configs on a terminal-dark background, each with its own tint picker.
+class _ClaudeThinkingShowcase extends StatefulWidget {
   const _ClaudeThinkingShowcase();
 
+  @override
+  State<_ClaudeThinkingShowcase> createState() =>
+      _ClaudeThinkingShowcaseState();
+}
+
+class _ClaudeThinkingShowcaseState extends State<_ClaudeThinkingShowcase> {
   static const TextStyle _caption = TextStyle(
     fontFamily: 'monospace',
     fontSize: 11,
     color: Color(0xFF565F89),
   );
+
+  // one tint index per showcase line — independent pickers
+  final List<int> _tint = <int>[0, 0, 1];
+
+  Widget _swatches(int line) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        for (int i = 0; i < _tints.length; i++)
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => setState(() => _tint[line] = i),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 6),
+              child: Container(
+                width: 16,
+                height: 16,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: _tints[i].base,
+                  border: Border.all(
+                    color: _tint[line] == i
+                        ? Colors.white
+                        : Colors.white24,
+                    width: _tint[line] == i ? 2 : 1,
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -81,21 +136,29 @@ class _ClaudeThinkingShowcase extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: const <Widget>[
-            Text('// default — Dingbat text glyphs', style: _caption),
-            SizedBox(height: 8),
-            ClaudeThinking(),
-            SizedBox(height: 28),
-            Text('// painted glyphs (no-tofu fallback)', style: _caption),
-            SizedBox(height: 8),
-            ClaudeThinking(glyphStyle: ClaudeThinkingGlyphStyle.painted),
-            SizedBox(height: 28),
-            Text('// custom verbs + colors', style: _caption),
-            SizedBox(height: 8),
+          children: <Widget>[
+            const Text('// default — Dingbat text glyphs', style: _caption),
+            _swatches(0),
             ClaudeThinking(
-              verbs: <String>['Compiling', 'Brewing', 'Untangling'],
-              baseColor: Color(0xFF5FAFAF),
-              highlightColor: Color(0xFF9FDFDF),
+              baseColor: _tints[_tint[0]].base,
+              highlightColor: _tints[_tint[0]].highlight,
+            ),
+            const SizedBox(height: 24),
+            const Text('// painted glyphs (no-tofu fallback)',
+                style: _caption),
+            _swatches(1),
+            ClaudeThinking(
+              glyphStyle: ClaudeThinkingGlyphStyle.painted,
+              baseColor: _tints[_tint[1]].base,
+              highlightColor: _tints[_tint[1]].highlight,
+            ),
+            const SizedBox(height: 24),
+            const Text('// custom verbs', style: _caption),
+            _swatches(2),
+            ClaudeThinking(
+              verbs: const <String>['Compiling', 'Brewing', 'Untangling'],
+              baseColor: _tints[_tint[2]].base,
+              highlightColor: _tints[_tint[2]].highlight,
               fontSize: 15,
             ),
           ],

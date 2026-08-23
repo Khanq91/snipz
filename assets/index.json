@@ -1,10 +1,55 @@
 {
   "_generated": true,
-  "_generated_at": "2026-08-23T02:35:46.065692Z",
+  "_generated_at": "2026-08-23T03:58:33.589257Z",
   "_generated_flutter": "3.44.0",
   "_generated_dart": "3.12.0",
   "_generated_remote": "https://github.com/Khanq91/snipz",
   "components": [
+    {
+      "id": "additive_creature",
+      "title": "Additive Creature",
+      "kind": "effect",
+      "tags": [
+        "particles",
+        "follow",
+        "touch",
+        "glow",
+        "creature",
+        "animated",
+        "animejs"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "additive_creature.dart",
+      "files": {
+        "additive_creature.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/juliangarnier/anime (examples/additive-creature)",
+      "author": "Khang",
+      "license": null,
+      "created": "2026-08-23",
+      "created_flutter": "3.44.0",
+      "created_dart": "3.12.0",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
     {
       "id": "animated_content",
       "title": "Animated Content",
@@ -897,6 +942,51 @@
       "test_history": []
     },
     {
+      "id": "drum_clock",
+      "title": "Drum Clock",
+      "kind": "composite",
+      "tags": [
+        "clock",
+        "3d",
+        "drum",
+        "playback",
+        "time",
+        "animated",
+        "animejs"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "drum_clock.dart",
+      "files": {
+        "drum_clock.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/juliangarnier/anime (examples/clock-playback-controls)",
+      "author": "Khang",
+      "license": null,
+      "created": "2026-08-23",
+      "created_flutter": "3.44.0",
+      "created_dart": "3.12.0",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
       "id": "elastic_slider",
       "title": "Elastic Slider",
       "kind": "composite",
@@ -977,6 +1067,51 @@
       "created": "2026-08-19",
       "created_flutter": "3.44.5",
       "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
+      "id": "firefly_swarm",
+      "title": "Firefly Swarm",
+      "kind": "effect",
+      "tags": [
+        "particles",
+        "fireflies",
+        "touch",
+        "glow",
+        "ambient",
+        "animated",
+        "animejs"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "firefly_swarm.dart",
+      "files": {
+        "firefly_swarm.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/juliangarnier/anime (examples/additive-fireflies)",
+      "author": "Khang",
+      "license": null,
+      "created": "2026-08-23",
+      "created_flutter": "3.44.0",
+      "created_dart": "3.12.0",
       "created_deps": {},
       "platforms_initial": [
         "android"
@@ -1220,6 +1355,51 @@
       "test_history": []
     },
     {
+      "id": "grid_ripple",
+      "title": "Grid Ripple",
+      "kind": "effect",
+      "tags": [
+        "grid",
+        "stagger",
+        "ripple",
+        "dots",
+        "ambient",
+        "animated",
+        "animejs"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "grid_ripple.dart",
+      "files": {
+        "grid_ripple.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/juliangarnier/anime (examples/advanced-grid-staggering)",
+      "author": "Khang",
+      "license": null,
+      "created": "2026-08-23",
+      "created_flutter": "3.44.0",
+      "created_dart": "3.12.0",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
       "id": "infinite_menu",
       "title": "Infinite Menu",
       "kind": "composite",
@@ -1252,6 +1432,50 @@
       "created": "2026-08-19",
       "created_flutter": "3.44.5",
       "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
+      "id": "irregular_typewriter",
+      "title": "Irregular Typewriter",
+      "kind": "effect",
+      "tags": [
+        "text",
+        "typewriter",
+        "cursor",
+        "terminal",
+        "animated",
+        "animejs"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "irregular_typewriter.dart",
+      "files": {
+        "irregular_typewriter.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/juliangarnier/anime (examples/irregular-playback-typewriter)",
+      "author": "Khang",
+      "license": null,
+      "created": "2026-08-23",
+      "created_flutter": "3.44.0",
+      "created_dart": "3.12.0",
       "created_deps": {},
       "platforms_initial": [
         "android"
@@ -1314,6 +1538,51 @@
       "status": null,
       "preview": null,
       "file_count": 6,
+      "test_history": []
+    },
+    {
+      "id": "line_drawing",
+      "title": "Line Drawing",
+      "kind": "effect",
+      "tags": [
+        "lines",
+        "circles",
+        "stroke",
+        "drawing",
+        "ambient",
+        "animated",
+        "animejs"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "line_drawing.dart",
+      "files": {
+        "line_drawing.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/juliangarnier/anime (examples/svg-line-drawing)",
+      "author": "Khang",
+      "license": null,
+      "created": "2026-08-23",
+      "created_flutter": "3.44.0",
+      "created_dart": "3.12.0",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
       "test_history": []
     },
     {
@@ -1996,6 +2265,50 @@
       "created": "2026-08-19",
       "created_flutter": "3.44.5",
       "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
+      "id": "starling_flock",
+      "title": "Starling Flock",
+      "kind": "effect",
+      "tags": [
+        "particles",
+        "flock",
+        "murmuration",
+        "ambient",
+        "animated",
+        "animejs"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "starling_flock.dart",
+      "files": {
+        "starling_flock.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/juliangarnier/anime (examples/timeline-refresh-starlings)",
+      "author": "Khang",
+      "license": null,
+      "created": "2026-08-23",
+      "created_flutter": "3.44.0",
+      "created_dart": "3.12.0",
       "created_deps": {},
       "platforms_initial": [
         "android"

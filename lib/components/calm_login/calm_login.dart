@@ -165,7 +165,13 @@ class _CalmLoginScreenState extends State<CalmLoginScreen>
                           .6,
                           dy: 12,
                           scaleFrom: .6,
-                          child: _Frost(
+                          child: _CssShadow(
+                            radius: 17,
+                            shadowOffset: const Offset(0, 12),
+                            blur: 28,
+                            spread: -16,
+                            color: p.shadow.withValues(alpha: .4),
+                            child: _Frost(
                             radius: 17,
                             child: Container(
                               width: 60,
@@ -175,18 +181,11 @@ class _CalmLoginScreenState extends State<CalmLoginScreen>
                                 color: Colors.white.withValues(alpha: .3),
                                 border: Border.all(
                                     color: const Color(0x47FFFFFF)),
-                                boxShadow: [
-                                  BoxShadow(
-                                    offset: const Offset(0, 12),
-                                    blurRadius: 28,
-                                    spreadRadius: -16,
-                                    color: p.shadow.withValues(alpha: .4),
-                                  ),
-                                ],
                               ),
                               child: CustomPaint(
                                   painter: _BrandFacePainter(p.deep)),
                             ),
+                          ),
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -233,7 +232,13 @@ class _CalmLoginScreenState extends State<CalmLoginScreen>
                       .62,
                       .6,
                       dy: 26,
-                      child: _Frost(
+                      child: _CssShadow(
+                        radius: 28,
+                        shadowOffset: const Offset(0, 24),
+                        blur: 48,
+                        spread: -34,
+                        color: p.shadow.withValues(alpha: .45),
+                        child: _Frost(
                         radius: 28,
                         child: Container(
                           padding:
@@ -247,14 +252,6 @@ class _CalmLoginScreenState extends State<CalmLoginScreen>
                             ),
                             border:
                                 Border.all(color: const Color(0x47FFFFFF)),
-                            boxShadow: [
-                              BoxShadow(
-                                offset: const Offset(0, 24),
-                                blurRadius: 48,
-                                spreadRadius: -34,
-                                color: p.shadow.withValues(alpha: .45),
-                              ),
-                            ],
                           ),
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
@@ -355,6 +352,7 @@ class _CalmLoginScreenState extends State<CalmLoginScreen>
                               ),
                             ],
                           ),
+                        ),
                         ),
                       ),
                     ),
@@ -672,4 +670,89 @@ class _PressScaleState extends State<_PressScale> {
       ),
     );
   }
+}
+
+/// CSS-style outer drop shadow. Flutter's BoxShadow also paints *under* the
+/// box, which shows straight through the translucent glass fills here and
+/// muddies them — CSS clips the border-box region out, so this painter does
+/// the same: blurred rrect shifted/spread, with the box itself cut away.
+class _CssShadow extends StatelessWidget {
+  const _CssShadow({
+    required this.radius,
+    required this.shadowOffset,
+    required this.blur,
+    required this.spread,
+    required this.color,
+    required this.child,
+  });
+
+  final double radius;
+  final Offset shadowOffset;
+  final double blur;
+  final double spread;
+  final Color color;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      painter: _CssShadowPainter(
+        radius: radius,
+        offset: shadowOffset,
+        blur: blur,
+        spread: spread,
+        color: color,
+      ),
+      child: child,
+    );
+  }
+}
+
+class _CssShadowPainter extends CustomPainter {
+  const _CssShadowPainter({
+    required this.radius,
+    required this.offset,
+    required this.blur,
+    required this.spread,
+    required this.color,
+  });
+
+  final double radius;
+  final Offset offset;
+  final double blur;
+  final double spread;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Rect box = Offset.zero & size;
+    final RRect rbox = RRect.fromRectAndRadius(box, Radius.circular(radius));
+    // Keep everything inside the border box unpainted (the CSS behavior).
+    final Path outside = Path()
+      ..addRect(box.inflate(blur * 2 + offset.distance + spread.abs()))
+      ..addRRect(rbox)
+      ..fillType = PathFillType.evenOdd;
+    canvas.save();
+    canvas.clipPath(outside);
+    final RRect shadow = RRect.fromRectAndRadius(
+      box.shift(offset).inflate(spread),
+      Radius.circular((radius + spread).clamp(0, double.infinity)),
+    );
+    canvas.drawRRect(
+      shadow,
+      Paint()
+        ..color = color
+        // CSS blur radius ≈ 2×sigma.
+        ..maskFilter = MaskFilter.blur(BlurStyle.normal, blur / 2),
+    );
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(_CssShadowPainter old) =>
+      old.radius != radius ||
+      old.offset != offset ||
+      old.blur != blur ||
+      old.spread != spread ||
+      old.color != color;
 }

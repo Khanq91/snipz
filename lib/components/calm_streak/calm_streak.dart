@@ -305,7 +305,13 @@ class _CalmStreakScreenState extends State<CalmStreakScreen>
       opacity: _ease(t, .68, .25),
       child: Transform.translate(
         offset: Offset(0, 16 * (1 - e)),
-        child: ClipRRect(
+        child: _CssShadow(
+          radius: 20,
+          shadowOffset: const Offset(0, 14),
+          blur: 28,
+          spread: -20,
+          color: const Color(0x8CBE6E14),
+          child: ClipRRect(
           borderRadius: BorderRadius.circular(20),
           child: BackdropFilter(
             filter: ui.ImageFilter.blur(sigmaX: 3, sigmaY: 3),
@@ -319,14 +325,6 @@ class _CalmStreakScreenState extends State<CalmStreakScreen>
                   colors: [Color(0xBDFFFFFF), Color(0x80FFFFFF)],
                 ),
                 border: Border.all(color: const Color(0x47FFFFFF)),
-                boxShadow: const [
-                  BoxShadow(
-                    offset: Offset(0, 14),
-                    blurRadius: 28,
-                    spreadRadius: -20,
-                    color: Color(0x8CBE6E14),
-                  ),
-                ],
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -335,6 +333,7 @@ class _CalmStreakScreenState extends State<CalmStreakScreen>
                 ],
               ),
             ),
+          ),
           ),
         ),
       ),
@@ -431,7 +430,13 @@ class _CalmStreakScreenState extends State<CalmStreakScreen>
       opacity: _ease(t, 1.45, .25),
       child: Transform.translate(
         offset: Offset(0, 14 * (1 - e)),
-        child: Container(
+        child: _CssShadow(
+          radius: 20,
+          shadowOffset: const Offset(0, 12),
+          blur: 26,
+          spread: -20,
+          color: const Color(0x80BE6E14),
+          child: Container(
           padding: const EdgeInsets.fromLTRB(0, 11, 0, 10),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
@@ -441,14 +446,6 @@ class _CalmStreakScreenState extends State<CalmStreakScreen>
               colors: [Color(0xA8FFFFFF), Color(0x6BFFFFFF)],
             ),
             border: Border.all(color: const Color(0x40FFFFFF)),
-            boxShadow: const [
-              BoxShadow(
-                offset: Offset(0, 12),
-                blurRadius: 26,
-                spreadRadius: -20,
-                color: Color(0x80BE6E14),
-              ),
-            ],
           ),
           child: IntrinsicHeight(
             child: Row(
@@ -466,6 +463,7 @@ class _CalmStreakScreenState extends State<CalmStreakScreen>
               ],
             ),
           ),
+        ),
         ),
       ),
     );
@@ -766,4 +764,89 @@ class _PressScaleState extends State<_PressScale> {
       ),
     );
   }
+}
+
+/// CSS-style outer drop shadow. Flutter's BoxShadow also paints *under* the
+/// box, which shows straight through the translucent glass fills here and
+/// muddies them — CSS clips the border-box region out, so this painter does
+/// the same: blurred rrect shifted/spread, with the box itself cut away.
+class _CssShadow extends StatelessWidget {
+  const _CssShadow({
+    required this.radius,
+    required this.shadowOffset,
+    required this.blur,
+    required this.spread,
+    required this.color,
+    required this.child,
+  });
+
+  final double radius;
+  final Offset shadowOffset;
+  final double blur;
+  final double spread;
+  final Color color;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      painter: _CssShadowPainter(
+        radius: radius,
+        offset: shadowOffset,
+        blur: blur,
+        spread: spread,
+        color: color,
+      ),
+      child: child,
+    );
+  }
+}
+
+class _CssShadowPainter extends CustomPainter {
+  const _CssShadowPainter({
+    required this.radius,
+    required this.offset,
+    required this.blur,
+    required this.spread,
+    required this.color,
+  });
+
+  final double radius;
+  final Offset offset;
+  final double blur;
+  final double spread;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Rect box = Offset.zero & size;
+    final RRect rbox = RRect.fromRectAndRadius(box, Radius.circular(radius));
+    // Keep everything inside the border box unpainted (the CSS behavior).
+    final Path outside = Path()
+      ..addRect(box.inflate(blur * 2 + offset.distance + spread.abs()))
+      ..addRRect(rbox)
+      ..fillType = PathFillType.evenOdd;
+    canvas.save();
+    canvas.clipPath(outside);
+    final RRect shadow = RRect.fromRectAndRadius(
+      box.shift(offset).inflate(spread),
+      Radius.circular((radius + spread).clamp(0, double.infinity)),
+    );
+    canvas.drawRRect(
+      shadow,
+      Paint()
+        ..color = color
+        // CSS blur radius ≈ 2×sigma.
+        ..maskFilter = MaskFilter.blur(BlurStyle.normal, blur / 2),
+    );
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(_CssShadowPainter old) =>
+      old.radius != radius ||
+      old.offset != offset ||
+      old.blur != blur ||
+      old.spread != spread ||
+      old.color != color;
 }

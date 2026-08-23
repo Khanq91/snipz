@@ -25,6 +25,14 @@ const List<String> _glyphCycle = <String>[
   '·', '✢', '✳', '✶', '✻', '✽', '✻', '✶', '✳', '✢',
 ];
 
+/// Bản render text của chu kỳ trên. ✳ (U+2733) có emoji presentation — không
+/// có U+FE0E (text variation selector) thì Android lấy nó từ NotoColorEmoji:
+/// sao XANH LÁ to gấp rưỡi các frame khác, làm dòng chữ giật theo chu kỳ.
+/// Chỉ ✳ cần selector; các glyph còn lại không có bản emoji.
+const List<String> _glyphCycleText = <String>[
+  '·', '✢', '✳︎', '✶', '✻', '✽', '✻', '✶', '✳︎', '✢',
+];
+
 /// Frame đứng yên khi reduced-motion / animate=false (bản gốc dùng ✳).
 const int _staticFrame = 2;
 
@@ -221,7 +229,7 @@ class _ClaudeThinkingState extends State<ClaudeThinking>
                       ),
                     )
                   : Center(
-                      child: Text(_glyphCycle[glyphFrame], style: style),
+                      child: Text(_glyphCycleText[glyphFrame], style: style),
                     ),
             ),
             const SizedBox(width: 8),
