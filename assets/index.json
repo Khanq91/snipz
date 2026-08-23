@@ -1,6 +1,6 @@
 {
   "_generated": true,
-  "_generated_at": "2026-08-22T13:54:09.940815Z",
+  "_generated_at": "2026-08-23T02:35:46.065692Z",
   "_generated_flutter": "3.44.0",
   "_generated_dart": "3.12.0",
   "_generated_remote": "https://github.com/Khanq91/snipz",
@@ -746,6 +746,50 @@
       "author": "Khang",
       "license": "unspecified — FeralUI reference copy carried no LICENSE (© mortspace)",
       "created": "2026-08-22",
+      "created_flutter": "3.44.0",
+      "created_dart": "3.12.0",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
+      "id": "claude_thinking",
+      "title": "Claude Thinking",
+      "kind": "effect",
+      "tags": [
+        "text",
+        "shimmer",
+        "terminal",
+        "loader",
+        "animated",
+        "claude"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "claude_thinking.dart",
+      "files": {
+        "claude_thinking.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/theswerd/brainless (registry/brainless/claude/claude-thinking.tsx)",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-23",
       "created_flutter": "3.44.0",
       "created_dart": "3.12.0",
       "created_deps": {},

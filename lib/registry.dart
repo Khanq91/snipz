@@ -18,6 +18,7 @@ import 'package:snipz/components/calm_paywall/calm_paywall_demo.dart';
 import 'package:snipz/components/calm_sleep/calm_sleep_demo.dart';
 import 'package:snipz/components/calm_streak/calm_streak_demo.dart';
 import 'package:snipz/components/calm_welcome/calm_welcome_demo.dart';
+import 'package:snipz/components/claude_thinking/claude_thinking_demo.dart';
 import 'package:snipz/components/dither/dither_demo.dart';
 import 'package:snipz/components/dock/dock_demo.dart';
 import 'package:snipz/components/elastic_slider/elastic_slider_demo.dart';
@@ -66,6 +67,7 @@ final Map<String, ComponentDemo> componentRegistry = <String, ComponentDemo>{
   'calm_sleep': calmSleepDemo,
   'calm_streak': calmStreakDemo,
   'calm_welcome': calmWelcomeDemo,
+  'claude_thinking': claudeThinkingDemo,
   'dither': ditherDemo,
   'dock': dockDemo,
   'elastic_slider': elasticSliderDemo,
