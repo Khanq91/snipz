@@ -1,9 +1,37 @@
 {
   "_generated": true,
-  "_generated_at": "2026-08-23T03:58:33.589257Z",
+  "_generated_at": "2026-08-23T04:59:37.014272Z",
   "_generated_flutter": "3.44.0",
   "_generated_dart": "3.12.0",
   "_generated_remote": "https://github.com/Khanq91/snipz",
+  "session": {
+    "id": "2026-08-23-anime-port",
+    "title": "Port anime.js v4 + fix glass shadows",
+    "date": "2026-08-23",
+    "added": [
+      "additive_creature",
+      "starling_flock",
+      "firefly_swarm",
+      "grid_ripple",
+      "irregular_typewriter",
+      "line_drawing",
+      "drum_clock"
+    ],
+    "fixed": [
+      "jelly_blob",
+      "calm_insights",
+      "claude_thinking",
+      "calm_sleep",
+      "calm_email",
+      "calm_login",
+      "calm_streak",
+      "calm_paywall",
+      "calm_breath",
+      "calm_mood",
+      "bloub_bot",
+      "morph_slider"
+    ]
+  },
   "components": [
     {
       "id": "additive_creature",
@@ -841,7 +869,7 @@
       "platforms_initial": [
         "android"
       ],
-      "version": "1.0.0",
+      "version": "1.1.0",
       "latest_known_good": null,
       "last_verified": null,
       "status": null,

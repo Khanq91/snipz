@@ -102,6 +102,8 @@ class _GridRippleState extends State<GridRipple>
     return ValueListenableBuilder<double>(
       valueListenable: _t,
       builder: (context, t, _) {
+        // the expanding child is load-bearing: a childless CustomPaint has
+        // preferred size zero and collapses under loose stage constraints
         return CustomPaint(
           painter: _GridRipplePainter(
             t: widget.frozenAt ?? t,
@@ -112,6 +114,7 @@ class _GridRippleState extends State<GridRipple>
             seed: widget.seed,
             repaint: widget.frozenAt == null ? _t : null,
           ),
+          child: const SizedBox.expand(),
         );
       },
     );

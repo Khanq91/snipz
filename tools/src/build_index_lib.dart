@@ -10,6 +10,7 @@ import 'dart:io';
 import 'flutter_env.dart';
 import 'frontmatter.dart';
 import 'paths.dart';
+import 'session.dart';
 import 'test_history.dart';
 
 class BuiltComponent {
@@ -148,6 +149,7 @@ String encodeIndex(
   required String generatedAt,
   required FlutterEnv env,
   String? remote,
+  SessionData? session,
 }) =>
     '${artifactEncoder.convert({
       '_generated': true,
@@ -155,6 +157,7 @@ String encodeIndex(
       '_generated_flutter': env.flutter,
       '_generated_dart': env.dart,
       '_generated_remote': remote,
+      'session': session?.toJson(),
       'components': [for (final BuiltComponent c in comps) c.meta],
     })}\n';
 
@@ -169,6 +172,9 @@ int writeArtifacts(FlutterEnv env) {
       generatedAt: DateTime.now().toUtc().toIso8601String(),
       env: env,
       remote: readGitRemote(),
+      // malformed SESSION.yaml throws FormatException → build refuses to
+      // write, same contract as a broken README (§10)
+      session: readSession(),
     ),
   );
   final Set<String> keep = {for (final BuiltComponent c in comps) c.id};

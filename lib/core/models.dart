@@ -267,6 +267,48 @@ class ComponentMeta {
   int get fileCount => files.length;
 }
 
+/// How a component relates to the current work session, if at all.
+enum SessionFlag { added, fixed }
+
+/// The latest work batch ("đợt"), embedded from SESSION.yaml by
+/// build_index.dart. Exactly one session exists at a time — no history —
+/// and its badges live until the next batch replaces it.
+class SessionInfo {
+  SessionInfo({
+    required this.id,
+    required this.title,
+    required this.date,
+    required List<String> added,
+    required List<String> fixed,
+  })  : added = Set.unmodifiable(added),
+        fixed = Set.unmodifiable(fixed);
+
+  factory SessionInfo.fromJson(Map<String, Object?> json) => SessionInfo(
+    id: json['id']! as String,
+    title: json['title'] as String?,
+    date: json['date']! as String,
+    added: _stringList(json['added']),
+    fixed: _stringList(json['fixed']),
+  );
+
+  final String id;
+  final String? title;
+  final String date;
+  final Set<String> added;
+  final Set<String> fixed;
+
+  bool get isEmpty => added.isEmpty && fixed.isEmpty;
+
+  bool contains(String componentId) =>
+      added.contains(componentId) || fixed.contains(componentId);
+
+  SessionFlag? flagOf(String componentId) => added.contains(componentId)
+      ? SessionFlag.added
+      : fixed.contains(componentId)
+          ? SessionFlag.fixed
+          : null;
+}
+
 /// Parsed assets/index.json.
 class ComponentIndex {
   const ComponentIndex({
@@ -274,6 +316,7 @@ class ComponentIndex {
     required this.generatedFlutter,
     required this.generatedDart,
     required this.remoteUrl,
+    required this.session,
     required this.components,
   });
 
@@ -282,6 +325,9 @@ class ComponentIndex {
     generatedFlutter: json['_generated_flutter']! as String,
     generatedDart: json['_generated_dart']! as String,
     remoteUrl: json['_generated_remote'] as String?,
+    session: json['session'] == null
+        ? null
+        : SessionInfo.fromJson(json['session']! as Map<String, Object?>),
     components: (json['components']! as List<Object?>)
         .map((c) => ComponentMeta.fromJson(c! as Map<String, Object?>))
         .toList(),
@@ -297,6 +343,9 @@ class ComponentIndex {
   /// https URL of the repo's `origin`, stamped by build_index.dart — used by
   /// the share sheet to link GitHub (§8.6). Null when the repo has no remote.
   final String? remoteUrl;
+
+  /// Current work-batch flag, or null when SESSION.yaml is absent.
+  final SessionInfo? session;
   final List<ComponentMeta> components;
 }
 

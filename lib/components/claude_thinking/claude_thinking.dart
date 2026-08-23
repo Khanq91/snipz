@@ -93,6 +93,8 @@ class ClaudeThinking extends StatefulWidget {
     this.glyphInterval = const Duration(milliseconds: 110),
     this.verbInterval = const Duration(milliseconds: 5200),
     this.shimmerPeriod = const Duration(milliseconds: 2800),
+    this.typeEffect = true,
+    this.typeCharInterval = const Duration(milliseconds: 55),
   });
 
   /// `false` render rỗng — như bản gốc return null khi không chạy.
@@ -127,6 +129,13 @@ class ClaudeThinking extends StatefulWidget {
 
   /// Chu kỳ một lượt shimmer (bản gốc 2.8s).
   final Duration shimmerPeriod;
+
+  /// Verb mới gõ ra từng ký tự trái → phải (một chiều, không xoá lùi) mỗi
+  /// khi đổi verb — kiểu text-type. `false` = swap tức thì như CLI thật.
+  final bool typeEffect;
+
+  /// Nhịp gõ mỗi ký tự của [typeEffect].
+  final Duration typeCharInterval;
 
   @override
   State<ClaudeThinking> createState() => _ClaudeThinkingState();
@@ -210,7 +219,24 @@ class _ClaudeThinkingState extends State<ClaudeThinking>
 
         final String verb =
             widget.verbs.isEmpty ? '' : widget.verbs[verbIdx];
-        final Widget verbText = Text('$verb…', style: style);
+        final String full = '$verb…';
+        String shown = full;
+        if (!still && widget.typeEffect) {
+          // one-way typewriter: chars revealed is a pure function of the
+          // time into this verb's cycle (single verb: since mount) — no
+          // accumulated state, frozen frames stay deterministic
+          final double ms = elapsed * 1000;
+          final double cycleMs =
+              widget.verbInterval.inMilliseconds.toDouble();
+          final double sinceStart = widget.verbs.length <= 1
+              ? ms
+              : ms - (ms / cycleMs).floorToDouble() * cycleMs;
+          final int chars = widget.typeCharInterval.inMilliseconds <= 0
+              ? full.characters.length
+              : sinceStart ~/ widget.typeCharInterval.inMilliseconds;
+          shown = full.characters.take(chars).toString();
+        }
+        final Widget verbText = Text(shown, style: style);
 
         return Row(
           mainAxisSize: MainAxisSize.min,

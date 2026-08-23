@@ -20,6 +20,8 @@
 //       (stale → fail, hint to run build_index)
 //   #9  origin/license — adapted/copied require source + license != unknown
 //   #10 warning (no fail) — kind: paint with scale_aware: false
+//   #11 session — SESSION.yaml well-formed, ids exist, no id in both lists;
+//       the embedded `session` in index.json must match (via #8)
 //
 // --fix rewrites the `files:` block from the real graph (decision #7) and
 // regenerates the artifacts, then re-checks.
@@ -36,6 +38,7 @@ import 'src/import_graph.dart';
 import 'src/paths.dart';
 import 'src/registry_edit.dart';
 import 'src/schema.dart';
+import 'src/session.dart';
 import 'src/test_history.dart';
 
 final List<String> _failures = [];
@@ -57,6 +60,7 @@ Future<void> main(List<String> args) async {
     _checkComponent(folder);
   }
   _checkRegistrySync(folders);
+  _checkSession(folders);
   _checkArtifactSync();
 
   _warnings.forEach(stdout.writeln);
@@ -434,6 +438,47 @@ void _checkRegistrySync(List<Directory> folders) {
   }
 }
 
+/// #11 — the current work-batch flag. Optional file; when present every id
+/// must be a real component and added/fixed must not overlap.
+void _checkSession(List<Directory> folders) {
+  final SessionData? session;
+  try {
+    session = readSession();
+  } on FormatException catch (e) {
+    fail('session', '#11 session', e.message);
+    return;
+  }
+  if (session == null) {
+    return;
+  }
+  if (!dateRe.hasMatch(session.date)) {
+    fail(
+      'session',
+      '#11 session',
+      "date: '${session.date}' is not YYYY-MM-DD",
+    );
+  }
+  final Set<String> known = {for (final Directory f in folders) idOfFolder(f)};
+  for (final String id in [...session.added, ...session.fixed]) {
+    if (!known.contains(id)) {
+      fail(
+        'session',
+        '#11 session',
+        "'$id' is not a component folder under $componentsDir/",
+      );
+    }
+  }
+  final Set<String> both =
+      session.added.toSet().intersection(session.fixed.toSet());
+  for (final String id in both) {
+    fail(
+      'session',
+      '#11 session',
+      "'$id' is in both added and fixed — pick one",
+    );
+  }
+}
+
 void _checkArtifactSync() {
   final List<BuiltComponent> expected;
   try {
@@ -473,6 +518,20 @@ void _checkArtifactSync() {
       '$indexPath is stale vs the READMEs — '
           'run: dart tools/build_index.dart',
     );
+  }
+  try {
+    final SessionData? session = readSession();
+    if (artifactEncoder.convert(session?.toJson()) !=
+        artifactEncoder.convert(committed['session'])) {
+      fail(
+        'session',
+        '#8 artifacts',
+        '$indexPath session block is stale vs $sessionPath — '
+            'run: dart tools/build_index.dart',
+      );
+    }
+  } on FormatException {
+    // malformed SESSION.yaml already reported by #11
   }
   final Set<String> ids = {for (final BuiltComponent c in expected) c.id};
   for (final BuiltComponent c in expected) {

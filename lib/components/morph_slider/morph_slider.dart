@@ -240,10 +240,19 @@ class MorphSliderState extends State<MorphSlider>
   }
 
   void _commit(int target) {
-    _current = target;
-    _progress.value = 0;
-    _animating = false;
-    _repaint.value++;
+    if (!mounted) {
+      return;
+    }
+    // setState is load-bearing: _announce() already announced this index at
+    // transition start, so without it nothing rebuilds and the painter keeps
+    // the OLD current/next images — progress reset to 0 then snaps the view
+    // back to the previous slide.
+    setState(() {
+      _current = target;
+      _dragDir = 0;
+      _progress.value = 0;
+      _animating = false;
+    });
     _announce(target);
   }
 

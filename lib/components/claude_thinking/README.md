@@ -37,7 +37,7 @@ created_deps: []
 platforms_initial: [android]
 
 # --- COMPONENT VERSION ---
-version: 1.0.0
+version: 1.1.0
 
 # --- DERIVED (computed from Test History by verify.dart, do not hand-edit) ---
 latest_known_good: null
@@ -52,7 +52,8 @@ preview: null
 Dòng "đang làm việc" của Claude Code CLI: một glyph asterisk nhấp nháy theo
 chu kỳ capture thật (`· ✢ ✳ ✶ ✻ ✽ …`, 110ms/frame) cạnh một verb ngẫu hứng
 ("Thinking…", "Noodling…") màu terracotta với vệt sáng shimmer trượt ngang
-(2.8s). Bản rút gọn của `claude-thinking` từ brainless — bỏ đồng hồ giây,
+(2.8s); mỗi lần đổi, verb mới tự gõ ra từng ký tự trái → phải (55ms/ký tự,
+một chiều — không xoá lùi, không cursor). Bản rút gọn của `claude-thinking` từ brainless — bỏ đồng hồ giây,
 token count và hint "esc to interrupt". Dùng làm loading indicator kiểu
 terminal. Tôn trọng reduced-motion (đứng yên ở ✳, verb màu đặc).
 
@@ -81,6 +82,8 @@ terminal. Tôn trọng reduced-motion (đứng yên ở ✳, verb màu đặc).
 | `glyphStyle` | `ClaudeThinkingGlyphStyle` | `text` | `painted` = vẽ glyph bằng CustomPainter, không bao giờ tofu |
 | `animate` | `bool` | `true` | `false` đóng băng deterministic (✳ + verb đầu, màu đặc) |
 | `glyphInterval` | `Duration` | `110ms` | Nhịp đổi glyph |
+| `typeEffect` | `bool` | `true` | Verb mới gõ từng ký tự trái → phải (một chiều, không xoá lùi); `false` = swap tức thì |
+| `typeCharInterval` | `Duration` | `55ms` | Nhịp gõ mỗi ký tự |
 | `verbInterval` | `Duration` | `5200ms` | Nhịp đổi verb |
 | `shimmerPeriod` | `Duration` | `2800ms` | Chu kỳ một lượt shimmer |
 
@@ -101,6 +104,9 @@ nội dung bất kỳ.
 
 ## Changelog
 
+- **1.1.0** (2026-08-23) — verb tự gõ trái → phải khi đổi (text-type một
+  chiều, không cursor); thêm `typeEffect` + `typeCharInterval`. Đồng thời ép
+  glyph ✳ về text presentation (U+FE0E) — hết lỗi emoji xanh lá trên Android.
 - **1.0.0** (2026-08-23) — created
 
 ## Test History

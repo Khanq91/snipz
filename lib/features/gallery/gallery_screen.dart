@@ -27,8 +27,12 @@ class _GalleryScreenState extends ConsumerState<GalleryScreen> {
   Carrier? _carrier;
   bool _compatOnly = false;
   bool _favoritesOnly = false;
+  bool _sessionOnly = false;
 
-  List<ComponentMeta> _filtered(List<ComponentMeta> all) {
+  List<ComponentMeta> _filtered(
+    List<ComponentMeta> all,
+    SessionInfo? session,
+  ) {
     final Set<String> favorites = ref.watch(favoritesProvider);
     final String? target = ref.watch(effectiveTargetProvider);
     final String q = _query.trim().toLowerCase();
@@ -41,6 +45,7 @@ class _GalleryScreenState extends ConsumerState<GalleryScreen> {
             (_status == null || m.status == _status) &&
             (_carrier == null || m.carriersVerified.contains(_carrier)) &&
             (!_favoritesOnly || favorites.contains(m.id)) &&
+            (!_sessionOnly || (session?.contains(m.id) ?? false)) &&
             (!_compatOnly ||
                 target == null ||
                 resolveCompat(m, target: target, today: DateTime.now()).badge ==
@@ -69,11 +74,13 @@ class _GalleryScreenState extends ConsumerState<GalleryScreen> {
         error: (error, stackTrace) =>
             Center(child: Text('Failed to load index.json\n$error')),
         data: (data) {
-          final List<ComponentMeta> shown = _filtered(data.components);
+          final SessionInfo? session = data.session;
+          final List<ComponentMeta> shown =
+              _filtered(data.components, session);
           return Column(
             children: [
               _searchField(),
-              _filterRow(),
+              _filterRow(session),
               Expanded(
                 child: shown.isEmpty
                     ? const Center(child: Text('No components match'))
@@ -87,8 +94,10 @@ class _GalleryScreenState extends ConsumerState<GalleryScreen> {
                               childAspectRatio: 0.78,
                             ),
                         itemCount: shown.length,
-                        itemBuilder: (context, i) =>
-                            _ComponentTile(meta: shown[i]),
+                        itemBuilder: (context, i) => _ComponentTile(
+                          meta: shown[i],
+                          sessionFlag: session?.flagOf(shown[i].id),
+                        ),
                       ),
               ),
             ],
@@ -117,13 +126,23 @@ class _GalleryScreenState extends ConsumerState<GalleryScreen> {
   );
 
   /// Horizontal, never wrapping (mobile §1.1).
-  Widget _filterRow() {
+  Widget _filterRow(SessionInfo? session) {
     return SizedBox(
       height: 48,
       child: ListView(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         children: [
+          // current work batch — only when SESSION.yaml declares one
+          if (session != null && !session.isEmpty) ...[
+            FilterChip(
+              key: const ValueKey('filter-session'),
+              label: const Text('✦ New'),
+              selected: _sessionOnly,
+              onSelected: (v) => setState(() => _sessionOnly = v),
+            ),
+            const SizedBox(width: 8),
+          ],
           FilterChip(
             key: const ValueKey('filter-favorites'),
             label: const Text('★ Fav'),
@@ -203,9 +222,12 @@ class _GalleryScreenState extends ConsumerState<GalleryScreen> {
 }
 
 class _ComponentTile extends ConsumerWidget {
-  const _ComponentTile({required this.meta});
+  const _ComponentTile({required this.meta, this.sessionFlag});
 
   final ComponentMeta meta;
+
+  /// Non-null marks this tile as part of the current work batch.
+  final SessionFlag? sessionFlag;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -234,6 +256,15 @@ class _ComponentTile extends ConsumerWidget {
                   RepaintBoundary(
                     child: IgnorePointer(child: _thumbnail(context)),
                   ),
+                  if (sessionFlag != null)
+                    Positioned(
+                      top: 8,
+                      left: 8,
+                      child: _SessionBadge(
+                        key: ValueKey('session-badge-${meta.id}'),
+                        flag: sessionFlag!,
+                      ),
+                    ),
                   Positioned(
                     top: 4,
                     right: 4,
@@ -298,5 +329,35 @@ class _ComponentTile extends ConsumerWidget {
     }
     final WidgetBuilder builder = demo.thumbnailBuilder ?? demo.builder;
     return ClipRect(child: builder(context));
+  }
+}
+
+/// NEW (violet) / FIX (amber) pill on tiles of the current work batch. Lives
+/// for the whole session — no dismissal — and disappears when the next batch
+/// replaces SESSION.yaml.
+class _SessionBadge extends StatelessWidget {
+  const _SessionBadge({super.key, required this.flag});
+
+  final SessionFlag flag;
+
+  @override
+  Widget build(BuildContext context) {
+    final bool added = flag == SessionFlag.added;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+      decoration: BoxDecoration(
+        color: added ? const Color(0xFF7C5CD6) : const Color(0xFFC98A1B),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        added ? '✦ NEW' : 'FIX',
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 9.5,
+          fontWeight: FontWeight.w800,
+          letterSpacing: .4,
+        ),
+      ),
+    );
   }
 }

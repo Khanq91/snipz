@@ -57,6 +57,8 @@ class DetailScreen extends ConsumerWidget {
         return _DetailBody(
           meta: meta,
           repoUrl: data.remoteUrl,
+          sessionFlag: data.session?.flagOf(id),
+          sessionDate: data.session?.date,
           initialVariantId: initialVariantId,
           initialFrozen: initialFrozen,
         );
@@ -71,12 +73,18 @@ class _DetailBody extends ConsumerWidget {
   const _DetailBody({
     required this.meta,
     required this.repoUrl,
+    this.sessionFlag,
+    this.sessionDate,
     this.initialVariantId,
     this.initialFrozen = false,
   });
 
   final ComponentMeta meta;
   final String? repoUrl;
+
+  /// Non-null: this component is part of the current work batch.
+  final SessionFlag? sessionFlag;
+  final String? sessionDate;
   final String? initialVariantId;
   final bool initialFrozen;
 
@@ -207,6 +215,20 @@ class _DetailBody extends ConsumerWidget {
                 _MetaChip(label: meta.status?.wire ?? 'untested'),
                 _MetaChip(label: 'verified: ${meta.lastVerified ?? 'unknown'}'),
                 _MetaChip(label: 'v${meta.version}'),
+                if (sessionFlag == SessionFlag.added)
+                  _MetaChip(
+                    key: const ValueKey('session-chip'),
+                    label: '✦ new · ${sessionDate ?? ''}',
+                    background: const Color(0xFF7C5CD6),
+                    foreground: Colors.white,
+                  )
+                else if (sessionFlag == SessionFlag.fixed)
+                  _MetaChip(
+                    key: const ValueKey('session-chip'),
+                    label: 'fixed · ${sessionDate ?? ''}',
+                    background: const Color(0xFFC98A1B),
+                    foreground: Colors.white,
+                  ),
               ],
             ),
           ),
@@ -233,9 +255,13 @@ class _DetailBody extends ConsumerWidget {
 }
 
 class _MetaChip extends StatelessWidget {
-  const _MetaChip({required this.label});
+  const _MetaChip({super.key, required this.label, this.background, this.foreground});
 
   final String label;
+
+  /// Defaults to the neutral surface chip; the session chip tints it.
+  final Color? background;
+  final Color? foreground;
 
   @override
   Widget build(BuildContext context) {
@@ -243,10 +269,16 @@ class _MetaChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: scheme.surfaceContainerHighest,
+        color: background ?? scheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(999),
       ),
-      child: Text(label, style: Theme.of(context).textTheme.labelSmall),
+      child: Text(
+        label,
+        style: Theme.of(context)
+            .textTheme
+            .labelSmall!
+            .copyWith(color: foreground),
+      ),
     );
   }
 }
