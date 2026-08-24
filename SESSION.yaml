@@ -2,27 +2,9 @@
 # app. CHỈ giữ một đợt mới nhất (không có lịch sử); sang đợt mới thì thay cả
 # file. build_index.dart nhúng block này vào assets/index.json, validate.dart
 # check (#11): id phải tồn tại, một id không được nằm cả added lẫn fixed.
-id: 2026-08-23-anime-port
-title: "Port anime.js v4 + fix glass shadows"
-date: 2026-08-23
+id: 2026-08-24-kinetics-port
+title: "Port kinetics effects (spring micro-interactions)"
+date: 2026-08-24
 added:
-  - additive_creature
-  - starling_flock
-  - firefly_swarm
-  - grid_ripple
-  - irregular_typewriter
-  - line_drawing
-  - drum_clock
-fixed:
-  - jelly_blob
-  - calm_insights
-  - claude_thinking
-  - calm_sleep
-  - calm_email
-  - calm_login
-  - calm_streak
-  - calm_paywall
-  - calm_breath
-  - calm_mood
-  - bloub_bot
-  - morph_slider
+  - step_progress
+fixed: []

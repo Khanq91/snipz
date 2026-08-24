@@ -52,6 +52,7 @@ import 'package:snipz/components/spectrum_sweep/spectrum_sweep_demo.dart';
 import 'package:snipz/components/split_flap_text/split_flap_text_demo.dart';
 import 'package:snipz/components/star_border/star_border_demo.dart';
 import 'package:snipz/components/starling_flock/starling_flock_demo.dart';
+import 'package:snipz/components/step_progress/step_progress_demo.dart';
 import 'package:snipz/components/stepper/stepper_demo.dart';
 import 'package:snipz/components/text_type/text_type_demo.dart';
 import 'package:snipz/components/true_focus/true_focus_demo.dart';
@@ -108,6 +109,7 @@ final Map<String, ComponentDemo> componentRegistry = <String, ComponentDemo>{
   'split_flap_text': splitFlapTextDemo,
   'star_border': starBorderDemo,
   'starling_flock': starlingFlockDemo,
+  'step_progress': stepProgressDemo,
   'stepper': stepperDemo,
   'text_type': textTypeDemo,
   'true_focus': trueFocusDemo,

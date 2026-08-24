@@ -42,10 +42,11 @@ void main() {
     expect(session, isNotNull,
         reason: 'SESSION.yaml exists, so the index must embed it');
     expect(session!.id, isNotEmpty);
-    expect(session.flagOf('additive_creature'), SessionFlag.added);
-    expect(session.flagOf('jelly_blob'), SessionFlag.fixed);
+    expect(session.flagOf('step_progress'), SessionFlag.added);
+    expect(session.flagOf('additive_creature'), isNull,
+        reason: 'previous batch is replaced, not accumulated');
     expect(session.flagOf('aurora_stack'), isNull);
-    expect(session.contains('drum_clock'), isTrue);
+    expect(session.contains('step_progress'), isTrue);
   });
 
   test('SessionInfo tolerates an index without a session block', () {
@@ -61,34 +62,25 @@ void main() {
   ) async {
     await pumpApp(tester);
 
-    // badge on the first tile (additive_creature is in `added`)
-    expect(
-      find.byKey(const ValueKey<String>('session-badge-additive_creature')),
-      findsOneWidget,
-    );
-
-    // enable the session filter
+    // step_progress sorts near the end of 54 tiles — off-screen in the lazy
+    // grid — so enable the session filter first to bring it into view.
     await tester.tap(find.byKey(const ValueKey<String>('filter-session')));
     await tester.pump();
 
-    // in-session tiles remain (bloub_bot is `fixed` and sorts 2nd of 19)…
+    // the in-session tile remains, with its NEW badge…
     expect(
-      find.byKey(const ValueKey<String>('tile-additive_creature')),
+      find.byKey(const ValueKey<String>('tile-step_progress')),
       findsOneWidget,
     );
     expect(
-      find.byKey(const ValueKey<String>('tile-bloub_bot')),
-      findsOneWidget,
-    );
-    expect(
-      find.byKey(const ValueKey<String>('session-badge-bloub_bot')),
+      find.byKey(const ValueKey<String>('session-badge-step_progress')),
       findsOneWidget,
     );
 
-    // …while an out-of-session component that would otherwise be on the
-    // first screen is gone
+    // …while out-of-session components that would otherwise be on the
+    // first screen are gone
     expect(
-      find.byKey(const ValueKey<String>('tile-animated_content')),
+      find.byKey(const ValueKey<String>('tile-additive_creature')),
       findsNothing,
     );
     expect(
