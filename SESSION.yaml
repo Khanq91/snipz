@@ -19,4 +19,12 @@ added:
   - notification_slide_in
   - switch_spring
   - toast_stack
+  - card_resize
+  - toast_overshoot
+  - tab_pill_glide
+  - hold_to_confirm
+  - like_burst
+  - copy_button
+  - choice_chips
+  - expanding_search
 fixed: []

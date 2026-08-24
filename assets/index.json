@@ -1,8 +1,8 @@
 {
   "_generated": true,
-  "_generated_at": "2026-08-24T08:45:54.914500Z",
-  "_generated_flutter": "3.44.5",
-  "_generated_dart": "3.12.2",
+  "_generated_at": "2026-08-24T13:24:42.651352Z",
+  "_generated_flutter": "3.44.0",
+  "_generated_dart": "3.12.0",
   "_generated_remote": "https://github.com/Khanq91/snipz",
   "session": {
     "id": "2026-08-24-kinetics-port",
@@ -21,7 +21,15 @@
       "undo_snackbar",
       "notification_slide_in",
       "switch_spring",
-      "toast_stack"
+      "toast_stack",
+      "card_resize",
+      "toast_overshoot",
+      "tab_pill_glide",
+      "hold_to_confirm",
+      "like_burst",
+      "copy_button",
+      "choice_chips",
+      "expanding_search"
     ],
     "fixed": []
   },
@@ -827,6 +835,93 @@
       "test_history": []
     },
     {
+      "id": "card_resize",
+      "title": "Card Resize",
+      "kind": "effect",
+      "tags": [
+        "card",
+        "expand",
+        "spring",
+        "resize",
+        "animated"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "card_resize.dart",
+      "files": {
+        "card_resize.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/ckissi/kinetics — effect 'Card Resize' (Interaction & Input)",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-24",
+      "created_flutter": "3.44.0",
+      "created_dart": "3.12.0",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
+      "id": "choice_chips",
+      "title": "Choice Chips",
+      "kind": "effect",
+      "tags": [
+        "chips",
+        "filter",
+        "toggle",
+        "pop",
+        "spring",
+        "animated"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "choice_chips.dart",
+      "files": {
+        "choice_chips.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/ckissi/kinetics — effect 'Choice Chips' (Interaction & Input)",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-24",
+      "created_flutter": "3.44.0",
+      "created_dart": "3.12.0",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
       "id": "claude_thinking",
       "title": "Claude Thinking",
       "kind": "effect",
@@ -863,6 +958,50 @@
         "android"
       ],
       "version": "1.1.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
+      "id": "copy_button",
+      "title": "Copy Button",
+      "kind": "effect",
+      "tags": [
+        "copy",
+        "clipboard",
+        "button",
+        "crossfade",
+        "spring",
+        "animated"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "copy_button.dart",
+      "files": {
+        "copy_button.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/ckissi/kinetics — effect 'Copy Button' (Interaction & Input)",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-24",
+      "created_flutter": "3.44.0",
+      "created_dart": "3.12.0",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
       "latest_known_good": null,
       "last_verified": null,
       "status": null,
@@ -1039,6 +1178,50 @@
       "created": "2026-08-18",
       "created_flutter": "3.44.5",
       "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
+      "id": "expanding_search",
+      "title": "Expanding Search",
+      "kind": "effect",
+      "tags": [
+        "search",
+        "input",
+        "expand",
+        "glide",
+        "focus",
+        "animated"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "expanding_search.dart",
+      "files": {
+        "expanding_search.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/ckissi/kinetics — effect 'Expanding Search' (Interaction & Input)",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-24",
+      "created_flutter": "3.44.0",
+      "created_dart": "3.12.0",
       "created_deps": {},
       "platforms_initial": [
         "android"
@@ -1421,6 +1604,50 @@
       "test_history": []
     },
     {
+      "id": "hold_to_confirm",
+      "title": "Hold to Confirm",
+      "kind": "effect",
+      "tags": [
+        "button",
+        "hold",
+        "confirm",
+        "ring",
+        "progress",
+        "animated"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "hold_to_confirm.dart",
+      "files": {
+        "hold_to_confirm.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/ckissi/kinetics — effect 'Hold to Confirm' (Interaction & Input)",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-24",
+      "created_flutter": "3.44.0",
+      "created_dart": "3.12.0",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
       "id": "infinite_menu",
       "title": "Infinite Menu",
       "kind": "composite",
@@ -1559,6 +1786,50 @@
       "status": null,
       "preview": null,
       "file_count": 6,
+      "test_history": []
+    },
+    {
+      "id": "like_burst",
+      "title": "Like Burst",
+      "kind": "effect",
+      "tags": [
+        "like",
+        "heart",
+        "burst",
+        "particles",
+        "toggle",
+        "animated"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "like_burst.dart",
+      "files": {
+        "like_burst.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/ckissi/kinetics — effect 'Like Burst' (Interaction & Input)",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-24",
+      "created_flutter": "3.44.0",
+      "created_dart": "3.12.0",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
       "test_history": []
     },
     {
@@ -2779,6 +3050,49 @@
       "test_history": []
     },
     {
+      "id": "tab_pill_glide",
+      "title": "Tab Pill Glide",
+      "kind": "effect",
+      "tags": [
+        "tabs",
+        "segmented",
+        "pill",
+        "glide",
+        "animated"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "tab_pill_glide.dart",
+      "files": {
+        "tab_pill_glide.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/ckissi/kinetics — effect 'Tab Pill Glide' (Interaction & Input)",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-24",
+      "created_flutter": "3.44.0",
+      "created_dart": "3.12.0",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
       "id": "text_type",
       "title": "Text Type",
       "kind": "effect",
@@ -2810,6 +3124,49 @@
       "created": "2026-08-18",
       "created_flutter": "3.44.5",
       "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
+      "id": "toast_overshoot",
+      "title": "Toast Overshoot",
+      "kind": "effect",
+      "tags": [
+        "toast",
+        "notification",
+        "overshoot",
+        "spring",
+        "animated"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "toast_overshoot.dart",
+      "files": {
+        "toast_overshoot.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/ckissi/kinetics — effect 'Toast Overshoot' (Interaction & Input)",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-24",
+      "created_flutter": "3.44.0",
+      "created_dart": "3.12.0",
       "created_deps": {},
       "platforms_initial": [
         "android"

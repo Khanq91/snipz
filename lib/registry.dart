@@ -19,11 +19,15 @@ import 'package:snipz/components/calm_paywall/calm_paywall_demo.dart';
 import 'package:snipz/components/calm_sleep/calm_sleep_demo.dart';
 import 'package:snipz/components/calm_streak/calm_streak_demo.dart';
 import 'package:snipz/components/calm_welcome/calm_welcome_demo.dart';
+import 'package:snipz/components/card_resize/card_resize_demo.dart';
+import 'package:snipz/components/choice_chips/choice_chips_demo.dart';
 import 'package:snipz/components/claude_thinking/claude_thinking_demo.dart';
+import 'package:snipz/components/copy_button/copy_button_demo.dart';
 import 'package:snipz/components/dither/dither_demo.dart';
 import 'package:snipz/components/dock/dock_demo.dart';
 import 'package:snipz/components/drum_clock/drum_clock_demo.dart';
 import 'package:snipz/components/elastic_slider/elastic_slider_demo.dart';
+import 'package:snipz/components/expanding_search/expanding_search_demo.dart';
 import 'package:snipz/components/faulty_terminal/faulty_terminal_demo.dart';
 import 'package:snipz/components/firefly_swarm/firefly_swarm_demo.dart';
 import 'package:snipz/components/fluid_glass/fluid_glass_demo.dart';
@@ -32,9 +36,11 @@ import 'package:snipz/components/gradient_text/gradient_text_demo.dart';
 import 'package:snipz/components/gradient_waves/gradient_waves_demo.dart';
 import 'package:snipz/components/gradual_blur/gradual_blur_demo.dart';
 import 'package:snipz/components/grid_ripple/grid_ripple_demo.dart';
+import 'package:snipz/components/hold_to_confirm/hold_to_confirm_demo.dart';
 import 'package:snipz/components/infinite_menu/infinite_menu_demo.dart';
 import 'package:snipz/components/irregular_typewriter/irregular_typewriter_demo.dart';
 import 'package:snipz/components/jelly_blob/jelly_blob_demo.dart';
+import 'package:snipz/components/like_burst/like_burst_demo.dart';
 import 'package:snipz/components/line_drawing/line_drawing_demo.dart';
 import 'package:snipz/components/morph_slider/morph_slider_demo.dart';
 import 'package:snipz/components/notification_slide_in/notification_slide_in_demo.dart';
@@ -62,7 +68,9 @@ import 'package:snipz/components/starling_flock/starling_flock_demo.dart';
 import 'package:snipz/components/step_progress/step_progress_demo.dart';
 import 'package:snipz/components/stepper/stepper_demo.dart';
 import 'package:snipz/components/switch_spring/switch_spring_demo.dart';
+import 'package:snipz/components/tab_pill_glide/tab_pill_glide_demo.dart';
 import 'package:snipz/components/text_type/text_type_demo.dart';
+import 'package:snipz/components/toast_overshoot/toast_overshoot_demo.dart';
 import 'package:snipz/components/toast_stack/toast_stack_demo.dart';
 import 'package:snipz/components/true_focus/true_focus_demo.dart';
 import 'package:snipz/components/typing_indicator/typing_indicator_demo.dart';
@@ -88,11 +96,15 @@ final Map<String, ComponentDemo> componentRegistry = <String, ComponentDemo>{
   'calm_sleep': calmSleepDemo,
   'calm_streak': calmStreakDemo,
   'calm_welcome': calmWelcomeDemo,
+  'card_resize': cardResizeDemo,
+  'choice_chips': choiceChipsDemo,
   'claude_thinking': claudeThinkingDemo,
+  'copy_button': copyButtonDemo,
   'dither': ditherDemo,
   'dock': dockDemo,
   'drum_clock': drumClockDemo,
   'elastic_slider': elasticSliderDemo,
+  'expanding_search': expandingSearchDemo,
   'faulty_terminal': faultyTerminalDemo,
   'firefly_swarm': fireflySwarmDemo,
   'fluid_glass': fluidGlassDemo,
@@ -101,9 +113,11 @@ final Map<String, ComponentDemo> componentRegistry = <String, ComponentDemo>{
   'gradient_waves': gradientWavesDemo,
   'gradual_blur': gradualBlurDemo,
   'grid_ripple': gridRippleDemo,
+  'hold_to_confirm': holdToConfirmDemo,
   'infinite_menu': infiniteMenuDemo,
   'irregular_typewriter': irregularTypewriterDemo,
   'jelly_blob': jellyBlobDemo,
+  'like_burst': likeBurstDemo,
   'line_drawing': lineDrawingDemo,
   'morph_slider': morphSliderDemo,
   'notification_slide_in': notificationSlideInDemo,
@@ -131,7 +145,9 @@ final Map<String, ComponentDemo> componentRegistry = <String, ComponentDemo>{
   'step_progress': stepProgressDemo,
   'stepper': stepperDemo,
   'switch_spring': switchSpringDemo,
+  'tab_pill_glide': tabPillGlideDemo,
   'text_type': textTypeDemo,
+  'toast_overshoot': toastOvershootDemo,
   'toast_stack': toastStackDemo,
   'true_focus': trueFocusDemo,
   'typing_indicator': typingIndicatorDemo,

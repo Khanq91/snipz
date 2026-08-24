@@ -11,9 +11,10 @@
 ## Bước 0 — ĐỌC SOURCE THẬT, KHÔNG ĐOÁN TỪ SNIPPET
 
 Repo kinetics đã clone ở máy:
-
+❎: Đường dẫn không dùng ở đây | ✅: Đường dẫn đúng ở máy hiện tại
 ```
-D:\khang\data\flutterDev\project\clone_ui\kinetics
+[❎] D:\khang\data\flutterDev\project\clone_ui\kinetics
+[✅] D:\project\clone_ui\kinetics
 ```
 
 Đây là site tĩnh Astro chứa **153 effect** chia 3 section × 51:
