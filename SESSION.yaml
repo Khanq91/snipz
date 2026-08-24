@@ -14,4 +14,9 @@ added:
   - signal_bars
   - rate_limit_cooldown
   - vector_recall
+  - signal_braille
+  - undo_snackbar
+  - notification_slide_in
+  - switch_spring
+  - toast_stack
 fixed: []

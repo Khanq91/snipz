@@ -1,6 +1,6 @@
 {
   "_generated": true,
-  "_generated_at": "2026-08-24T03:30:07.450503Z",
+  "_generated_at": "2026-08-24T08:32:27.922702Z",
   "_generated_flutter": "3.44.5",
   "_generated_dart": "3.12.2",
   "_generated_remote": "https://github.com/Khanq91/snipz",
@@ -16,7 +16,12 @@
       "typing_indicator",
       "signal_bars",
       "rate_limit_cooldown",
-      "vector_recall"
+      "vector_recall",
+      "signal_braille",
+      "undo_snackbar",
+      "notification_slide_in",
+      "switch_spring",
+      "toast_stack"
     ],
     "fixed": []
   },
@@ -1649,6 +1654,49 @@
       "test_history": []
     },
     {
+      "id": "notification_slide_in",
+      "title": "Notification Slide-in",
+      "kind": "effect",
+      "tags": [
+        "notification",
+        "banner",
+        "spring",
+        "timed",
+        "animated"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "notification_slide_in.dart",
+      "files": {
+        "notification_slide_in.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/ckissi/kinetics — effect 'Notification Slide-in' (Feedback & State)",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-24",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
       "id": "option_wheel",
       "title": "Option Wheel",
       "kind": "composite",
@@ -2322,6 +2370,49 @@
       "test_history": []
     },
     {
+      "id": "signal_braille",
+      "title": "Signal Braille",
+      "kind": "effect",
+      "tags": [
+        "status",
+        "braille",
+        "dots",
+        "discrete",
+        "animated"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "signal_braille.dart",
+      "files": {
+        "signal_braille.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/ckissi/kinetics — effect 'Signal Braille' (Feedback & State)",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-24",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
       "id": "skeleton_content",
       "title": "Skeleton to Content",
       "kind": "effect",
@@ -2645,6 +2736,49 @@
       "test_history": []
     },
     {
+      "id": "switch_spring",
+      "title": "Switch Spring",
+      "kind": "effect",
+      "tags": [
+        "switch",
+        "toggle",
+        "spring",
+        "control",
+        "animated"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "switch_spring.dart",
+      "files": {
+        "switch_spring.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/ckissi/kinetics — effect 'Switch Spring' (Feedback & State)",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-24",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
       "id": "text_type",
       "title": "Text Type",
       "kind": "effect",
@@ -2674,6 +2808,50 @@
       "author": "Khang",
       "license": "MIT",
       "created": "2026-08-18",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
+      "id": "toast_stack",
+      "title": "Toast Stack",
+      "kind": "effect",
+      "tags": [
+        "toast",
+        "stack",
+        "notification",
+        "queue",
+        "timed",
+        "animated"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "toast_stack.dart",
+      "files": {
+        "toast_stack.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/ckissi/kinetics — effect 'Toast Stack' (Feedback & State)",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-24",
       "created_flutter": "3.44.5",
       "created_dart": "3.12.2",
       "created_deps": {},
@@ -2758,6 +2936,50 @@
       "deps": {},
       "origin": "reimplemented",
       "source": "https://github.com/ckissi/kinetics — effect 'Typing Indicator' (Feedback & State)",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-24",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
+      "id": "undo_snackbar",
+      "title": "Undo Snackbar",
+      "kind": "effect",
+      "tags": [
+        "snackbar",
+        "undo",
+        "destructive",
+        "progress",
+        "timed",
+        "animated"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "undo_snackbar.dart",
+      "files": {
+        "undo_snackbar.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/ckissi/kinetics — effect 'Undo Snackbar' (Feedback & State)",
       "author": "Khang",
       "license": "MIT",
       "created": "2026-08-24",

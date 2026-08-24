@@ -37,6 +37,7 @@ import 'package:snipz/components/irregular_typewriter/irregular_typewriter_demo.
 import 'package:snipz/components/jelly_blob/jelly_blob_demo.dart';
 import 'package:snipz/components/line_drawing/line_drawing_demo.dart';
 import 'package:snipz/components/morph_slider/morph_slider_demo.dart';
+import 'package:snipz/components/notification_slide_in/notification_slide_in_demo.dart';
 import 'package:snipz/components/option_wheel/option_wheel_demo.dart';
 import 'package:snipz/components/orbit_spinner/orbit_spinner_demo.dart';
 import 'package:snipz/components/particle_field/particle_field_demo.dart';
@@ -52,6 +53,7 @@ import 'package:snipz/components/scroll_expand/scroll_expand_demo.dart';
 import 'package:snipz/components/shape_morph/shape_morph_demo.dart';
 import 'package:snipz/components/shimmer_skeleton/shimmer_skeleton_demo.dart';
 import 'package:snipz/components/signal_bars/signal_bars_demo.dart';
+import 'package:snipz/components/signal_braille/signal_braille_demo.dart';
 import 'package:snipz/components/skeleton_content/skeleton_content_demo.dart';
 import 'package:snipz/components/spectrum_sweep/spectrum_sweep_demo.dart';
 import 'package:snipz/components/split_flap_text/split_flap_text_demo.dart';
@@ -59,9 +61,12 @@ import 'package:snipz/components/star_border/star_border_demo.dart';
 import 'package:snipz/components/starling_flock/starling_flock_demo.dart';
 import 'package:snipz/components/step_progress/step_progress_demo.dart';
 import 'package:snipz/components/stepper/stepper_demo.dart';
+import 'package:snipz/components/switch_spring/switch_spring_demo.dart';
 import 'package:snipz/components/text_type/text_type_demo.dart';
+import 'package:snipz/components/toast_stack/toast_stack_demo.dart';
 import 'package:snipz/components/true_focus/true_focus_demo.dart';
 import 'package:snipz/components/typing_indicator/typing_indicator_demo.dart';
+import 'package:snipz/components/undo_snackbar/undo_snackbar_demo.dart';
 import 'package:snipz/components/vector_recall/vector_recall_demo.dart';
 import 'package:snipz/core/component_demo.dart';
 
@@ -101,6 +106,7 @@ final Map<String, ComponentDemo> componentRegistry = <String, ComponentDemo>{
   'jelly_blob': jellyBlobDemo,
   'line_drawing': lineDrawingDemo,
   'morph_slider': morphSliderDemo,
+  'notification_slide_in': notificationSlideInDemo,
   'option_wheel': optionWheelDemo,
   'orbit_spinner': orbitSpinnerDemo,
   'particle_field': particleFieldDemo,
@@ -116,6 +122,7 @@ final Map<String, ComponentDemo> componentRegistry = <String, ComponentDemo>{
   'shape_morph': shapeMorphDemo,
   'shimmer_skeleton': shimmerSkeletonDemo,
   'signal_bars': signalBarsDemo,
+  'signal_braille': signalBrailleDemo,
   'skeleton_content': skeletonContentDemo,
   'spectrum_sweep': spectrumSweepDemo,
   'split_flap_text': splitFlapTextDemo,
@@ -123,8 +130,11 @@ final Map<String, ComponentDemo> componentRegistry = <String, ComponentDemo>{
   'starling_flock': starlingFlockDemo,
   'step_progress': stepProgressDemo,
   'stepper': stepperDemo,
+  'switch_spring': switchSpringDemo,
   'text_type': textTypeDemo,
+  'toast_stack': toastStackDemo,
   'true_focus': trueFocusDemo,
   'typing_indicator': typingIndicatorDemo,
+  'undo_snackbar': undoSnackbarDemo,
   'vector_recall': vectorRecallDemo,
 };
