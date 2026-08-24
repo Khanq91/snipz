@@ -7,4 +7,11 @@ title: "Port kinetics effects (spring micro-interactions)"
 date: 2026-08-24
 added:
   - step_progress
+  - orbit_spinner
+  - skeleton_content
+  - shimmer_skeleton
+  - typing_indicator
+  - signal_bars
+  - rate_limit_cooldown
+  - vector_recall
 fixed: []

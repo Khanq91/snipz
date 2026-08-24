@@ -62,18 +62,19 @@ void main() {
   ) async {
     await pumpApp(tester);
 
-    // step_progress sorts near the end of 54 tiles — off-screen in the lazy
-    // grid — so enable the session filter first to bring it into view.
+    // The session tiles sort late alphabetically — off-screen in the lazy
+    // grid — so enable the session filter first to bring them into view.
+    // Assert on the batch's alphabetically-first id (fits the viewport).
     await tester.tap(find.byKey(const ValueKey<String>('filter-session')));
     await tester.pump();
 
-    // the in-session tile remains, with its NEW badge…
+    // an in-session tile remains, with its NEW badge…
     expect(
-      find.byKey(const ValueKey<String>('tile-step_progress')),
+      find.byKey(const ValueKey<String>('tile-orbit_spinner')),
       findsOneWidget,
     );
     expect(
-      find.byKey(const ValueKey<String>('session-badge-step_progress')),
+      find.byKey(const ValueKey<String>('session-badge-orbit_spinner')),
       findsOneWidget,
     );
 

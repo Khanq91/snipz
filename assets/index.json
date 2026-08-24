@@ -1,6 +1,6 @@
 {
   "_generated": true,
-  "_generated_at": "2026-08-24T02:05:58.100886Z",
+  "_generated_at": "2026-08-24T03:30:07.450503Z",
   "_generated_flutter": "3.44.5",
   "_generated_dart": "3.12.2",
   "_generated_remote": "https://github.com/Khanq91/snipz",
@@ -9,7 +9,14 @@
     "title": "Port kinetics effects (spring micro-interactions)",
     "date": "2026-08-24",
     "added": [
-      "step_progress"
+      "step_progress",
+      "orbit_spinner",
+      "skeleton_content",
+      "shimmer_skeleton",
+      "typing_indicator",
+      "signal_bars",
+      "rate_limit_cooldown",
+      "vector_recall"
     ],
     "fixed": []
   },
@@ -1686,6 +1693,49 @@
       "test_history": []
     },
     {
+      "id": "orbit_spinner",
+      "title": "Orbit Spinner",
+      "kind": "effect",
+      "tags": [
+        "spinner",
+        "loader",
+        "loading",
+        "ring",
+        "animated"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "orbit_spinner.dart",
+      "files": {
+        "orbit_spinner.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/ckissi/kinetics — effect 'Orbit Spinner' (Feedback & State)",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-24",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
       "id": "particle_field",
       "title": "Particle Field",
       "kind": "paint",
@@ -2008,6 +2058,50 @@
       "test_history": []
     },
     {
+      "id": "rate_limit_cooldown",
+      "title": "Rate Limit Cooldown",
+      "kind": "effect",
+      "tags": [
+        "rate-limit",
+        "tokens",
+        "cooldown",
+        "status",
+        "api",
+        "animated"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "rate_limit_cooldown.dart",
+      "files": {
+        "rate_limit_cooldown.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/ckissi/kinetics — effect 'Rate Limit Cooldown' (Feedback & State)",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-24",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
       "id": "reveal_list",
       "title": "Reveal List",
       "kind": "carrier",
@@ -2128,6 +2222,137 @@
       "created": "2026-08-21",
       "created_flutter": "3.47.1",
       "created_dart": "3.13.1",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
+      "id": "shimmer_skeleton",
+      "title": "Shimmer Skeleton",
+      "kind": "effect",
+      "tags": [
+        "skeleton",
+        "shimmer",
+        "loading",
+        "placeholder",
+        "animated"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "shimmer_skeleton.dart",
+      "files": {
+        "shimmer_skeleton.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/ckissi/kinetics — effect 'Shimmer Skeleton' (Feedback & State)",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-24",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
+      "id": "signal_bars",
+      "title": "Signal Bars",
+      "kind": "effect",
+      "tags": [
+        "signal",
+        "connecting",
+        "bars",
+        "indicator",
+        "loading",
+        "animated"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "signal_bars.dart",
+      "files": {
+        "signal_bars.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/ckissi/kinetics — effect 'Signal Bars' (Feedback & State)",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-24",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
+      "id": "skeleton_content",
+      "title": "Skeleton to Content",
+      "kind": "effect",
+      "tags": [
+        "skeleton",
+        "shimmer",
+        "loading",
+        "placeholder",
+        "transition",
+        "animated"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "skeleton_content.dart",
+      "files": {
+        "skeleton_content.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/ckissi/kinetics — effect 'Skeleton to Content' (Feedback & State)",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-24",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
       "created_deps": {},
       "platforms_initial": [
         "android"
@@ -2492,6 +2717,95 @@
       "author": "Khang",
       "license": "MIT + Commons Clause License Condition v1.0 (react-bits, © David Haz)",
       "created": "2026-08-19",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
+      "id": "typing_indicator",
+      "title": "Typing Indicator",
+      "kind": "effect",
+      "tags": [
+        "typing",
+        "chat",
+        "dots",
+        "indicator",
+        "loading",
+        "animated"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "typing_indicator.dart",
+      "files": {
+        "typing_indicator.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/ckissi/kinetics — effect 'Typing Indicator' (Feedback & State)",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-24",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
+      "id": "vector_recall",
+      "title": "Vector Recall",
+      "kind": "effect",
+      "tags": [
+        "vector",
+        "embedding",
+        "search",
+        "ai",
+        "radar",
+        "status",
+        "animated"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "vector_recall.dart",
+      "files": {
+        "vector_recall.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/ckissi/kinetics — effect 'Vector Recall' (Feedback & State)",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-24",
       "created_flutter": "3.44.5",
       "created_dart": "3.12.2",
       "created_deps": {},
