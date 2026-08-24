@@ -1,6 +1,6 @@
 {
   "_generated": true,
-  "_generated_at": "2026-08-24T13:24:42.651352Z",
+  "_generated_at": "2026-08-24T14:00:33.420631Z",
   "_generated_flutter": "3.44.0",
   "_generated_dart": "3.12.0",
   "_generated_remote": "https://github.com/Khanq91/snipz",
@@ -29,7 +29,16 @@
       "like_burst",
       "copy_button",
       "choice_chips",
-      "expanding_search"
+      "expanding_search",
+      "speed_dial_fab",
+      "tag_input",
+      "contextual_dock",
+      "orbital_action_menu",
+      "elastic_lasso",
+      "snap_rail",
+      "momentum_picker",
+      "hold_to_talk",
+      "lattice_snap"
     ],
     "fixed": []
   },
@@ -966,6 +975,50 @@
       "test_history": []
     },
     {
+      "id": "contextual_dock",
+      "title": "Contextual Dock",
+      "kind": "effect",
+      "tags": [
+        "dock",
+        "icons",
+        "focus",
+        "neighbors",
+        "spring",
+        "animated"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "contextual_dock.dart",
+      "files": {
+        "contextual_dock.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/ckissi/kinetics — effect 'Contextual Dock' (Interaction & Input)",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-24",
+      "created_flutter": "3.44.0",
+      "created_dart": "3.12.0",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
       "id": "copy_button",
       "title": "Copy Button",
       "kind": "effect",
@@ -1132,6 +1185,50 @@
       "author": "Khang",
       "license": null,
       "created": "2026-08-23",
+      "created_flutter": "3.44.0",
+      "created_dart": "3.12.0",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
+      "id": "elastic_lasso",
+      "title": "Elastic Lasso",
+      "kind": "effect",
+      "tags": [
+        "lasso",
+        "selection",
+        "drag",
+        "dots",
+        "spring",
+        "animated"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "elastic_lasso.dart",
+      "files": {
+        "elastic_lasso.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/ckissi/kinetics — effect 'Elastic Lasso' (Interaction & Input)",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-24",
       "created_flutter": "3.44.0",
       "created_dart": "3.12.0",
       "created_deps": {},
@@ -1648,6 +1745,50 @@
       "test_history": []
     },
     {
+      "id": "hold_to_talk",
+      "title": "Hold to Talk",
+      "kind": "effect",
+      "tags": [
+        "voice",
+        "waveform",
+        "hold",
+        "press",
+        "spring",
+        "animated"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "hold_to_talk.dart",
+      "files": {
+        "hold_to_talk.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/ckissi/kinetics — effect 'Hold to Talk' (Interaction & Input)",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-24",
+      "created_flutter": "3.44.0",
+      "created_dart": "3.12.0",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
       "id": "infinite_menu",
       "title": "Infinite Menu",
       "kind": "composite",
@@ -1789,6 +1930,50 @@
       "test_history": []
     },
     {
+      "id": "lattice_snap",
+      "title": "Lattice Snap",
+      "kind": "effect",
+      "tags": [
+        "grid",
+        "drag",
+        "snap",
+        "magnetic",
+        "spring",
+        "animated"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "lattice_snap.dart",
+      "files": {
+        "lattice_snap.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/ckissi/kinetics — effect 'Lattice Snap' (Interaction & Input)",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-24",
+      "created_flutter": "3.44.0",
+      "created_dart": "3.12.0",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
       "id": "like_burst",
       "title": "Like Burst",
       "kind": "effect",
@@ -1863,6 +2048,50 @@
       "author": "Khang",
       "license": null,
       "created": "2026-08-23",
+      "created_flutter": "3.44.0",
+      "created_dart": "3.12.0",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
+      "id": "momentum_picker",
+      "title": "Momentum Picker",
+      "kind": "effect",
+      "tags": [
+        "picker",
+        "wheel",
+        "detent",
+        "momentum",
+        "spring",
+        "animated"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "momentum_picker.dart",
+      "files": {
+        "momentum_picker.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/ckissi/kinetics — effect 'Momentum Picker' (Interaction & Input)",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-24",
       "created_flutter": "3.44.0",
       "created_dart": "3.12.0",
       "created_deps": {},
@@ -2042,6 +2271,50 @@
       "created": "2026-08-24",
       "created_flutter": "3.44.5",
       "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
+      "id": "orbital_action_menu",
+      "title": "Orbital Action Menu",
+      "kind": "effect",
+      "tags": [
+        "menu",
+        "radial",
+        "orbit",
+        "fab",
+        "spring",
+        "animated"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "orbital_action_menu.dart",
+      "files": {
+        "orbital_action_menu.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/ckissi/kinetics — effect 'Orbital Action Menu' (Interaction & Input)",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-24",
+      "created_flutter": "3.44.0",
+      "created_dart": "3.12.0",
       "created_deps": {},
       "platforms_initial": [
         "android"
@@ -2728,6 +3001,50 @@
       "test_history": []
     },
     {
+      "id": "snap_rail",
+      "title": "Snap Rail",
+      "kind": "effect",
+      "tags": [
+        "segmented",
+        "rail",
+        "pill",
+        "snap",
+        "spring",
+        "animated"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "snap_rail.dart",
+      "files": {
+        "snap_rail.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/ckissi/kinetics — effect 'Snap Rail' (Interaction & Input)",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-24",
+      "created_flutter": "3.44.0",
+      "created_dart": "3.12.0",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
       "id": "spectrum_sweep",
       "title": "Spectrum Sweep",
       "kind": "paint",
@@ -2785,6 +3102,50 @@
           "note": "initial: analyze + tests clean"
         }
       ]
+    },
+    {
+      "id": "speed_dial_fab",
+      "title": "Speed-Dial FAB",
+      "kind": "effect",
+      "tags": [
+        "fab",
+        "speed-dial",
+        "menu",
+        "stagger",
+        "spring",
+        "animated"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "speed_dial_fab.dart",
+      "files": {
+        "speed_dial_fab.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/ckissi/kinetics — effect 'Speed-Dial FAB' (Interaction & Input)",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-24",
+      "created_flutter": "3.44.0",
+      "created_dart": "3.12.0",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
     },
     {
       "id": "split_flap_text",
@@ -3075,6 +3436,50 @@
       "deps": {},
       "origin": "reimplemented",
       "source": "https://github.com/ckissi/kinetics — effect 'Tab Pill Glide' (Interaction & Input)",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-24",
+      "created_flutter": "3.44.0",
+      "created_dart": "3.12.0",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
+      "id": "tag_input",
+      "title": "Tag Input",
+      "kind": "effect",
+      "tags": [
+        "tags",
+        "tokens",
+        "input",
+        "chips",
+        "pop",
+        "animated"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "tag_input.dart",
+      "files": {
+        "tag_input.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/ckissi/kinetics — effect 'Tag Input' (Interaction & Input)",
       "author": "Khang",
       "license": "MIT",
       "created": "2026-08-24",

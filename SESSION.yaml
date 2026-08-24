@@ -27,4 +27,13 @@ added:
   - copy_button
   - choice_chips
   - expanding_search
+  - speed_dial_fab
+  - tag_input
+  - contextual_dock
+  - orbital_action_menu
+  - elastic_lasso
+  - snap_rail
+  - momentum_picker
+  - hold_to_talk
+  - lattice_snap
 fixed: []

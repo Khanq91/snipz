@@ -22,10 +22,12 @@ import 'package:snipz/components/calm_welcome/calm_welcome_demo.dart';
 import 'package:snipz/components/card_resize/card_resize_demo.dart';
 import 'package:snipz/components/choice_chips/choice_chips_demo.dart';
 import 'package:snipz/components/claude_thinking/claude_thinking_demo.dart';
+import 'package:snipz/components/contextual_dock/contextual_dock_demo.dart';
 import 'package:snipz/components/copy_button/copy_button_demo.dart';
 import 'package:snipz/components/dither/dither_demo.dart';
 import 'package:snipz/components/dock/dock_demo.dart';
 import 'package:snipz/components/drum_clock/drum_clock_demo.dart';
+import 'package:snipz/components/elastic_lasso/elastic_lasso_demo.dart';
 import 'package:snipz/components/elastic_slider/elastic_slider_demo.dart';
 import 'package:snipz/components/expanding_search/expanding_search_demo.dart';
 import 'package:snipz/components/faulty_terminal/faulty_terminal_demo.dart';
@@ -37,15 +39,19 @@ import 'package:snipz/components/gradient_waves/gradient_waves_demo.dart';
 import 'package:snipz/components/gradual_blur/gradual_blur_demo.dart';
 import 'package:snipz/components/grid_ripple/grid_ripple_demo.dart';
 import 'package:snipz/components/hold_to_confirm/hold_to_confirm_demo.dart';
+import 'package:snipz/components/hold_to_talk/hold_to_talk_demo.dart';
 import 'package:snipz/components/infinite_menu/infinite_menu_demo.dart';
 import 'package:snipz/components/irregular_typewriter/irregular_typewriter_demo.dart';
 import 'package:snipz/components/jelly_blob/jelly_blob_demo.dart';
+import 'package:snipz/components/lattice_snap/lattice_snap_demo.dart';
 import 'package:snipz/components/like_burst/like_burst_demo.dart';
 import 'package:snipz/components/line_drawing/line_drawing_demo.dart';
+import 'package:snipz/components/momentum_picker/momentum_picker_demo.dart';
 import 'package:snipz/components/morph_slider/morph_slider_demo.dart';
 import 'package:snipz/components/notification_slide_in/notification_slide_in_demo.dart';
 import 'package:snipz/components/option_wheel/option_wheel_demo.dart';
 import 'package:snipz/components/orbit_spinner/orbit_spinner_demo.dart';
+import 'package:snipz/components/orbital_action_menu/orbital_action_menu_demo.dart';
 import 'package:snipz/components/particle_field/particle_field_demo.dart';
 import 'package:snipz/components/pixel_blast/pixel_blast_demo.dart';
 import 'package:snipz/components/pixel_card/pixel_card_demo.dart';
@@ -61,7 +67,9 @@ import 'package:snipz/components/shimmer_skeleton/shimmer_skeleton_demo.dart';
 import 'package:snipz/components/signal_bars/signal_bars_demo.dart';
 import 'package:snipz/components/signal_braille/signal_braille_demo.dart';
 import 'package:snipz/components/skeleton_content/skeleton_content_demo.dart';
+import 'package:snipz/components/snap_rail/snap_rail_demo.dart';
 import 'package:snipz/components/spectrum_sweep/spectrum_sweep_demo.dart';
+import 'package:snipz/components/speed_dial_fab/speed_dial_fab_demo.dart';
 import 'package:snipz/components/split_flap_text/split_flap_text_demo.dart';
 import 'package:snipz/components/star_border/star_border_demo.dart';
 import 'package:snipz/components/starling_flock/starling_flock_demo.dart';
@@ -69,6 +77,7 @@ import 'package:snipz/components/step_progress/step_progress_demo.dart';
 import 'package:snipz/components/stepper/stepper_demo.dart';
 import 'package:snipz/components/switch_spring/switch_spring_demo.dart';
 import 'package:snipz/components/tab_pill_glide/tab_pill_glide_demo.dart';
+import 'package:snipz/components/tag_input/tag_input_demo.dart';
 import 'package:snipz/components/text_type/text_type_demo.dart';
 import 'package:snipz/components/toast_overshoot/toast_overshoot_demo.dart';
 import 'package:snipz/components/toast_stack/toast_stack_demo.dart';
@@ -99,10 +108,12 @@ final Map<String, ComponentDemo> componentRegistry = <String, ComponentDemo>{
   'card_resize': cardResizeDemo,
   'choice_chips': choiceChipsDemo,
   'claude_thinking': claudeThinkingDemo,
+  'contextual_dock': contextualDockDemo,
   'copy_button': copyButtonDemo,
   'dither': ditherDemo,
   'dock': dockDemo,
   'drum_clock': drumClockDemo,
+  'elastic_lasso': elasticLassoDemo,
   'elastic_slider': elasticSliderDemo,
   'expanding_search': expandingSearchDemo,
   'faulty_terminal': faultyTerminalDemo,
@@ -114,15 +125,19 @@ final Map<String, ComponentDemo> componentRegistry = <String, ComponentDemo>{
   'gradual_blur': gradualBlurDemo,
   'grid_ripple': gridRippleDemo,
   'hold_to_confirm': holdToConfirmDemo,
+  'hold_to_talk': holdToTalkDemo,
   'infinite_menu': infiniteMenuDemo,
   'irregular_typewriter': irregularTypewriterDemo,
   'jelly_blob': jellyBlobDemo,
+  'lattice_snap': latticeSnapDemo,
   'like_burst': likeBurstDemo,
   'line_drawing': lineDrawingDemo,
+  'momentum_picker': momentumPickerDemo,
   'morph_slider': morphSliderDemo,
   'notification_slide_in': notificationSlideInDemo,
   'option_wheel': optionWheelDemo,
   'orbit_spinner': orbitSpinnerDemo,
+  'orbital_action_menu': orbitalActionMenuDemo,
   'particle_field': particleFieldDemo,
   'pixel_blast': pixelBlastDemo,
   'pixel_card': pixelCardDemo,
@@ -138,7 +153,9 @@ final Map<String, ComponentDemo> componentRegistry = <String, ComponentDemo>{
   'signal_bars': signalBarsDemo,
   'signal_braille': signalBrailleDemo,
   'skeleton_content': skeletonContentDemo,
+  'snap_rail': snapRailDemo,
   'spectrum_sweep': spectrumSweepDemo,
+  'speed_dial_fab': speedDialFabDemo,
   'split_flap_text': splitFlapTextDemo,
   'star_border': starBorderDemo,
   'starling_flock': starlingFlockDemo,
@@ -146,6 +163,7 @@ final Map<String, ComponentDemo> componentRegistry = <String, ComponentDemo>{
   'stepper': stepperDemo,
   'switch_spring': switchSpringDemo,
   'tab_pill_glide': tabPillGlideDemo,
+  'tag_input': tagInputDemo,
   'text_type': textTypeDemo,
   'toast_overshoot': toastOvershootDemo,
   'toast_stack': toastStackDemo,
