@@ -1,6 +1,6 @@
 {
   "_generated": true,
-  "_generated_at": "2026-08-26T09:28:20.272189Z",
+  "_generated_at": "2026-08-26T09:50:21.969692Z",
   "_generated_flutter": "3.44.5",
   "_generated_dart": "3.12.2",
   "_generated_remote": "https://github.com/Khanq91/snipz",
@@ -46,7 +46,14 @@
       "page_peel",
       "breathing_orb",
       "float_bob",
-      "equalizer_bars"
+      "equalizer_bars",
+      "neon_glow_pulse",
+      "gradient_shimmer_text",
+      "radar_pulse",
+      "bouncing_ball",
+      "marquee_reveal",
+      "before_after",
+      "variable_weight"
     ],
     "fixed": []
   },
@@ -196,6 +203,49 @@
       ]
     },
     {
+      "id": "before_after",
+      "title": "Before / After",
+      "kind": "composite",
+      "tags": [
+        "compare",
+        "slider",
+        "wipe",
+        "drag",
+        "reveal"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "before_after.dart",
+      "files": {
+        "before_after.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/ckissi/kinetics — effect 'Before / After' (Surface & Motion)",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-26",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
       "id": "bloub_bot",
       "title": "Bloub Bot",
       "kind": "composite",
@@ -327,6 +377,50 @@
       "author": "Khang",
       "license": "MIT",
       "created": "2026-08-19",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
+      "id": "bouncing_ball",
+      "title": "Bouncing Ball",
+      "kind": "effect",
+      "tags": [
+        "ball",
+        "bounce",
+        "squash",
+        "stretch",
+        "loader",
+        "animated"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "bouncing_ball.dart",
+      "files": {
+        "bouncing_ball.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/ckissi/kinetics — effect 'Bouncing Ball' (Surface & Motion)",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-26",
       "created_flutter": "3.44.5",
       "created_dart": "3.12.2",
       "created_deps": {},
@@ -1750,6 +1844,49 @@
       ]
     },
     {
+      "id": "gradient_shimmer_text",
+      "title": "Gradient Shimmer Text",
+      "kind": "effect",
+      "tags": [
+        "text",
+        "shimmer",
+        "gradient",
+        "sweep",
+        "animated"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "gradient_shimmer_text.dart",
+      "files": {
+        "gradient_shimmer_text.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/ckissi/kinetics — effect 'Gradient Shimmer Text' (Surface & Motion)",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-26",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
       "id": "gradient_text",
       "title": "Gradient Text",
       "kind": "effect",
@@ -2291,6 +2428,50 @@
       "test_history": []
     },
     {
+      "id": "marquee_reveal",
+      "title": "Marquee Reveal",
+      "kind": "effect",
+      "tags": [
+        "marquee",
+        "scroll",
+        "strip",
+        "loop",
+        "pause",
+        "animated"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "marquee_reveal.dart",
+      "files": {
+        "marquee_reveal.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/ckissi/kinetics — effect 'Marquee Reveal' (Surface & Motion)",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-26",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
       "id": "momentum_picker",
       "title": "Momentum Picker",
       "kind": "effect",
@@ -2367,6 +2548,50 @@
       "author": "Khang",
       "license": "MIT + Commons Clause License Condition v1.0 (react-bits, © David Haz)",
       "created": "2026-08-19",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
+      "id": "neon_glow_pulse",
+      "title": "Neon Glow Pulse",
+      "kind": "effect",
+      "tags": [
+        "neon",
+        "glow",
+        "pulse",
+        "badge",
+        "pill",
+        "animated"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "neon_glow_pulse.dart",
+      "files": {
+        "neon_glow_pulse.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/ckissi/kinetics — effect 'Neon Glow Pulse' (Surface & Motion)",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-26",
       "created_flutter": "3.44.5",
       "created_dart": "3.12.2",
       "created_deps": {},
@@ -2915,6 +3140,50 @@
         "android"
       ],
       "version": "1.0.1",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
+      "id": "radar_pulse",
+      "title": "Radar Pulse",
+      "kind": "effect",
+      "tags": [
+        "radar",
+        "sonar",
+        "ping",
+        "ripple",
+        "loader",
+        "animated"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "radar_pulse.dart",
+      "files": {
+        "radar_pulse.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/ckissi/kinetics — effect 'Radar Pulse' (Surface & Motion)",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-26",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
       "latest_known_good": null,
       "last_verified": null,
       "status": null,
@@ -4062,6 +4331,49 @@
       "author": "Khang",
       "license": "MIT",
       "created": "2026-08-24",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
+      "id": "variable_weight",
+      "title": "Variable Weight",
+      "kind": "effect",
+      "tags": [
+        "text",
+        "weight",
+        "variable-font",
+        "press",
+        "typographic"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "variable_weight.dart",
+      "files": {
+        "variable_weight.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/ckissi/kinetics — effect 'Variable Weight' (Surface & Motion)",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-26",
       "created_flutter": "3.44.5",
       "created_dart": "3.12.2",
       "created_deps": {},

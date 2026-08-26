@@ -5,9 +5,11 @@
 import 'package:snipz/components/additive_creature/additive_creature_demo.dart';
 import 'package:snipz/components/animated_content/animated_content_demo.dart';
 import 'package:snipz/components/aurora_stack/aurora_stack_demo.dart';
+import 'package:snipz/components/before_after/before_after_demo.dart';
 import 'package:snipz/components/bloub_bot/bloub_bot_demo.dart';
 import 'package:snipz/components/blur_text/blur_text_demo.dart';
 import 'package:snipz/components/bounce_cards/bounce_cards_demo.dart';
+import 'package:snipz/components/bouncing_ball/bouncing_ball_demo.dart';
 import 'package:snipz/components/breathing_orb/breathing_orb_demo.dart';
 import 'package:snipz/components/calm_breath/calm_breath_demo.dart';
 import 'package:snipz/components/calm_climb/calm_climb_demo.dart';
@@ -39,6 +41,7 @@ import 'package:snipz/components/firefly_swarm/firefly_swarm_demo.dart';
 import 'package:snipz/components/float_bob/float_bob_demo.dart';
 import 'package:snipz/components/fluid_glass/fluid_glass_demo.dart';
 import 'package:snipz/components/glass_card/glass_card_demo.dart';
+import 'package:snipz/components/gradient_shimmer_text/gradient_shimmer_text_demo.dart';
 import 'package:snipz/components/gradient_text/gradient_text_demo.dart';
 import 'package:snipz/components/gradient_waves/gradient_waves_demo.dart';
 import 'package:snipz/components/gradual_blur/gradual_blur_demo.dart';
@@ -51,8 +54,10 @@ import 'package:snipz/components/jelly_blob/jelly_blob_demo.dart';
 import 'package:snipz/components/lattice_snap/lattice_snap_demo.dart';
 import 'package:snipz/components/like_burst/like_burst_demo.dart';
 import 'package:snipz/components/line_drawing/line_drawing_demo.dart';
+import 'package:snipz/components/marquee_reveal/marquee_reveal_demo.dart';
 import 'package:snipz/components/momentum_picker/momentum_picker_demo.dart';
 import 'package:snipz/components/morph_slider/morph_slider_demo.dart';
+import 'package:snipz/components/neon_glow_pulse/neon_glow_pulse_demo.dart';
 import 'package:snipz/components/notification_slide_in/notification_slide_in_demo.dart';
 import 'package:snipz/components/option_wheel/option_wheel_demo.dart';
 import 'package:snipz/components/orbit_spinner/orbit_spinner_demo.dart';
@@ -65,6 +70,7 @@ import 'package:snipz/components/pixel_loader/pixel_loader_demo.dart';
 import 'package:snipz/components/pixel_transition/pixel_transition_demo.dart';
 import 'package:snipz/components/pixel_walker/pixel_walker_demo.dart';
 import 'package:snipz/components/pull_reveal_refresh/pull_reveal_refresh_demo.dart';
+import 'package:snipz/components/radar_pulse/radar_pulse_demo.dart';
 import 'package:snipz/components/rate_limit_cooldown/rate_limit_cooldown_demo.dart';
 import 'package:snipz/components/reveal_list/reveal_list_demo.dart';
 import 'package:snipz/components/scroll_expand/scroll_expand_demo.dart';
@@ -91,6 +97,7 @@ import 'package:snipz/components/toast_stack/toast_stack_demo.dart';
 import 'package:snipz/components/true_focus/true_focus_demo.dart';
 import 'package:snipz/components/typing_indicator/typing_indicator_demo.dart';
 import 'package:snipz/components/undo_snackbar/undo_snackbar_demo.dart';
+import 'package:snipz/components/variable_weight/variable_weight_demo.dart';
 import 'package:snipz/components/vector_recall/vector_recall_demo.dart';
 import 'package:snipz/components/wave_loader/wave_loader_demo.dart';
 import 'package:snipz/core/component_demo.dart';
@@ -99,9 +106,11 @@ final Map<String, ComponentDemo> componentRegistry = <String, ComponentDemo>{
   'additive_creature': additiveCreatureDemo,
   'animated_content': animatedContentDemo,
   'aurora_stack': auroraStackDemo,
+  'before_after': beforeAfterDemo,
   'bloub_bot': bloubBotDemo,
   'blur_text': blurTextDemo,
   'bounce_cards': bounceCardsDemo,
+  'bouncing_ball': bouncingBallDemo,
   'breathing_orb': breathingOrbDemo,
   'calm_breath': calmBreathDemo,
   'calm_climb': calmClimbDemo,
@@ -133,6 +142,7 @@ final Map<String, ComponentDemo> componentRegistry = <String, ComponentDemo>{
   'float_bob': floatBobDemo,
   'fluid_glass': fluidGlassDemo,
   'glass_card': glassCardDemo,
+  'gradient_shimmer_text': gradientShimmerTextDemo,
   'gradient_text': gradientTextDemo,
   'gradient_waves': gradientWavesDemo,
   'gradual_blur': gradualBlurDemo,
@@ -145,8 +155,10 @@ final Map<String, ComponentDemo> componentRegistry = <String, ComponentDemo>{
   'lattice_snap': latticeSnapDemo,
   'like_burst': likeBurstDemo,
   'line_drawing': lineDrawingDemo,
+  'marquee_reveal': marqueeRevealDemo,
   'momentum_picker': momentumPickerDemo,
   'morph_slider': morphSliderDemo,
+  'neon_glow_pulse': neonGlowPulseDemo,
   'notification_slide_in': notificationSlideInDemo,
   'option_wheel': optionWheelDemo,
   'orbit_spinner': orbitSpinnerDemo,
@@ -159,6 +171,7 @@ final Map<String, ComponentDemo> componentRegistry = <String, ComponentDemo>{
   'pixel_transition': pixelTransitionDemo,
   'pixel_walker': pixelWalkerDemo,
   'pull_reveal_refresh': pullRevealRefreshDemo,
+  'radar_pulse': radarPulseDemo,
   'rate_limit_cooldown': rateLimitCooldownDemo,
   'reveal_list': revealListDemo,
   'scroll_expand': scrollExpandDemo,
@@ -185,6 +198,7 @@ final Map<String, ComponentDemo> componentRegistry = <String, ComponentDemo>{
   'true_focus': trueFocusDemo,
   'typing_indicator': typingIndicatorDemo,
   'undo_snackbar': undoSnackbarDemo,
+  'variable_weight': variableWeightDemo,
   'vector_recall': vectorRecallDemo,
   'wave_loader': waveLoaderDemo,
 };

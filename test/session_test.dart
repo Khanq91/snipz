@@ -76,11 +76,11 @@ void main() {
 
     // an in-session tile remains, with its NEW badge…
     expect(
-      find.byKey(const ValueKey<String>('tile-breathing_orb')),
+      find.byKey(const ValueKey<String>('tile-before_after')),
       findsOneWidget,
     );
     expect(
-      find.byKey(const ValueKey<String>('session-badge-breathing_orb')),
+      find.byKey(const ValueKey<String>('session-badge-before_after')),
       findsOneWidget,
     );
 
