@@ -39,12 +39,18 @@ void main() {
             as Map<String, Object?>;
     final ComponentIndex index = ComponentIndex.fromJson(json);
     final SessionInfo? session = index.session;
-    expect(session, isNotNull,
-        reason: 'SESSION.yaml exists, so the index must embed it');
+    expect(
+      session,
+      isNotNull,
+      reason: 'SESSION.yaml exists, so the index must embed it',
+    );
     expect(session!.id, isNotEmpty);
     expect(session.flagOf('step_progress'), SessionFlag.added);
-    expect(session.flagOf('additive_creature'), isNull,
-        reason: 'previous batch is replaced, not accumulated');
+    expect(
+      session.flagOf('additive_creature'),
+      isNull,
+      reason: 'previous batch is replaced, not accumulated',
+    );
     expect(session.flagOf('aurora_stack'), isNull);
     expect(session.contains('step_progress'), isTrue);
   });
@@ -62,19 +68,19 @@ void main() {
   ) async {
     await pumpApp(tester);
 
-    // The session tiles sort late alphabetically — off-screen in the lazy
-    // grid — so enable the session filter first to bring them into view.
+    // The session spans many tiles — most are off-screen in the lazy grid —
+    // so enable the session filter first to bring the current batch forward.
     // Assert on the batch's alphabetically-first id (fits the viewport).
     await tester.tap(find.byKey(const ValueKey<String>('filter-session')));
     await tester.pump();
 
     // an in-session tile remains, with its NEW badge…
     expect(
-      find.byKey(const ValueKey<String>('tile-card_resize')),
+      find.byKey(const ValueKey<String>('tile-breathing_orb')),
       findsOneWidget,
     );
     expect(
-      find.byKey(const ValueKey<String>('session-badge-card_resize')),
+      find.byKey(const ValueKey<String>('session-badge-breathing_orb')),
       findsOneWidget,
     );
 

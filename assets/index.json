@@ -1,8 +1,8 @@
 {
   "_generated": true,
-  "_generated_at": "2026-08-24T14:00:33.420631Z",
-  "_generated_flutter": "3.44.0",
-  "_generated_dart": "3.12.0",
+  "_generated_at": "2026-08-26T09:28:20.272189Z",
+  "_generated_flutter": "3.44.5",
+  "_generated_dart": "3.12.2",
   "_generated_remote": "https://github.com/Khanq91/snipz",
   "session": {
     "id": "2026-08-24-kinetics-port",
@@ -38,7 +38,15 @@
       "snap_rail",
       "momentum_picker",
       "hold_to_talk",
-      "lattice_snap"
+      "lattice_snap",
+      "error_shake",
+      "confetti_burst",
+      "wave_loader",
+      "skeleton_sweep",
+      "page_peel",
+      "breathing_orb",
+      "float_bob",
+      "equalizer_bars"
     ],
     "fixed": []
   },
@@ -319,6 +327,50 @@
       "author": "Khang",
       "license": "MIT",
       "created": "2026-08-19",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
+      "id": "breathing_orb",
+      "title": "Breathing Orb",
+      "kind": "effect",
+      "tags": [
+        "orb",
+        "breathe",
+        "glow",
+        "pulse",
+        "radial-gradient",
+        "animated"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "breathing_orb.dart",
+      "files": {
+        "breathing_orb.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/ckissi/kinetics — effect 'Breathing Orb' (Surface & Motion)",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-26",
       "created_flutter": "3.44.5",
       "created_dart": "3.12.2",
       "created_deps": {},
@@ -975,6 +1027,50 @@
       "test_history": []
     },
     {
+      "id": "confetti_burst",
+      "title": "Confetti Burst",
+      "kind": "effect",
+      "tags": [
+        "confetti",
+        "particles",
+        "celebration",
+        "button",
+        "burst",
+        "animated"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "confetti_burst.dart",
+      "files": {
+        "confetti_burst.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/ckissi/kinetics — effect 'Confetti Burst' (Surface & Motion)",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-26",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
       "id": "contextual_dock",
       "title": "Contextual Dock",
       "kind": "effect",
@@ -1288,6 +1384,94 @@
       "test_history": []
     },
     {
+      "id": "equalizer_bars",
+      "title": "Equalizer Bars",
+      "kind": "effect",
+      "tags": [
+        "equalizer",
+        "audio",
+        "meter",
+        "bars",
+        "loading",
+        "animated"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "equalizer_bars.dart",
+      "files": {
+        "equalizer_bars.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/ckissi/kinetics — effect 'Equalizer Bars' (Surface & Motion)",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-26",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
+      "id": "error_shake",
+      "title": "Error Shake",
+      "kind": "composite",
+      "tags": [
+        "error",
+        "input",
+        "validation",
+        "shake",
+        "feedback",
+        "animated"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "error_shake.dart",
+      "files": {
+        "error_shake.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/ckissi/kinetics — effect 'Error Shake' (Surface & Motion)",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-26",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
       "id": "expanding_search",
       "title": "Expanding Search",
       "kind": "effect",
@@ -1413,6 +1597,50 @@
       "created": "2026-08-23",
       "created_flutter": "3.44.0",
       "created_dart": "3.12.0",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
+      "id": "float_bob",
+      "title": "Float Bob",
+      "kind": "effect",
+      "tags": [
+        "card",
+        "float",
+        "bob",
+        "hover",
+        "shadow",
+        "animated"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "float_bob.dart",
+      "files": {
+        "float_bob.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/ckissi/kinetics — effect 'Float Bob' (Surface & Motion)",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-26",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
       "created_deps": {},
       "platforms_initial": [
         "android"
@@ -2328,6 +2556,51 @@
       "test_history": []
     },
     {
+      "id": "page_peel",
+      "title": "Page Peel",
+      "kind": "composite",
+      "tags": [
+        "page",
+        "card",
+        "stack",
+        "3d",
+        "transition",
+        "tap",
+        "animated"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "page_peel.dart",
+      "files": {
+        "page_peel.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/ckissi/kinetics — effect 'Page Peel' (Surface & Motion)",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-26",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
       "id": "particle_field",
       "title": "Particle Field",
       "kind": "paint",
@@ -2986,6 +3259,50 @@
       "author": "Khang",
       "license": "MIT",
       "created": "2026-08-24",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
+      "id": "skeleton_sweep",
+      "title": "Skeleton Sweep",
+      "kind": "effect",
+      "tags": [
+        "skeleton",
+        "shimmer",
+        "loading",
+        "placeholder",
+        "sweep",
+        "animated"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "skeleton_sweep.dart",
+      "files": {
+        "skeleton_sweep.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/ckissi/kinetics — effect 'Skeleton Sweep' (Surface & Motion)",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-26",
       "created_flutter": "3.44.5",
       "created_dart": "3.12.2",
       "created_deps": {},
@@ -3790,6 +4107,50 @@
       "author": "Khang",
       "license": "MIT",
       "created": "2026-08-24",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
+      "id": "wave_loader",
+      "title": "Wave Loader",
+      "kind": "effect",
+      "tags": [
+        "loader",
+        "dots",
+        "wave",
+        "bounce",
+        "stagger",
+        "animated"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "wave_loader.dart",
+      "files": {
+        "wave_loader.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/ckissi/kinetics — effect 'Wave Loader' (Surface & Motion)",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-08-26",
       "created_flutter": "3.44.5",
       "created_dart": "3.12.2",
       "created_deps": {},

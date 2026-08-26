@@ -59,8 +59,9 @@ late List<String> reads;
 
 Future<void> _pumpApp(WidgetTester tester) async {
   // Tall viewport so every tile these tests tap is built, up to glass_card
-  // wherever it lands alphabetically (GridView.builder skips off-screen tiles).
-  tester.view.physicalSize = const Size(900, 9000);
+  // wherever it lands alphabetically — row 19 of the 2-col grid as of the
+  // kinetics batch (GridView.builder skips off-screen tiles).
+  tester.view.physicalSize = const Size(900, 12000);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
   reads = <String>[];

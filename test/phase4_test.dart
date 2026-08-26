@@ -29,10 +29,11 @@ Future<MemoryPrefsStore> _pumpApp(
   IndexMutator? mutate,
   MemoryPrefsStore? store,
 }) async {
-  // Tall viewport so the first ~6 rows of the grid (all tiles these tests
-  // assert on, up to glass_card wherever it lands alphabetically) are actually built —
-  // GridView.builder skips off-screen tiles.
-  tester.view.physicalSize = const Size(900, 9000);
+  // Tall viewport so every tile these tests assert on (up to glass_card
+  // wherever it lands alphabetically — row 19 of the 2-col grid as of the
+  // kinetics batch) is actually built — GridView.builder skips off-screen
+  // tiles.
+  tester.view.physicalSize = const Size(900, 12000);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
   final MemoryPrefsStore prefs = store ?? MemoryPrefsStore();

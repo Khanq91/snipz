@@ -36,4 +36,12 @@ added:
   - momentum_picker
   - hold_to_talk
   - lattice_snap
+  - error_shake
+  - confetti_burst
+  - wave_loader
+  - skeleton_sweep
+  - page_peel
+  - breathing_orb
+  - float_bob
+  - equalizer_bars
 fixed: []
