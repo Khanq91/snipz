@@ -45,11 +45,11 @@ void main() {
     final Finder tile = find.byKey(ValueKey<String>('tile-$id'));
     // Target the grid's own scrollable — the filter chip row (horizontal
     // ListView) and nested thumbnail scrollables would otherwise match first.
-    // 400px/drag: 50 drags must cover the whole grid — 53 components in
-    // 2 columns is ~11k px, past the old 200px×50 reach.
+    // 600px/drag: 50 drags must cover the whole grid — 102 components in
+    // 2 columns is ~21k px, past the old 400px×50 effective reach.
     await tester.scrollUntilVisible(
       tile,
-      400,
+      600,
       scrollable: find
           .descendant(of: find.byType(GridView), matching: find.byType(Scrollable))
           .first,

@@ -2,53 +2,12 @@
 # app. CHỈ giữ một đợt mới nhất (không có lịch sử); sang đợt mới thì thay cả
 # file. build_index.dart nhúng block này vào assets/index.json, validate.dart
 # check (#11): id phải tồn tại, một id không được nằm cả added lẫn fixed.
-id: 2026-08-24-kinetics-port
-title: "Port kinetics effects (spring micro-interactions)"
-date: 2026-08-24
+id: 2026-08-27-gsap-port
+title: "Port GSAP motion primitives (scramble, eases, inertia, FLIP) + viewer scrubber"
+date: 2026-08-27
 added:
-  - step_progress
-  - orbit_spinner
-  - skeleton_content
-  - shimmer_skeleton
-  - typing_indicator
-  - signal_bars
-  - rate_limit_cooldown
-  - vector_recall
-  - signal_braille
-  - undo_snackbar
-  - notification_slide_in
-  - switch_spring
-  - toast_stack
-  - card_resize
-  - toast_overshoot
-  - tab_pill_glide
-  - hold_to_confirm
-  - like_burst
-  - copy_button
-  - choice_chips
-  - expanding_search
-  - speed_dial_fab
-  - tag_input
-  - contextual_dock
-  - orbital_action_menu
-  - elastic_lasso
-  - snap_rail
-  - momentum_picker
-  - hold_to_talk
-  - lattice_snap
-  - error_shake
-  - confetti_burst
-  - wave_loader
-  - skeleton_sweep
-  - page_peel
-  - breathing_orb
-  - float_bob
-  - equalizer_bars
-  - neon_glow_pulse
-  - gradient_shimmer_text
-  - radar_pulse
-  - bouncing_ball
-  - marquee_reveal
-  - before_after
-  - variable_weight
+  - scramble_text
+  - ease_lab
+  - inertia_throw
+  - flip_grid
 fixed: []

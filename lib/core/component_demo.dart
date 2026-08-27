@@ -65,7 +65,9 @@ class ComponentDemo {
     this.carrierBuilders = const {},
     this.shader,
     this.variants = const [],
-  });
+    this.scrubBuilder,
+    this.scrubDuration = 6,
+  }) : assert(scrubDuration > 0);
 
   final String id;
 
@@ -87,4 +89,15 @@ class ComponentDemo {
   /// Named variants/states, when the component has clearly distinct ones.
   /// Powers the variant chips, the state board and `?variant=` deep links.
   final List<DemoVariant> variants;
+
+  /// sample(t) hook (GSDevTools-style scrubbing): renders the default demo
+  /// at an arbitrary elapsed time [t] in seconds. When present, freezing the
+  /// detail stage swaps the dead frame for a draggable time scrubber.
+  /// Only components following the sample(t)/frozenAt authoring convention
+  /// can offer this.
+  final Widget Function(BuildContext context, double t)? scrubBuilder;
+
+  /// Length (seconds) of the scrub timeline — one loop/script cycle of the
+  /// demo. Only meaningful with [scrubBuilder].
+  final double scrubDuration;
 }

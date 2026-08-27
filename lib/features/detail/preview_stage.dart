@@ -2,11 +2,14 @@
 //   paint             -> carrier switcher (Phase 3)
 //   carrier/composite -> padded frame + local light/dark toggle
 //   effect            -> sample target + effect on/off toggle
-// Common to all kinds: checkerboard, freeze (TickerMode) and — when the demo
-// declares variants — a variant chip row (bloub-style state switching, with
-// `?variant=&frozen=` deep links).
+// Common to all kinds: checkerboard, freeze (TickerMode), a slow-motion
+// speed toggle (GSDevTools-style, via scheduler timeDilation — reset on
+// dispose), a time scrubber when the demo declares a sample(t)
+// `scrubBuilder`, and — when the demo declares variants — a variant chip
+// row (bloub-style state switching, with `?variant=&frozen=` deep links).
 
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart' show timeDilation;
 import 'package:snipz/app/theme.dart';
 import 'package:snipz/core/component_demo.dart';
 import 'package:snipz/core/models.dart';
@@ -37,11 +40,37 @@ class PreviewStage extends StatefulWidget {
 }
 
 class _PreviewStageState extends State<PreviewStage> {
+  /// Slow-motion presets cycled by the speed button (× of real time).
+  static const List<double> _speeds = [1, 0.5, 0.25, 0.1, 2];
+
   bool _dark = false;
   bool _effectOn = true;
   bool _checkerboard = false;
   late bool _frozen = widget.initialFrozen;
   late String? _variantId = widget.initialVariantId;
+  int _speedIndex = 0;
+  double _scrubT = 0;
+
+  @override
+  void dispose() {
+    // timeDilation is process-global — never leak slow motion past the stage.
+    timeDilation = 1.0;
+    super.dispose();
+  }
+
+  double get _speed => _speeds[_speedIndex];
+
+  void _cycleSpeed() {
+    setState(() {
+      _speedIndex = (_speedIndex + 1) % _speeds.length;
+      timeDilation = 1 / _speed;
+    });
+  }
+
+  /// The scrubber replaces the dead frozen frame when the default demo
+  /// declares a sample(t) scrubBuilder and no variant is selected.
+  bool _scrubbing(ComponentDemo demo) =>
+      _frozen && _variantId == null && demo.scrubBuilder != null;
 
   DemoVariant? _variantOf(ComponentDemo demo) {
     final String? id = _variantId;
@@ -63,7 +92,62 @@ class _PreviewStageState extends State<PreviewStage> {
     if (_frozen && variant?.frozenBuilder != null) {
       return variant!.frozenBuilder!(context);
     }
+    if (_scrubbing(demo)) {
+      // sample(t): a deterministic frame at the scrubbed time.
+      return demo.scrubBuilder!(context, _scrubT);
+    }
     return TickerMode(enabled: !_frozen, child: Builder(builder: live));
+  }
+
+  /// Time slider shown while scrubbing (freeze + scrubBuilder).
+  Widget _scrubRow(ComponentDemo demo) => SizedBox(
+    height: 40,
+    child: Row(
+      children: [
+        const SizedBox(width: 16),
+        Text(
+          '${_scrubT.toStringAsFixed(2)}s',
+          style: Theme.of(context).textTheme.labelSmall,
+        ),
+        Expanded(
+          child: Slider(
+            key: const ValueKey('scrub-slider'),
+            value: _scrubT.clamp(0.0, demo.scrubDuration),
+            max: demo.scrubDuration,
+            onChanged: (v) => setState(() => _scrubT = v),
+          ),
+        ),
+        Text(
+          '${demo.scrubDuration.toStringAsFixed(1)}s',
+          style: Theme.of(context).textTheme.labelSmall,
+        ),
+        const SizedBox(width: 16),
+      ],
+    ),
+  );
+
+  /// Slow-motion toggle — GSDevTools' timeScale, powered by the scheduler's
+  /// global timeDilation so every well-behaved ticker follows.
+  Widget _speedButton() {
+    final String label = switch (_speed) {
+      1 => '1×',
+      2 => '2×',
+      0.5 => '½×',
+      0.25 => '¼×',
+      _ => '$_speed×',
+    };
+    return TextButton(
+      key: const ValueKey('toggle-speed'),
+      onPressed: _cycleSpeed,
+      style: TextButton.styleFrom(
+        minimumSize: const Size(44, 40),
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        foregroundColor: _speed == 1
+            ? Theme.of(context).colorScheme.onSurfaceVariant
+            : Theme.of(context).colorScheme.primary,
+      ),
+      child: Text(label),
+    );
   }
 
   @override
@@ -91,7 +175,12 @@ class _PreviewStageState extends State<PreviewStage> {
         ),
       ),
       _controlBar(
-        children: [const Text('Paint'), const Spacer(), _freezeButton()],
+        children: [
+          const Text('Paint'),
+          const Spacer(),
+          _speedButton(),
+          _freezeButton(),
+        ],
       ),
     ],
   );
@@ -119,11 +208,13 @@ class _PreviewStageState extends State<PreviewStage> {
             ),
           ),
         ),
+        if (_scrubbing(demo)) _scrubRow(demo),
         if (demo.variants.isNotEmpty) _variantRow(demo),
         _controlBar(
           children: [
             const Text('Stage'),
             const Spacer(),
+            _speedButton(),
             _freezeButton(),
             _checkerboardButton(),
             IconButton(
@@ -202,11 +293,13 @@ class _PreviewStageState extends State<PreviewStage> {
                 : _target(),
           ),
         ),
+        if (_effectOn && _scrubbing(demo)) _scrubRow(demo),
         if (demo.variants.isNotEmpty) _variantRow(demo),
         _controlBar(
           children: [
             const Text('Effect'),
             const Spacer(),
+            _speedButton(),
             _freezeButton(),
             _checkerboardButton(),
             Switch(

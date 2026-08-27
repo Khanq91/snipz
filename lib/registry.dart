@@ -31,6 +31,7 @@ import 'package:snipz/components/copy_button/copy_button_demo.dart';
 import 'package:snipz/components/dither/dither_demo.dart';
 import 'package:snipz/components/dock/dock_demo.dart';
 import 'package:snipz/components/drum_clock/drum_clock_demo.dart';
+import 'package:snipz/components/ease_lab/ease_lab_demo.dart';
 import 'package:snipz/components/elastic_lasso/elastic_lasso_demo.dart';
 import 'package:snipz/components/elastic_slider/elastic_slider_demo.dart';
 import 'package:snipz/components/equalizer_bars/equalizer_bars_demo.dart';
@@ -38,6 +39,7 @@ import 'package:snipz/components/error_shake/error_shake_demo.dart';
 import 'package:snipz/components/expanding_search/expanding_search_demo.dart';
 import 'package:snipz/components/faulty_terminal/faulty_terminal_demo.dart';
 import 'package:snipz/components/firefly_swarm/firefly_swarm_demo.dart';
+import 'package:snipz/components/flip_grid/flip_grid_demo.dart';
 import 'package:snipz/components/float_bob/float_bob_demo.dart';
 import 'package:snipz/components/fluid_glass/fluid_glass_demo.dart';
 import 'package:snipz/components/glass_card/glass_card_demo.dart';
@@ -48,6 +50,7 @@ import 'package:snipz/components/gradual_blur/gradual_blur_demo.dart';
 import 'package:snipz/components/grid_ripple/grid_ripple_demo.dart';
 import 'package:snipz/components/hold_to_confirm/hold_to_confirm_demo.dart';
 import 'package:snipz/components/hold_to_talk/hold_to_talk_demo.dart';
+import 'package:snipz/components/inertia_throw/inertia_throw_demo.dart';
 import 'package:snipz/components/infinite_menu/infinite_menu_demo.dart';
 import 'package:snipz/components/irregular_typewriter/irregular_typewriter_demo.dart';
 import 'package:snipz/components/jelly_blob/jelly_blob_demo.dart';
@@ -73,6 +76,7 @@ import 'package:snipz/components/pull_reveal_refresh/pull_reveal_refresh_demo.da
 import 'package:snipz/components/radar_pulse/radar_pulse_demo.dart';
 import 'package:snipz/components/rate_limit_cooldown/rate_limit_cooldown_demo.dart';
 import 'package:snipz/components/reveal_list/reveal_list_demo.dart';
+import 'package:snipz/components/scramble_text/scramble_text_demo.dart';
 import 'package:snipz/components/scroll_expand/scroll_expand_demo.dart';
 import 'package:snipz/components/shape_morph/shape_morph_demo.dart';
 import 'package:snipz/components/shimmer_skeleton/shimmer_skeleton_demo.dart';
@@ -132,6 +136,7 @@ final Map<String, ComponentDemo> componentRegistry = <String, ComponentDemo>{
   'dither': ditherDemo,
   'dock': dockDemo,
   'drum_clock': drumClockDemo,
+  'ease_lab': easeLabDemo,
   'elastic_lasso': elasticLassoDemo,
   'elastic_slider': elasticSliderDemo,
   'equalizer_bars': equalizerBarsDemo,
@@ -139,6 +144,7 @@ final Map<String, ComponentDemo> componentRegistry = <String, ComponentDemo>{
   'expanding_search': expandingSearchDemo,
   'faulty_terminal': faultyTerminalDemo,
   'firefly_swarm': fireflySwarmDemo,
+  'flip_grid': flipGridDemo,
   'float_bob': floatBobDemo,
   'fluid_glass': fluidGlassDemo,
   'glass_card': glassCardDemo,
@@ -149,6 +155,7 @@ final Map<String, ComponentDemo> componentRegistry = <String, ComponentDemo>{
   'grid_ripple': gridRippleDemo,
   'hold_to_confirm': holdToConfirmDemo,
   'hold_to_talk': holdToTalkDemo,
+  'inertia_throw': inertiaThrowDemo,
   'infinite_menu': infiniteMenuDemo,
   'irregular_typewriter': irregularTypewriterDemo,
   'jelly_blob': jellyBlobDemo,
@@ -174,6 +181,7 @@ final Map<String, ComponentDemo> componentRegistry = <String, ComponentDemo>{
   'radar_pulse': radarPulseDemo,
   'rate_limit_cooldown': rateLimitCooldownDemo,
   'reveal_list': revealListDemo,
+  'scramble_text': scrambleTextDemo,
   'scroll_expand': scrollExpandDemo,
   'shape_morph': shapeMorphDemo,
   'shimmer_skeleton': shimmerSkeletonDemo,

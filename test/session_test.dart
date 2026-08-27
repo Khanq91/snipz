@@ -45,14 +45,14 @@ void main() {
       reason: 'SESSION.yaml exists, so the index must embed it',
     );
     expect(session!.id, isNotEmpty);
-    expect(session.flagOf('step_progress'), SessionFlag.added);
+    expect(session.flagOf('scramble_text'), SessionFlag.added);
     expect(
-      session.flagOf('additive_creature'),
+      session.flagOf('step_progress'),
       isNull,
       reason: 'previous batch is replaced, not accumulated',
     );
     expect(session.flagOf('aurora_stack'), isNull);
-    expect(session.contains('step_progress'), isTrue);
+    expect(session.contains('scramble_text'), isTrue);
   });
 
   test('SessionInfo tolerates an index without a session block', () {
@@ -76,11 +76,11 @@ void main() {
 
     // an in-session tile remains, with its NEW badge…
     expect(
-      find.byKey(const ValueKey<String>('tile-before_after')),
+      find.byKey(const ValueKey<String>('tile-ease_lab')),
       findsOneWidget,
     );
     expect(
-      find.byKey(const ValueKey<String>('session-badge-before_after')),
+      find.byKey(const ValueKey<String>('session-badge-ease_lab')),
       findsOneWidget,
     );
 
