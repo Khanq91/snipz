@@ -39,6 +39,7 @@ import 'package:snipz/components/error_shake/error_shake_demo.dart';
 import 'package:snipz/components/expanding_search/expanding_search_demo.dart';
 import 'package:snipz/components/faulty_terminal/faulty_terminal_demo.dart';
 import 'package:snipz/components/firefly_swarm/firefly_swarm_demo.dart';
+import 'package:snipz/components/flick_feed/flick_feed_demo.dart';
 import 'package:snipz/components/flip_grid/flip_grid_demo.dart';
 import 'package:snipz/components/float_bob/float_bob_demo.dart';
 import 'package:snipz/components/fluid_glass/fluid_glass_demo.dart';
@@ -144,6 +145,7 @@ final Map<String, ComponentDemo> componentRegistry = <String, ComponentDemo>{
   'expanding_search': expandingSearchDemo,
   'faulty_terminal': faultyTerminalDemo,
   'firefly_swarm': fireflySwarmDemo,
+  'flick_feed': flickFeedDemo,
   'flip_grid': flipGridDemo,
   'float_bob': floatBobDemo,
   'fluid_glass': fluidGlassDemo,

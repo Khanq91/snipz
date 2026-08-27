@@ -1,6 +1,6 @@
 {
   "_generated": true,
-  "_generated_at": "2026-08-27T03:38:59.691505Z",
+  "_generated_at": "2026-08-27T04:04:31.013672Z",
   "_generated_flutter": "3.44.5",
   "_generated_dart": "3.12.2",
   "_generated_remote": "https://github.com/Khanq91/snipz",
@@ -12,7 +12,8 @@
       "scramble_text",
       "ease_lab",
       "inertia_throw",
-      "flip_grid"
+      "flip_grid",
+      "flick_feed"
     ],
     "fixed": []
   },
@@ -1700,6 +1701,54 @@
       "created": "2026-08-23",
       "created_flutter": "3.44.0",
       "created_dart": "3.12.0",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
+      "id": "flick_feed",
+      "title": "Flick Feed",
+      "kind": "composite",
+      "tags": [
+        "scroll",
+        "snap",
+        "momentum",
+        "flick",
+        "feed",
+        "velocity",
+        "gesture",
+        "feel",
+        "interactive",
+        "gsap"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "flick_feed.dart",
+      "files": {
+        "flick_feed.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/greensock/GSAP (ScrollTrigger snap/fastScrollEnd/preventOverlaps/anticipatePin, InertiaPlugin, utils/VelocityTracker)",
+      "author": "Khang",
+      "license": "GSAP Standard License (các luật hành vi dựng lại, không copy code)",
+      "created": "2026-08-27",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
       "created_deps": {},
       "platforms_initial": [
         "android"
