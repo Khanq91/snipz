@@ -74,13 +74,14 @@ void main() {
     await tester.tap(find.byKey(const ValueKey<String>('filter-session')));
     await tester.pump();
 
-    // an in-session tile remains, with its NEW badge…
+    // an in-session tile remains, with its badge (bouncing_ball is the
+    // batch's alphabetically-first id — a `fixed:` entry, FIX badge)…
     expect(
-      find.byKey(const ValueKey<String>('tile-ease_lab')),
+      find.byKey(const ValueKey<String>('tile-bouncing_ball')),
       findsOneWidget,
     );
     expect(
-      find.byKey(const ValueKey<String>('session-badge-ease_lab')),
+      find.byKey(const ValueKey<String>('session-badge-bouncing_ball')),
       findsOneWidget,
     );
 

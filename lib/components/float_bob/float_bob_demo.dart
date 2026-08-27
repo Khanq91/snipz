@@ -20,4 +20,10 @@ final ComponentDemo floatBobDemo = ComponentDemo(
       child: SizedBox(height: 140, child: Center(child: FloatBob(frozenAt: 2))),
     ),
   ),
+  // sample(t): freeze in the detail stage becomes a time scrubber.
+  scrubBuilder: (context, t) => ColoredBox(
+    color: const Color(0xFF0E0E10),
+    child: Center(child: SizedBox(height: 140, child: Center(child: FloatBob(frozenAt: t)))),
+  ),
+  scrubDuration: 4, // one bob cycle (period 4)
 );

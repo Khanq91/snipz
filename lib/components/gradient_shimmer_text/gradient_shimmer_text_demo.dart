@@ -12,6 +12,9 @@ final ComponentDemo gradientShimmerTextDemo = ComponentDemo(
   // frozenAt 0 parks the highlight mid-word — no ticker in the gallery grid.
   thumbnailBuilder: (context) =>
       const _Stage(child: GradientShimmerText(frozenAt: 0)),
+  // sample(t): freeze in the detail stage becomes a time scrubber.
+  scrubBuilder: (context, t) => _Stage(child: GradientShimmerText(frozenAt: t)),
+  scrubDuration: 3, // one sweep (period 3)
 );
 
 class _Stage extends StatelessWidget {

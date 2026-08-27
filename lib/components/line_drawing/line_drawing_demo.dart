@@ -11,6 +11,9 @@ final ComponentDemo lineDrawingDemo = ComponentDemo(
   builder: (context) => const LineDrawing(),
   thumbnailBuilder: (context) =>
       const LineDrawing(count: 14, frozenAt: 3.2),
+  // sample(t): freeze in the detail stage becomes a time scrubber.
+  scrubBuilder: (context, t) => LineDrawing(frozenAt: t),
+  scrubDuration: 10, // full field loop (internal 10s cycle)
   variants: <DemoVariant>[
     DemoVariant(
       id: 'circles',

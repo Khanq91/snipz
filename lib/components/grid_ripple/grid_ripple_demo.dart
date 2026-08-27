@@ -10,6 +10,9 @@ final ComponentDemo gridRippleDemo = ComponentDemo(
   id: 'grid_ripple',
   builder: (context) => const GridRipple(),
   thumbnailBuilder: (context) => const GridRipple(rows: 7, frozenAt: 1.1),
+  // sample(t): freeze in the detail stage becomes a time scrubber.
+  scrubBuilder: (context, t) => GridRipple(frozenAt: t),
+  scrubDuration: 4.02, // two hops — target cell re-randomizes per cycle (~2.01s each)
   variants: <DemoVariant>[
     DemoVariant(
       id: 'charcoal',

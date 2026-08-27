@@ -11,4 +11,24 @@ added:
   - inertia_throw
   - flip_grid
   - flick_feed
-fixed: []
+# Đợt scrubber v2: các comp cũ có frozenAt được nối vào scrub player.
+fixed:
+  - bouncing_ball
+  - breathing_orb
+  - equalizer_bars
+  - float_bob
+  - gradient_shimmer_text
+  - grid_ripple
+  - line_drawing
+  - marquee_reveal
+  - neon_glow_pulse
+  - orbit_spinner
+  - radar_pulse
+  - rate_limit_cooldown
+  - shimmer_skeleton
+  - signal_bars
+  - signal_braille
+  - skeleton_sweep
+  - typing_indicator
+  - vector_recall
+  - wave_loader

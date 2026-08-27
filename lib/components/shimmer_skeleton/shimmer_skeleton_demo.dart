@@ -21,4 +21,10 @@ final ComponentDemo shimmerSkeletonDemo = ComponentDemo(
       child: SizedBox(width: 230, child: ShimmerSkeleton(frozenAt: 0.5)),
     ),
   ),
+  // sample(t): freeze in the detail stage becomes a time scrubber.
+  scrubBuilder: (context, t) => ColoredBox(
+    color: const Color(0xFF0E0E10),
+    child: Center(child: SizedBox(width: 230, child: ShimmerSkeleton(frozenAt: t))),
+  ),
+  scrubDuration: 3, // two sweeps (period 1.5)
 );

@@ -18,4 +18,10 @@ final ComponentDemo skeletonSweepDemo = ComponentDemo(
       child: SizedBox(width: 220, child: SkeletonSweep(frozenAt: 0.56)),
     ),
   ),
+  // sample(t): freeze in the detail stage becomes a time scrubber.
+  scrubBuilder: (context, t) => ColoredBox(
+    color: const Color(0xFF0E0E10),
+    child: Center(child: SizedBox(width: 220, child: SkeletonSweep(frozenAt: t))),
+  ),
+  scrubDuration: 2.8, // two sweeps (period 1.4)
 );

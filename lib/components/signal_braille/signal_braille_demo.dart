@@ -10,6 +10,9 @@ final ComponentDemo signalBrailleDemo = ComponentDemo(
   builder: (context) => const _Stage(child: SignalBraille()),
   thumbnailBuilder: (context) =>
       const _Stage(child: SignalBraille(frozenAt: 0.8)),
+  // sample(t): freeze in the detail stage becomes a time scrubber.
+  scrubBuilder: (context, t) => _Stage(child: SignalBraille(frozenAt: t)),
+  scrubDuration: 2.1, // one cycle (period 2.1)
   variants: <DemoVariant>[
     for (final (String id, String label, double time)
         in <(String, String, double)>[

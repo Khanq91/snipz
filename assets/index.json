@@ -1,6 +1,6 @@
 {
   "_generated": true,
-  "_generated_at": "2026-08-27T04:04:31.013672Z",
+  "_generated_at": "2026-08-27T04:28:13.454264Z",
   "_generated_flutter": "3.44.5",
   "_generated_dart": "3.12.2",
   "_generated_remote": "https://github.com/Khanq91/snipz",
@@ -15,7 +15,27 @@
       "flip_grid",
       "flick_feed"
     ],
-    "fixed": []
+    "fixed": [
+      "bouncing_ball",
+      "breathing_orb",
+      "equalizer_bars",
+      "float_bob",
+      "gradient_shimmer_text",
+      "grid_ripple",
+      "line_drawing",
+      "marquee_reveal",
+      "neon_glow_pulse",
+      "orbit_spinner",
+      "radar_pulse",
+      "rate_limit_cooldown",
+      "shimmer_skeleton",
+      "signal_bars",
+      "signal_braille",
+      "skeleton_sweep",
+      "typing_indicator",
+      "vector_recall",
+      "wave_loader"
+    ]
   },
   "components": [
     {

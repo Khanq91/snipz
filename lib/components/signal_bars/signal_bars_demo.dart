@@ -17,4 +17,10 @@ final ComponentDemo signalBarsDemo = ComponentDemo(
     color: Color(0xFF0E0E10),
     child: Center(child: SignalBars(frozenAt: 0.9)),
   ),
+  // sample(t): freeze in the detail stage becomes a time scrubber.
+  scrubBuilder: (context, t) => ColoredBox(
+    color: const Color(0xFF0E0E10),
+    child: Center(child: SignalBars(frozenAt: t)),
+  ),
+  scrubDuration: 2.4, // one cycle, bars staggered inside (period 2.4)
 );

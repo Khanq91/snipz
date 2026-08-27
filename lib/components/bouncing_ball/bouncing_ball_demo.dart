@@ -12,6 +12,9 @@ final ComponentDemo bouncingBallDemo = ComponentDemo(
   // Mid-fall frame at t = 0.25s — no ticker in the gallery grid.
   thumbnailBuilder: (context) =>
       const _Stage(child: BouncingBall(frozenAt: 0.25)),
+  // sample(t): freeze in the detail stage becomes a time scrubber.
+  scrubBuilder: (context, t) => _Stage(child: BouncingBall(frozenAt: t)),
+  scrubDuration: 2, // two bounces (period 1)
 );
 
 class _Stage extends StatelessWidget {

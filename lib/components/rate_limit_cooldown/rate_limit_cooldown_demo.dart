@@ -12,6 +12,9 @@ final ComponentDemo rateLimitCooldownDemo = ComponentDemo(
   // Frozen mid-cooldown for the gallery grid — no ticker per tile.
   thumbnailBuilder: (context) =>
       const _Stage(child: RateLimitCooldown(frozenAt: 2.5)),
+  // sample(t): freeze in the detail stage becomes a time scrubber.
+  scrubBuilder: (context, t) => _Stage(child: RateLimitCooldown(frozenAt: t)),
+  scrubDuration: 6.4, // request-limit-cooldown-recover cycle (period 6.4)
   // The three phases of the 6.4s cycle, as deterministic frames.
   variants: <DemoVariant>[
     DemoVariant(

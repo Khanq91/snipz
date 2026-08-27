@@ -27,6 +27,9 @@ final ComponentDemo marqueeRevealDemo = ComponentDemo(
   ),
   // Deterministic mid-scroll frame — no ticker in the gallery grid.
   thumbnailBuilder: (context) => _Stage(child: MarqueeReveal(frozenAt: 0.75)),
+  // sample(t): freeze in the detail stage becomes a time scrubber.
+  scrubBuilder: (context, t) => _Stage(child: MarqueeReveal(frozenAt: t)),
+  scrubDuration: 6, // one label-set pass (period 6)
 );
 
 class _Stage extends StatelessWidget {

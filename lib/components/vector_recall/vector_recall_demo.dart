@@ -12,6 +12,9 @@ final ComponentDemo vectorRecallDemo = ComponentDemo(
   // Frozen at the "match" phase for the gallery grid — no ticker per tile.
   thumbnailBuilder: (context) =>
       const _Stage(child: VectorRecall(frozenAt: 3.2)),
+  // sample(t): freeze in the detail stage becomes a time scrubber.
+  scrubBuilder: (context, t) => _Stage(child: VectorRecall(frozenAt: t)),
+  scrubDuration: 5.6, // one recall cycle (period 5.6)
   variants: <DemoVariant>[
     DemoVariant(
       id: 'querying',

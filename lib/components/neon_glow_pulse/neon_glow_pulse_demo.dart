@@ -12,6 +12,9 @@ final ComponentDemo neonGlowPulseDemo = ComponentDemo(
   // Frozen at the bright half of the cycle — no ticker in the gallery grid.
   thumbnailBuilder: (context) =>
       const _Stage(child: NeonGlowPulse(frozenAt: 1)),
+  // sample(t): freeze in the detail stage becomes a time scrubber.
+  scrubBuilder: (context, t) => _Stage(child: NeonGlowPulse(frozenAt: t)),
+  scrubDuration: 2, // one pulse (period 2)
 );
 
 class _Stage extends StatelessWidget {

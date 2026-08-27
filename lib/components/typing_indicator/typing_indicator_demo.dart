@@ -17,4 +17,10 @@ final ComponentDemo typingIndicatorDemo = ComponentDemo(
     color: Color(0xFF0E0E10),
     child: Center(child: TypingIndicator(frozenAt: 0.34)),
   ),
+  // sample(t): freeze in the detail stage becomes a time scrubber.
+  scrubBuilder: (context, t) => ColoredBox(
+    color: const Color(0xFF0E0E10),
+    child: Center(child: TypingIndicator(frozenAt: t)),
+  ),
+  scrubDuration: 2.4, // two cycles (period 1.2)
 );

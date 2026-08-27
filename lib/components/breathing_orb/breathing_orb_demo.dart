@@ -16,4 +16,10 @@ final ComponentDemo breathingOrbDemo = ComponentDemo(
     color: Color(0xFF0E0E10),
     child: Center(child: BreathingOrb(frozenAt: 2.5)),
   ),
+  // sample(t): freeze in the detail stage becomes a time scrubber.
+  scrubBuilder: (context, t) => ColoredBox(
+    color: const Color(0xFF0E0E10),
+    child: Center(child: BreathingOrb(frozenAt: t)),
+  ),
+  scrubDuration: 5, // one breath cycle (period 5)
 );

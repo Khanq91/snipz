@@ -12,6 +12,9 @@ final ComponentDemo equalizerBarsDemo = ComponentDemo(
   // Deterministic phase mix — no ticker in the scrolling gallery grid.
   thumbnailBuilder: (context) =>
       _Stage(child: EqualizerBars(frozenAt: 0.25)),
+  // sample(t): freeze in the detail stage becomes a time scrubber.
+  scrubBuilder: (context, t) => _Stage(child: EqualizerBars(frozenAt: t)),
+  scrubDuration: 2, // two cycles (period 1)
 );
 
 class _Stage extends StatelessWidget {

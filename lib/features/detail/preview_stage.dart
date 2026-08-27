@@ -9,7 +9,8 @@
 // row (bloub-style state switching, with `?variant=&frozen=` deep links).
 
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart' show timeDilation;
+import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart' show LogicalKeyboardKey;
 import 'package:snipz/app/theme.dart';
 import 'package:snipz/core/component_demo.dart';
 import 'package:snipz/core/models.dart';
@@ -39,9 +40,18 @@ class PreviewStage extends StatefulWidget {
   State<PreviewStage> createState() => _PreviewStageState();
 }
 
-class _PreviewStageState extends State<PreviewStage> {
-  /// Slow-motion presets cycled by the speed button (× of real time).
+class _PreviewStageState extends State<PreviewStage>
+    with SingleTickerProviderStateMixin {
+  /// Slow-motion presets cycled by the speed button (× of real time). The
+  /// same factor drives live playback (via timeDilation) and the scrub
+  /// player (via the tick advance below).
   static const List<double> _speeds = [1, 0.5, 0.25, 0.1, 2];
+  static const double _frameStep = 1 / 60;
+
+  /// Session-only per-component scrub settings (GSDevTools' `persist`,
+  /// deliberately in-memory: closing the app resets them).
+  static final Map<String, ({int speedIndex, double inT, double outT})>
+      _sessionPrefs = {};
 
   bool _dark = false;
   bool _effectOn = true;
@@ -51,11 +61,43 @@ class _PreviewStageState extends State<PreviewStage> {
   int _speedIndex = 0;
   double _scrubT = 0;
 
+  // Scrub player: a stage-owned clock over the demo's sample(t) hook — the
+  // component renders deterministic frames, the stage owns time.
+  late final Ticker _scrubTicker;
+  Duration? _scrubLastTick;
+  bool _scrubPlaying = false;
+  double _inT = 0;
+  double _outT = 1;
+
+  double get _scrubDuration => widget.demo?.scrubDuration ?? 1;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrubTicker = createTicker(_handleScrubTick);
+    _outT = _scrubDuration;
+    final ({int speedIndex, double inT, double outT})? saved =
+        _sessionPrefs[widget.meta.id];
+    if (saved != null) {
+      _speedIndex = saved.speedIndex.clamp(0, _speeds.length - 1);
+      _inT = saved.inT.clamp(0.0, _scrubDuration);
+      _outT = saved.outT.clamp(_inT + _frameStep, _scrubDuration);
+      timeDilation = 1 / _speed;
+    }
+  }
+
   @override
   void dispose() {
+    _saveSessionPrefs();
+    _scrubTicker.dispose();
     // timeDilation is process-global — never leak slow motion past the stage.
     timeDilation = 1.0;
     super.dispose();
+  }
+
+  void _saveSessionPrefs() {
+    _sessionPrefs[widget.meta.id] =
+        (speedIndex: _speedIndex, inT: _inT, outT: _outT);
   }
 
   double get _speed => _speeds[_speedIndex];
@@ -64,6 +106,7 @@ class _PreviewStageState extends State<PreviewStage> {
     setState(() {
       _speedIndex = (_speedIndex + 1) % _speeds.length;
       timeDilation = 1 / _speed;
+      _saveSessionPrefs();
     });
   }
 
@@ -71,6 +114,60 @@ class _PreviewStageState extends State<PreviewStage> {
   /// declares a sample(t) scrubBuilder and no variant is selected.
   bool _scrubbing(ComponentDemo demo) =>
       _frozen && _variantId == null && demo.scrubBuilder != null;
+
+  // ---- scrub player -------------------------------------------------------
+
+  void _handleScrubTick(Duration elapsed) {
+    final Duration previous = _scrubLastTick ?? Duration.zero;
+    _scrubLastTick = elapsed;
+    final double delta = ((elapsed - previous).inMicroseconds / 1000000)
+        .clamp(0.0, 0.064)
+        .toDouble();
+    setState(() {
+      _scrubT += delta * _speed;
+      final double window = _outT - _inT;
+      if (_scrubT >= _outT) {
+        // Loop inside the in/out window (GSDevTools in-point/out-point).
+        _scrubT = window <= 0 ? _inT : _inT + (_scrubT - _inT) % window;
+      }
+    });
+  }
+
+  void _toggleScrubPlay() {
+    setState(() {
+      _scrubPlaying = !_scrubPlaying;
+      if (_scrubPlaying) {
+        if (_scrubT < _inT || _scrubT >= _outT) _scrubT = _inT;
+        _scrubLastTick = Duration.zero;
+        _scrubTicker.start();
+      } else {
+        _scrubTicker.stop();
+        _scrubLastTick = null;
+      }
+    });
+  }
+
+  void _stopScrubPlay() {
+    if (!_scrubPlaying) return;
+    _scrubPlaying = false;
+    _scrubTicker.stop();
+    _scrubLastTick = null;
+  }
+
+  void _stepFrame(int direction) {
+    setState(() {
+      _stopScrubPlay();
+      _scrubT = (_scrubT + direction * _frameStep).clamp(0.0, _scrubDuration);
+    });
+  }
+
+  void _setWindow(double inT, double outT) {
+    setState(() {
+      _inT = inT;
+      _outT = outT.clamp(inT + _frameStep, _scrubDuration);
+      _saveSessionPrefs();
+    });
+  }
 
   DemoVariant? _variantOf(ComponentDemo demo) {
     final String? id = _variantId;
@@ -99,32 +196,122 @@ class _PreviewStageState extends State<PreviewStage> {
     return TickerMode(enabled: !_frozen, child: Builder(builder: live));
   }
 
-  /// Time slider shown while scrubbing (freeze + scrubBuilder).
-  Widget _scrubRow(ComponentDemo demo) => SizedBox(
-    height: 40,
-    child: Row(
-      children: [
-        const SizedBox(width: 16),
-        Text(
-          '${_scrubT.toStringAsFixed(2)}s',
-          style: Theme.of(context).textTheme.labelSmall,
+  /// GSDevTools-style transport shown while scrubbing (freeze +
+  /// scrubBuilder): play/pause looping inside the in/out window, ±1-frame
+  /// steps, a playhead slider, and a compact RangeSlider defining the loop
+  /// window. Keyboard (desktop niceties, no-op without one): space
+  /// play/pause · ←/→ frame step · I/O set in/out at the playhead · R
+  /// resets the window.
+  Widget _scrubRow(ComponentDemo demo) {
+    final TextStyle? label = Theme.of(context).textTheme.labelSmall;
+    return CallbackShortcuts(
+      bindings: <ShortcutActivator, VoidCallback>{
+        const SingleActivator(LogicalKeyboardKey.space): _toggleScrubPlay,
+        const SingleActivator(LogicalKeyboardKey.arrowLeft): () =>
+            _stepFrame(-1),
+        const SingleActivator(LogicalKeyboardKey.arrowRight): () =>
+            _stepFrame(1),
+        const SingleActivator(LogicalKeyboardKey.keyI): () =>
+            _setWindow(_scrubT, _outT),
+        const SingleActivator(LogicalKeyboardKey.keyO): () =>
+            _setWindow(_inT, _scrubT),
+        const SingleActivator(LogicalKeyboardKey.keyR): () =>
+            _setWindow(0, _scrubDuration),
+      },
+      child: Focus(
+        autofocus: true,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              height: 40,
+              child: Row(
+                children: [
+                  const SizedBox(width: 4),
+                  IconButton(
+                    key: const ValueKey('scrub-play'),
+                    tooltip: _scrubPlaying ? 'Pause' : 'Play in/out loop',
+                    visualDensity: VisualDensity.compact,
+                    icon: Icon(
+                      _scrubPlaying ? Icons.pause : Icons.play_arrow,
+                      size: 20,
+                    ),
+                    onPressed: _toggleScrubPlay,
+                  ),
+                  IconButton(
+                    key: const ValueKey('scrub-step-back'),
+                    tooltip: '-1 frame',
+                    visualDensity: VisualDensity.compact,
+                    icon: const Icon(Icons.keyboard_arrow_left, size: 20),
+                    onPressed: () => _stepFrame(-1),
+                  ),
+                  IconButton(
+                    key: const ValueKey('scrub-step-fwd'),
+                    tooltip: '+1 frame',
+                    visualDensity: VisualDensity.compact,
+                    icon: const Icon(Icons.keyboard_arrow_right, size: 20),
+                    onPressed: () => _stepFrame(1),
+                  ),
+                  Expanded(
+                    child: Slider(
+                      key: const ValueKey('scrub-slider'),
+                      value: _scrubT.clamp(0.0, demo.scrubDuration),
+                      max: demo.scrubDuration,
+                      onChangeStart: (_) => setState(_stopScrubPlay),
+                      onChanged: (v) => setState(() => _scrubT = v),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 52,
+                    child: Text(
+                      '${_scrubT.toStringAsFixed(2)}s',
+                      style: label,
+                      textAlign: TextAlign.right,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                ],
+              ),
+            ),
+            SizedBox(
+              height: 26,
+              child: Row(
+                children: [
+                  const SizedBox(width: 16),
+                  Text(_inT.toStringAsFixed(1), style: label),
+                  Expanded(
+                    child: SliderTheme(
+                      data: SliderTheme.of(context).copyWith(
+                        trackHeight: 2,
+                        rangeThumbShape: const RoundRangeSliderThumbShape(
+                          enabledThumbRadius: 6,
+                        ),
+                        overlayShape: const RoundSliderOverlayShape(
+                          overlayRadius: 12,
+                        ),
+                      ),
+                      child: RangeSlider(
+                        key: const ValueKey('scrub-window'),
+                        values: RangeValues(
+                          _inT,
+                          _outT.clamp(_inT + _frameStep, demo.scrubDuration),
+                        ),
+                        max: demo.scrubDuration,
+                        onChanged: (RangeValues v) =>
+                            _setWindow(v.start, v.end),
+                      ),
+                    ),
+                  ),
+                  Text(_outT.toStringAsFixed(1), style: label),
+                  const SizedBox(width: 16),
+                ],
+              ),
+            ),
+          ],
         ),
-        Expanded(
-          child: Slider(
-            key: const ValueKey('scrub-slider'),
-            value: _scrubT.clamp(0.0, demo.scrubDuration),
-            max: demo.scrubDuration,
-            onChanged: (v) => setState(() => _scrubT = v),
-          ),
-        ),
-        Text(
-          '${demo.scrubDuration.toStringAsFixed(1)}s',
-          style: Theme.of(context).textTheme.labelSmall,
-        ),
-        const SizedBox(width: 16),
-      ],
-    ),
-  );
+      ),
+    );
+  }
 
   /// Slow-motion toggle — GSDevTools' timeScale, powered by the scheduler's
   /// global timeDilation so every well-behaved ticker follows.
@@ -242,7 +429,10 @@ class _PreviewStageState extends State<PreviewStage> {
     tooltip: _frozen ? 'Resume' : 'Freeze',
     isSelected: _frozen,
     icon: Icon(_frozen ? Icons.play_arrow : Icons.pause),
-    onPressed: () => setState(() => _frozen = !_frozen),
+    onPressed: () => setState(() {
+      _frozen = !_frozen;
+      if (!_frozen) _stopScrubPlay(); // live mode owns time again
+    }),
   );
 
   Widget _checkerboardButton() => IconButton(
@@ -274,7 +464,10 @@ class _PreviewStageState extends State<PreviewStage> {
               key: ValueKey('variant-chip-${v.id}'),
               label: Text(v.label),
               selected: _variantId == v.id,
-              onSelected: (_) => setState(() => _variantId = v.id),
+              onSelected: (_) => setState(() {
+                _variantId = v.id;
+                _stopScrubPlay(); // variants hide the scrub transport
+              }),
             ),
           ],
         ],

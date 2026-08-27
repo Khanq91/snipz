@@ -17,4 +17,10 @@ final ComponentDemo orbitSpinnerDemo = ComponentDemo(
     color: Color(0xFF0E0E10),
     child: Center(child: OrbitSpinner(size: 56, frozenAt: 0.3)),
   ),
+  // sample(t): freeze in the detail stage becomes a time scrubber.
+  scrubBuilder: (context, t) => ColoredBox(
+    color: const Color(0xFF0E0E10),
+    child: Center(child: OrbitSpinner(frozenAt: t)),
+  ),
+  scrubDuration: 1.6, // two revolutions (period 0.8)
 );
