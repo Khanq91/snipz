@@ -37,7 +37,7 @@ created_deps: []
 platforms_initial: [android]
 
 # --- COMPONENT VERSION ---
-version: 1.0.0
+version: 1.0.1
 
 # --- DERIVED (computed from Test History by verify.dart, do not hand-edit) ---
 latest_known_good: null
@@ -100,6 +100,8 @@ Label đang chọn chuyển amber.
   "never size the pill to the text" của bản gốc); tăng `width` khi cần.
 
 ## Changelog
+
+- **1.0.1** (2026-09-03) — pill dồn vào vách khi spring vọt quá ô đầu/cuối, không còn lòi ra khỏi rail (TweenAnimationBuilder kẹp cạnh, giữ nguyên curve 0.45s)
 
 - **1.0.0** (2026-08-24) — created
 

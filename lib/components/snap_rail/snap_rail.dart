@@ -6,6 +6,8 @@
 /// Entry file. Copy cả folder này sang project khác là dùng được.
 library;
 
+import 'dart:math' as math;
+
 import 'package:flutter/widgets.dart';
 
 /// Segmented rail whose translucent amber pill springs between EQUAL cells —
@@ -57,7 +59,8 @@ class SnapRail extends StatelessWidget {
         ? const Duration(milliseconds: 250)
         : Duration.zero;
     // Equal columns of the inner track (width minus border and padding).
-    final double cellWidth = (width - 2 - _padding * 2) / labels.length;
+    final double trackWidth = width - 2 - _padding * 2;
+    final double cellWidth = trackWidth / labels.length;
 
     return Container(
       width: width,
@@ -70,13 +73,26 @@ class SnapRail extends StatelessWidget {
       ),
       child: Stack(
         children: <Widget>[
-          AnimatedPositioned(
+          // The spring overshoots by ~10% of the travel. Past the end cells
+          // the outer edge stops at the wall while the inner edge keeps
+          // going, so the pill squashes against the end and rebounds instead
+          // of poking out of the rounded rail.
+          TweenAnimationBuilder<double>(
+            tween: Tween<double>(end: index.toDouble()),
             duration: snapDuration,
             curve: _spring,
-            left: index * cellWidth,
-            top: 0,
-            bottom: 0,
-            width: cellWidth,
+            builder: (BuildContext context, double cell, Widget? child) {
+              final double x = cell * cellWidth;
+              final double left = math.max(x, 0.0);
+              final double right = math.min(x + cellWidth, trackWidth);
+              return Positioned(
+                left: left,
+                top: 0,
+                bottom: 0,
+                width: math.max(right - left, 0.0),
+                child: child!,
+              );
+            },
             child: DecoratedBox(
               decoration: BoxDecoration(
                 color: accentColor.withValues(alpha: 0.16),
