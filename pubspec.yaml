@@ -1,7 +1,7 @@
 name: snipz
 description: "Personal Flutter component vault — the app is just a visual index."
 publish_to: 'none'
-version: 1.5.0+39
+version: 1.5.1+40
 
 environment:
   sdk: ^3.10.8
@@ -9,6 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  # Local-only Coucou Mochi study: audio pools for the copied WAV effects.
+  audioplayers: ^6.8.1
   cupertino_icons: ^1.0.8
   # App viewer (spec §11). Hive: personal state only — favorites, target
   # Flutter version (§8.7), values stored as JSON strings.
@@ -30,11 +32,13 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
-  # PERMANENT two lines — never add per-component entries here.
+  # Vault index and source bundle are permanent entries. Coucou Mochi's WAV
+  # folder below is an explicitly approved local-study exception.
   # build_index.dart generates everything under assets/ (spec §4, decision #6).
   assets:
     - assets/index.json
     - assets/sources/
+    - lib/components/coucou_mochi/audio/
 
   # Shader components are the one exception to the rule above: the shaders:
   # key does not support directories, so each .frag is listed explicitly.

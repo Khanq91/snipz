@@ -1,41 +1,17 @@
 {
   "_generated": true,
-  "_generated_at": "2026-09-03T03:48:29.066970Z",
+  "_generated_at": "2026-10-02T03:22:21.806315Z",
   "_generated_flutter": "3.44.5",
   "_generated_dart": "3.12.2",
   "_generated_remote": "https://github.com/Khanq91/snipz",
   "session": {
-    "id": "2026-08-27-gsap-port",
-    "title": "Port GSAP motion primitives (scramble, eases, inertia, FLIP) + viewer scrubber",
-    "date": "2026-08-27",
+    "id": "2026-10-02-coucou-mochi-study",
+    "title": "Add Coucou Mochi for private local study",
+    "date": "2026-10-02",
     "added": [
-      "scramble_text",
-      "ease_lab",
-      "inertia_throw",
-      "flip_grid",
-      "flick_feed"
+      "coucou_mochi"
     ],
-    "fixed": [
-      "bouncing_ball",
-      "breathing_orb",
-      "equalizer_bars",
-      "float_bob",
-      "gradient_shimmer_text",
-      "grid_ripple",
-      "line_drawing",
-      "marquee_reveal",
-      "neon_glow_pulse",
-      "orbit_spinner",
-      "radar_pulse",
-      "rate_limit_cooldown",
-      "shimmer_skeleton",
-      "signal_bars",
-      "signal_braille",
-      "skeleton_sweep",
-      "typing_indicator",
-      "vector_recall",
-      "wave_loader"
-    ]
+    "fixed": []
   },
   "components": [
     {
@@ -1230,6 +1206,59 @@
       "status": null,
       "preview": null,
       "file_count": 1,
+      "test_history": []
+    },
+    {
+      "id": "coucou_mochi",
+      "title": "Coucou Mochi",
+      "kind": "composite",
+      "tags": [
+        "mascot",
+        "animation",
+        "canvas",
+        "audio",
+        "interaction",
+        "study"
+      ],
+      "paint_source": "painter",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "folder_with_assets",
+      "entry": "coucou_mochi.dart",
+      "files": {
+        "coucou_mochi.dart": "entry, public API",
+        "_audio.dart": "audio playback for copied WAV effects",
+        "_engine.dart": "time-addressable motion and interaction model",
+        "_painter.dart": "Canvas renderer"
+      },
+      "vendored_from": null,
+      "assets_required": [
+        "lib/components/coucou_mochi/audio/"
+      ],
+      "shaders_required": [],
+      "deps": {
+        "audioplayers": "^6.8.1"
+      },
+      "origin": "adapted",
+      "source": "https://github.com/Louis-CFM/coucou",
+      "author": "Louis Raillé",
+      "license": "Source code MIT; character design and sounds reserved; private local study only",
+      "created": "2026-10-02",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {
+        "audioplayers": "6.8.1"
+      },
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 4,
       "test_history": []
     },
     {

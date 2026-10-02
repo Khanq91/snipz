@@ -1,34 +1,9 @@
-# Đợt làm việc hiện hành — nguồn của badge NEW/FIX và filter "✦ New" trong
-# app. CHỈ giữ một đợt mới nhất (không có lịch sử); sang đợt mới thì thay cả
-# file. build_index.dart nhúng block này vào assets/index.json, validate.dart
-# check (#11): id phải tồn tại, một id không được nằm cả added lẫn fixed.
-id: 2026-08-27-gsap-port
-title: "Port GSAP motion primitives (scramble, eases, inertia, FLIP) + viewer scrubber"
-date: 2026-08-27
+# Current work batch drives the NEW/FIX badges and the gallery's New filter.
+# Keep one current batch; build_index.dart embeds it in assets/index.json and
+# validate.dart checks its IDs (#11).
+id: 2026-10-02-coucou-mochi-study
+title: "Add Coucou Mochi for private local study"
+date: 2026-10-02
 added:
-  - scramble_text
-  - ease_lab
-  - inertia_throw
-  - flip_grid
-  - flick_feed
-# Đợt scrubber v2: các comp cũ có frozenAt được nối vào scrub player.
-fixed:
-  - bouncing_ball
-  - breathing_orb
-  - equalizer_bars
-  - float_bob
-  - gradient_shimmer_text
-  - grid_ripple
-  - line_drawing
-  - marquee_reveal
-  - neon_glow_pulse
-  - orbit_spinner
-  - radar_pulse
-  - rate_limit_cooldown
-  - shimmer_skeleton
-  - signal_bars
-  - signal_braille
-  - skeleton_sweep
-  - typing_indicator
-  - vector_recall
-  - wave_loader
+  - coucou_mochi
+fixed: []
