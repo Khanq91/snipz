@@ -58,9 +58,8 @@ ComponentMeta _paintMeta() => ComponentMeta.fromJson({
 late List<String> reads;
 
 Future<void> _pumpApp(WidgetTester tester) async {
-  // Tall viewport so every tile these tests tap is built, up to glass_card
-  // wherever it lands alphabetically — row 19 of the 2-col grid as of the
-  // kinetics batch (GridView.builder skips off-screen tiles).
+  // Keep a tall viewport for the gallery. _openDetail scrolls to its target
+  // because GridView.builder lazily builds off-screen tiles.
   tester.view.physicalSize = const Size(900, 12000);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
@@ -83,7 +82,16 @@ Future<void> _pumpApp(WidgetTester tester) async {
 }
 
 Future<void> _openDetail(WidgetTester tester, String id) async {
-  await tester.tap(find.byKey(ValueKey('tile-$id')));
+  final Finder tile = find.byKey(ValueKey('tile-$id'));
+  await tester.scrollUntilVisible(
+    tile,
+    500,
+    scrollable: find.descendant(
+      of: find.byType(GridView).first,
+      matching: find.byType(Scrollable),
+    ).first,
+  );
+  await tester.tap(tile);
   await tester.pump(const Duration(milliseconds: 400));
   await tester.pump();
 }
@@ -109,7 +117,10 @@ void main() {
     );
     expect(block, contains('Snipz component: Aurora Stack (aurora_stack)'));
     expect(block, contains('dependencies:\n  blur: ^4.0.1'));
-    expect(block, contains('Copy folder: lib/components/aurora_stack/  (3 files)'));
+    expect(
+      block,
+      contains('Copy folder: lib/components/aurora_stack/  (3 files)'),
+    );
     expect(
       block,
       contains('aurora_stack.dart, _noise_layer.dart, _blob_painter.dart'),

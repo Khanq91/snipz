@@ -21,18 +21,16 @@ typedef IndexMutator = void Function(Map<String, Object?> indexJson);
 
 Map<String, Object?> _component(Map<String, Object?> index, String id) =>
     (index['components']! as List<Object?>)
-            .cast<Map<String, Object?>>()
-            .firstWhere((c) => c['id'] == id);
+        .cast<Map<String, Object?>>()
+        .firstWhere((c) => c['id'] == id);
 
 Future<MemoryPrefsStore> _pumpApp(
   WidgetTester tester, {
   IndexMutator? mutate,
   MemoryPrefsStore? store,
 }) async {
-  // Tall viewport so every tile these tests assert on (up to glass_card
-  // wherever it lands alphabetically — row 19 of the 2-col grid as of the
-  // kinetics batch) is actually built — GridView.builder skips off-screen
-  // tiles.
+  // Keep a tall viewport for the gallery. _badgeText scrolls to its target
+  // because GridView.builder lazily builds off-screen tiles.
   tester.view.physicalSize = const Size(900, 12000);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
@@ -63,8 +61,17 @@ Future<MemoryPrefsStore> _pumpApp(
 
 Finder _badgeIn(String id) => find.byKey(ValueKey('badge-compat-$id'));
 
-String _badgeText(WidgetTester tester, String id) =>
-    tester.widget<Text>(_badgeIn(id)).data!;
+Future<String> _badgeText(WidgetTester tester, String id) async {
+  await tester.scrollUntilVisible(
+    find.byKey(ValueKey('tile-$id')),
+    500,
+    scrollable: find.descendant(
+      of: find.byType(GridView),
+      matching: find.byType(Scrollable),
+    ).first,
+  );
+  return tester.widget<Text>(_badgeIn(id)).data!;
+}
 
 void main() {
   testWidgets('hand-edited fail row -> 🔴 badge and compat filter hides it', (
@@ -92,15 +99,29 @@ void main() {
       },
     );
 
-    expect(_badgeText(tester, 'aurora_stack'), '🔴');
+    expect(await _badgeText(tester, 'aurora_stack'), '🔴');
     // Un-edited, verified neighbour stays green. (blur_text would be 🟡 —
     // the react-bits ports have no Test History yet.)
-    expect(_badgeText(tester, 'glass_card'), '🟢');
+    expect(await _badgeText(tester, 'glass_card'), '🟢');
+
+    final Finder gridScrollable = find.descendant(
+      of: find.byType(GridView).first,
+      matching: find.byType(Scrollable),
+    ).first;
+    tester.state<ScrollableState>(gridScrollable).position.jumpTo(0);
+    await tester.pump();
 
     await tester.tap(find.byKey(const ValueKey('filter-compat')));
     await tester.pump();
     expect(find.byKey(const ValueKey('tile-aurora_stack')), findsNothing);
-    expect(find.byKey(const ValueKey('tile-glass_card')), findsOneWidget);
+    expect(find.text('No components match'), findsNothing);
+    final Finder glassTile = find.byKey(const ValueKey('tile-glass_card'));
+    await tester.scrollUntilVisible(
+      glassTile,
+      500,
+      scrollable: gridScrollable,
+    );
+    expect(glassTile, findsOneWidget);
   });
 
   testWidgets('changing target version in settings flips badges', (
@@ -125,7 +146,7 @@ void main() {
     );
 
     // Default target 3.44.5: exact pass row -> green.
-    expect(_badgeText(tester, 'aurora_stack'), '🟢');
+    expect(await _badgeText(tester, 'aurora_stack'), '🟢');
 
     await tester.tap(find.byKey(const ValueKey('open-settings')));
     await tester.pump(const Duration(milliseconds: 400));
@@ -141,9 +162,9 @@ void main() {
     await tester.pump();
 
     // aurora: no row @3.50.0, lkg 3.44.5 < target -> 🟡 unknown.
-    expect(_badgeText(tester, 'aurora_stack'), '🟡');
+    expect(await _badgeText(tester, 'aurora_stack'), '🟡');
     // glass_card: exact pass @3.50.0 -> stays green.
-    expect(_badgeText(tester, 'glass_card'), '🟢');
+    expect(await _badgeText(tester, 'glass_card'), '🟢');
   });
 
   testWidgets('multi-file component shows folder badge with file count', (
@@ -179,7 +200,7 @@ void main() {
             .substring(0, 10);
       },
     );
-    expect(_badgeText(tester, 'aurora_stack'), '🟡');
+    expect(await _badgeText(tester, 'aurora_stack'), '🟡');
   });
 
   testWidgets('favorite star persists to the store; ★ filter narrows grid', (

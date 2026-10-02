@@ -6,7 +6,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter/foundation.dart' show ValueKey;
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:snipz/app/app.dart';
@@ -14,6 +14,10 @@ import 'package:snipz/app/providers.dart';
 import 'package:snipz/core/index_loader.dart';
 import 'package:snipz/core/models.dart';
 import 'package:snipz/core/prefs.dart';
+import 'package:yaml/yaml.dart';
+
+Set<String> _stringIds(Object? value) =>
+    value is Iterable<Object?> ? value.map((id) => '$id').toSet() : <String>{};
 
 void main() {
   Future<void> pumpApp(WidgetTester tester) async {
@@ -39,20 +43,21 @@ void main() {
             as Map<String, Object?>;
     final ComponentIndex index = ComponentIndex.fromJson(json);
     final SessionInfo? session = index.session;
+    final YamlMap source =
+        loadYaml(File('SESSION.yaml').readAsStringSync())! as YamlMap;
     expect(
       session,
       isNotNull,
       reason: 'SESSION.yaml exists, so the index must embed it',
     );
-    expect(session!.id, isNotEmpty);
-    expect(session.flagOf('scramble_text'), SessionFlag.added);
+    expect(session!.id, '${source['id']}');
     expect(
-      session.flagOf('step_progress'),
-      isNull,
-      reason: 'previous batch is replaced, not accumulated',
+      session.title,
+      source['title'] == null ? null : '${source['title']}',
     );
-    expect(session.flagOf('aurora_stack'), isNull);
-    expect(session.contains('scramble_text'), isTrue);
+    expect(session.date, '${source['date']}');
+    expect(session.added, _stringIds(source['added']));
+    expect(session.fixed, _stringIds(source['fixed']));
   });
 
   test('SessionInfo tolerates an index without a session block', () {
@@ -67,33 +72,59 @@ void main() {
     tester,
   ) async {
     await pumpApp(tester);
+    final Map<String, Object?> json =
+        jsonDecode(File('assets/index.json').readAsStringSync())
+            as Map<String, Object?>;
+    final ComponentIndex index = ComponentIndex.fromJson(json);
+    final SessionInfo session = index.session!;
+    expect(session.isEmpty, isFalse);
+    final String componentId = index.components
+        .firstWhere((component) => session.contains(component.id))
+        .id;
+    final String outsideId = index.components
+        .firstWhere((component) => !session.contains(component.id))
+        .id;
+    final Finder outsideTile = find.byKey(ValueKey<String>('tile-$outsideId'));
+    await tester.scrollUntilVisible(
+      outsideTile,
+      500,
+      scrollable: find.descendant(
+        of: find.byType(GridView).first,
+        matching: find.byType(Scrollable),
+      ).first,
+    );
+    expect(outsideTile, findsOneWidget);
 
-    // The session spans many tiles — most are off-screen in the lazy grid —
-    // so enable the session filter first to bring the current batch forward.
-    // Assert on the batch's alphabetically-first id (fits the viewport).
+    // Narrow the lazy grid to the current batch before checking its tile and badge.
     await tester.tap(find.byKey(const ValueKey<String>('filter-session')));
     await tester.pump();
 
-    // an in-session tile remains, with its badge (bouncing_ball is the
-    // batch's alphabetically-first id — a `fixed:` entry, FIX badge)…
-    expect(
-      find.byKey(const ValueKey<String>('tile-bouncing_ball')),
-      findsOneWidget,
+    // A current-batch component remains, with the matching badge.
+    final Finder tile = find.byKey(ValueKey<String>('tile-$componentId'));
+    await tester.scrollUntilVisible(
+      tile,
+      500,
+      scrollable: find.descendant(
+        of: find.byType(GridView).first,
+        matching: find.byType(Scrollable),
+      ).first,
     );
+    expect(tile, findsOneWidget);
+    final Finder badge = find.byKey(
+      ValueKey<String>('session-badge-$componentId'),
+    );
+    expect(badge, findsOneWidget);
+    final SessionFlag flag = session.flagOf(componentId)!;
     expect(
-      find.byKey(const ValueKey<String>('session-badge-bouncing_ball')),
+      find.descendant(
+        of: badge,
+        matching: find.text(flag == SessionFlag.added ? '✦ NEW' : 'FIX'),
+      ),
       findsOneWidget,
     );
 
     // …while out-of-session components that would otherwise be on the
     // first screen are gone
-    expect(
-      find.byKey(const ValueKey<String>('tile-additive_creature')),
-      findsNothing,
-    );
-    expect(
-      find.byKey(const ValueKey<String>('tile-aurora_stack')),
-      findsNothing,
-    );
+    expect(outsideTile, findsNothing);
   });
 }
