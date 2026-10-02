@@ -273,13 +273,18 @@ class CoucouMochiEngine {
     _fromColor = _styles[_state]!.color;
     _state = next;
     _stateAt = t;
-    if (next == CoucouMochiState.finished)
+    if (next == CoucouMochiState.finished) {
       _emit(CoucouMochiParticleType.spark, 5, t);
-    if (next == CoucouMochiState.ratelimit)
+    }
+    if (next == CoucouMochiState.ratelimit) {
       _emit(CoucouMochiParticleType.sweat, 1, t);
-    if (next == CoucouMochiState.sleeping)
+    }
+    if (next == CoucouMochiState.sleeping) {
       _emit(CoucouMochiParticleType.z, 1, t + .45);
-    if (next != CoucouMochiState.idle) _emitBlink(t);
+    }
+    if (next != CoucouMochiState.idle) {
+      _emitBlink(t);
+    }
   }
 
   /// Returns true when this tap completes the three-hit dizzy gesture.

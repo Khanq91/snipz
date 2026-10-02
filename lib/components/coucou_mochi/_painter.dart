@@ -4,6 +4,7 @@
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
+import 'package:flutter/material.dart' show Colors;
 import 'package:flutter/rendering.dart';
 
 import '_engine.dart';
@@ -11,6 +12,7 @@ import '_engine.dart';
 const Color _baseTop = Color(0xFFEDEDEF);
 const Color _baseBottom = Color(0xFFC4C5CA);
 const Color _ink = Color(0xFF1A1412);
+const double _tau = math.pi * 2;
 
 class CoucouMochiPainter extends CustomPainter {
   const CoucouMochiPainter({

@@ -8,8 +8,8 @@ library;
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/gestures.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 
@@ -216,8 +216,9 @@ class _CoucouMochiState extends State<CoucouMochi>
   void _play(String? name) {
     if (name == null) return;
     widget.onSound?.call(name);
-    if (widget.soundEnabled)
+    if (widget.soundEnabled) {
       unawaited(_audio.play(name, volume: widget.volume));
+    }
   }
 
   void _tap() {
@@ -264,8 +265,8 @@ class _CoucouMochiState extends State<CoucouMochi>
     if (!_canInteract) return;
     final double w = widget.size;
     final double h = widget.size * 1.28;
-    final double x = math.tanh((local.dx - w / 2) / 260);
-    final double y = -math.tanh((local.dy - h / 2) / 200);
+    final double x = _tanh((local.dx - w / 2) / 260);
+    final double y = -_tanh((local.dy - h / 2) / 200);
     _engine.setLook(x, y, _clock);
     _frameSignal.value = _engine.sample(_clock);
   }
@@ -366,4 +367,10 @@ class _FramePainter extends CustomPainter {
   bool shouldRepaint(covariant _FramePainter oldDelegate) =>
       oldDelegate.frames != frames ||
       oldDelegate.backgroundColor != backgroundColor;
+}
+
+double _tanh(double value) {
+  final double exponential = math.exp(-2 * value.abs());
+  final double magnitude = (1 - exponential) / (1 + exponential);
+  return value < 0 ? -magnitude : magnitude;
 }
