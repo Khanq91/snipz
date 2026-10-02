@@ -18,12 +18,15 @@ class CoucouMochiPainter extends CustomPainter {
   const CoucouMochiPainter({
     required this.frame,
     this.isMini = false,
+    this.bodyColor,
     this.backgroundColor,
     super.repaint,
   });
 
   final CoucouMochiFrame frame;
   final bool isMini;
+  final Color? bodyColor;
+  Color get _eyeInk => isMini ? const Color(0xFF10131A) : _ink;
   final Color? backgroundColor;
 
   @override
@@ -139,6 +142,10 @@ class CoucouMochiPainter extends CustomPainter {
   }
 
   void _drawBody(Canvas canvas, Path body, double r, double rx, double ry) {
+    if (isMini && bodyColor != null) {
+      canvas.drawPath(body, Paint()..color = bodyColor!);
+      return;
+    }
     canvas.drawPath(
       body,
       Paint()
@@ -171,7 +178,8 @@ class CoucouMochiPainter extends CustomPainter {
             const Color(0x00000000),
             const Color(0x33000000),
           ],
-          const [0, .6, 1],
+          // Canvas 2D's inner radius is .15R and outer radius is 1.25R.
+          const [0, .648, 1],
         ),
     );
     canvas.drawPath(
@@ -251,7 +259,7 @@ class CoucouMochiPainter extends CustomPainter {
     double side,
     double r,
   ) {
-    final Paint ink = Paint()..color = _ink;
+    final Paint ink = Paint()..color = _eyeInk;
     switch (shape) {
       case CoucouMochiEye.wide:
         _drawEye(
@@ -316,7 +324,7 @@ class CoucouMochiPainter extends CustomPainter {
         canvas.drawPath(
           p,
           Paint()
-            ..color = _ink
+            ..color = _eyeInk
             ..style = PaintingStyle.stroke
             ..strokeWidth = w * .5
             ..strokeCap = StrokeCap.round,
@@ -332,7 +340,7 @@ class CoucouMochiPainter extends CustomPainter {
         canvas.drawPath(
           p,
           Paint()
-            ..color = _ink
+            ..color = _eyeInk
             ..style = PaintingStyle.stroke
             ..strokeWidth = w * .36
             ..strokeCap = StrokeCap.round,
@@ -353,7 +361,7 @@ class CoucouMochiPainter extends CustomPainter {
         canvas.drawPath(
           p,
           Paint()
-            ..color = _ink
+            ..color = _eyeInk
             ..style = PaintingStyle.stroke
             ..strokeWidth = w * .22
             ..strokeCap = StrokeCap.round,
@@ -493,7 +501,6 @@ class CoucouMochiPainter extends CustomPainter {
       canvas.save();
       canvas.translate(worldX, worldY);
       canvas.rotate(rotation);
-      final Color state = Color(frame.bodyColor);
       canvas.drawOval(
         Rect.fromCenter(
           center: Offset.zero,
@@ -504,7 +511,7 @@ class CoucouMochiPainter extends CustomPainter {
           ..shader = ui.Gradient.linear(
             Offset(handW * .7, -handH * .85),
             Offset(-handW * .8, handH * .9),
-            [_baseTop, Color.lerp(state, Colors.white, .35) ?? _baseBottom],
+            const [_baseTop, _baseBottom],
           ),
       );
       canvas.drawOval(
@@ -532,10 +539,21 @@ class CoucouMochiPainter extends CustomPainter {
   ) {
     canvas.save();
     canvas.translate(cx - r * .72 * frame.scaleX, cy - r * .72 * frame.scaleY);
-    canvas.scale(frame.badgeScale);
+    canvas.scale(frame.badgeScale * (isMini ? 1.25 : 1));
     final Color color = Color(colorValue);
     switch (badge) {
       case CoucouMochiBadge.dots:
+        if (isMini) {
+          final radius =
+              r * .22 * (1 + .25 * math.sin(frame.time * 2.4 * _tau));
+          canvas.drawCircle(
+            Offset.zero,
+            radius + r * .055,
+            Paint()..color = Colors.black,
+          );
+          canvas.drawCircle(Offset.zero, radius, Paint()..color = color);
+          break;
+        }
         final RRect pill = RRect.fromRectAndRadius(
           Rect.fromCenter(center: Offset.zero, width: r * .72, height: r * .36),
           Radius.circular(r * .18),
@@ -556,7 +574,13 @@ class CoucouMochiPainter extends CustomPainter {
       case CoucouMochiBadge.question:
         canvas.drawCircle(Offset.zero, r * .3, Paint()..color = Colors.black);
         canvas.drawCircle(Offset.zero, r * .23, Paint()..color = color);
-        _drawBadgeGlyph(canvas, badge == CoucouMochiBadge.bang ? '!' : '?', r);
+        if (!isMini) {
+          _drawBadgeGlyph(
+            canvas,
+            badge == CoucouMochiBadge.bang ? '!' : '?',
+            r,
+          );
+        }
         break;
       case CoucouMochiBadge.dot:
         canvas.drawCircle(Offset.zero, r * .2, Paint()..color = Colors.black);
@@ -584,6 +608,7 @@ class CoucouMochiPainter extends CustomPainter {
       canvas,
       Offset(-painter.width / 2, -painter.height / 2 + r * .02),
     );
+    painter.dispose();
   }
 
   void _drawParticles(Canvas canvas, double r, double cx, double cy) {
@@ -616,10 +641,12 @@ class CoucouMochiPainter extends CustomPainter {
           break;
         case CoucouMochiParticleType.z:
           final TextPainter painter = TextPainter(
-            text: const TextSpan(
+            text: TextSpan(
               text: 'z',
               style: TextStyle(
-                color: Color(0xFFD1DBEB),
+                color: const Color(
+                  0xFFD1DBEB,
+                ).withValues(alpha: particle.alpha),
                 fontSize: 1.9,
                 fontWeight: FontWeight.w700,
                 height: 1,
@@ -631,6 +658,7 @@ class CoucouMochiPainter extends CustomPainter {
             canvas,
             Offset(-painter.width / 2, -painter.height / 2),
           );
+          painter.dispose();
           break;
       }
       canvas.restore();
@@ -647,16 +675,16 @@ class CoucouMochiPainter extends CustomPainter {
 
   Path _heartPath(double size) {
     final Path p = Path()
-      ..moveTo(0, size * .9)
+      ..moveTo(0, size * .38)
       ..cubicTo(
-        -size * 1.2,
-        size * .15,
-        -size * .72,
-        -size * .65,
+        -size * 1.05,
+        -size * .15,
+        -size * .5,
+        -size * .95,
         0,
-        -size * .2,
+        -size * .38,
       )
-      ..cubicTo(size * .72, -size * .65, size * 1.2, size * .15, 0, size * .9)
+      ..cubicTo(size * .5, -size * .95, size * 1.05, -size * .15, 0, size * .38)
       ..close();
     return p;
   }
@@ -678,7 +706,10 @@ class CoucouMochiPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CoucouMochiPainter oldDelegate) =>
-      oldDelegate.frame != frame || oldDelegate.isMini != isMini;
+      oldDelegate.frame != frame ||
+      oldDelegate.isMini != isMini ||
+      oldDelegate.backgroundColor != backgroundColor ||
+      oldDelegate.bodyColor != bodyColor;
 }
 
 double _lerp(double a, double b, double t) => a + (b - a) * t;

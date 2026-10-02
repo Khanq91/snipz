@@ -19,7 +19,11 @@ import '_painter.dart';
 
 export '_audio.dart';
 export '_engine.dart';
+export '_greeting.dart';
 export '_painter.dart';
+export '_scenes.dart';
+export '_upload.dart';
+export '_upload_painter.dart';
 
 /// Emotes that can be requested through [CoucouMochiController].
 enum CoucouMochiEmote { love, surprised, proud, wink, yawn, happy, annoyed }
@@ -76,6 +80,10 @@ class CoucouMochi extends StatefulWidget {
     this.backgroundColor = const Color(0xFF080A10),
     this.onSound,
     this.onDizzy,
+    this.isMini = false,
+    this.miniColor = const Color(0xFF3E86E0),
+    this.permanentEmote,
+    this.behaviorSeed = 41,
   }) : assert(size > 0),
        assert(volume >= 0 && volume <= 1),
        assert(morph >= 0 && morph <= 1);
@@ -121,6 +129,12 @@ class CoucouMochi extends StatefulWidget {
   /// Called when three quick taps trigger the dizzy reaction.
   final VoidCallback? onDizzy;
 
+  /// Mini agents use a solid body, larger eyes and autonomous gaze/emote loops.
+  final bool isMini;
+  final Color miniColor;
+  final CoucouMochiEmote? permanentEmote;
+  final int behaviorSeed;
+
   @override
   State<CoucouMochi> createState() => _CoucouMochiState();
 }
@@ -128,14 +142,18 @@ class CoucouMochi extends StatefulWidget {
 class _CoucouMochiState extends State<CoucouMochi>
     with SingleTickerProviderStateMixin {
   late final Ticker _ticker;
-  final CoucouMochiEngine _engine = CoucouMochiEngine();
+  late CoucouMochiEngine _engine;
   final CoucouMochiAudio _audio = CoucouMochiAudio();
   final ValueNotifier<CoucouMochiFrame> _frameSignal =
       ValueNotifier<CoucouMochiFrame>(CoucouMochiEngine().sample(0));
-  Timer? _hoverTimer;
+  final List<({double at, String name, String? group})> _sounds = [];
+  double? _hoverDue;
+  Offset? _hoverStart;
+  double _lastLove = -100;
+  bool _hovering = false;
+  bool _tickerMode = true;
   Duration? _lastTick;
   double _clock = 0;
-  bool _loveFromHover = false;
   int _lastCommandRevision = 0;
 
   bool get _frozen => widget.frozenAt != null || !widget.animate;
@@ -143,33 +161,79 @@ class _CoucouMochiState extends State<CoucouMochi>
   @override
   void initState() {
     super.initState();
+    _engine = CoucouMochiEngine(
+      isMini: widget.isMini,
+      behaviorSeed: widget.behaviorSeed,
+    );
+    _engine.setPermanentEmote(widget.permanentEmote?.name, 0);
     widget.controller?.addListener(_consumeControllerCommand);
     _engine.setState(widget.state, 0, force: true);
     _engine.setMorph(widget.morph, 0);
-    if (widget.greetingOnStart) _engine.greet(0);
+    if (widget.greetingOnStart) {
+      _engine.greet(0);
+      _schedule('greet', .25, group: 'greet');
+    }
     _frameSignal.value = _engine.sample(widget.frozenAt ?? 0);
     _ticker = createTicker(_tick);
     if (!_frozen) _ticker.start();
-    if (widget.greetingOnStart) {
-      Future<void>.delayed(const Duration(milliseconds: 250), () {
-        if (mounted) _play('greet');
-      });
-    }
     _consumeControllerCommand();
   }
 
   void _tick(Duration elapsed) {
-    final Duration previous = _lastTick ?? Duration.zero;
+    final Duration previous = _lastTick ?? elapsed;
     _lastTick = elapsed;
-    _clock += ((elapsed - previous).inMicroseconds / 1e6)
-        .clamp(0.0, .064)
-        .toDouble();
+    _clock += (elapsed - previous).inMicroseconds / 1e6;
+    if (_hoverDue != null && _clock >= _hoverDue!) {
+      final at = _hoverDue!;
+      _hoverDue = null;
+      if (_hovering &&
+          _canInteract &&
+          !_engine.isDizzy(at) &&
+          at - _lastLove >= 6) {
+        _lastLove = at;
+        _engine.triggerEmote('love', at);
+        _play('love');
+      }
+    }
+    final due = _sounds.where((cue) => cue.at <= _clock).toList()
+      ..sort((a, b) => a.at.compareTo(b.at));
+    _sounds.removeWhere((cue) => cue.at <= _clock);
+    for (final cue in due) {
+      _play(cue.name);
+    }
     _frameSignal.value = _engine.sample(_clock);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final enabled = TickerMode.valuesOf(context).enabled;
+    if (enabled != _tickerMode) {
+      _lastTick = null;
+      _tickerMode = enabled;
+      _cancelHover();
+    }
+  }
+
+  void _schedule(String name, double delay, {String? group}) {
+    _sounds.add((at: _clock + delay, name: name, group: group));
   }
 
   @override
   void didUpdateWidget(CoucouMochi oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.isMini != widget.isMini ||
+        oldWidget.behaviorSeed != widget.behaviorSeed) {
+      _engine = CoucouMochiEngine(
+        isMini: widget.isMini,
+        behaviorSeed: widget.behaviorSeed,
+      );
+      _engine.setState(widget.state, _clock, force: true);
+      _engine.setMorph(widget.morph, _clock);
+      _engine.setPermanentEmote(widget.permanentEmote?.name, _clock);
+    } else if (oldWidget.permanentEmote != widget.permanentEmote) {
+      _engine.setPermanentEmote(widget.permanentEmote?.name, _clock);
+    }
     if (oldWidget.controller != widget.controller) {
       oldWidget.controller?.removeListener(_consumeControllerCommand);
       _lastCommandRevision = 0;
@@ -186,10 +250,10 @@ class _CoucouMochiState extends State<CoucouMochi>
     }
     if (oldWidget.greetingOnStart != widget.greetingOnStart &&
         widget.greetingOnStart) {
-      _engine.greet(_clock);
-      _play('greet');
+      _greet();
     }
     if (_frozen) {
+      _cancelHover();
       if (_ticker.isActive) _ticker.stop();
       _lastTick = null;
       _frameSignal.value = _engine.sample(widget.frozenAt ?? _clock);
@@ -197,6 +261,8 @@ class _CoucouMochiState extends State<CoucouMochi>
       _lastTick = null;
       _ticker.start();
     }
+    if (!widget.interactive) _cancelHover();
+    if (!_frozen) _consumeControllerCommand();
   }
 
   String? _soundFor(CoucouMochiState state) => switch (state) {
@@ -214,7 +280,7 @@ class _CoucouMochiState extends State<CoucouMochi>
   };
 
   void _play(String? name) {
-    if (name == null) return;
+    if (name == null || _frozen || !_tickerMode) return;
     widget.onSound?.call(name);
     if (widget.soundEnabled) {
       unawaited(_audio.play(name, volume: widget.volume));
@@ -222,17 +288,17 @@ class _CoucouMochiState extends State<CoucouMochi>
   }
 
   void _tap() {
-    if (!_canInteract) return;
+    if (!_canInteract || _engine.isDizzy(_clock)) return;
+    _sounds.removeWhere((cue) => cue.group == 'greet');
+    _cancelHover();
     final bool dizzy = _engine.tap(_clock);
     _frameSignal.value = _engine.sample(_clock);
+    _play('slap');
     if (dizzy) {
       _play('dizzy');
       widget.onDizzy?.call();
     } else {
-      _play('slap');
-      Future<void>.delayed(const Duration(milliseconds: 60), () {
-        if (mounted) _play('annoyed');
-      });
+      _schedule('annoyed', .06);
     }
   }
 
@@ -240,29 +306,39 @@ class _CoucouMochiState extends State<CoucouMochi>
     if (!_canInteract) return;
     _engine.triggerEmote('love', _clock);
     _frameSignal.value = _engine.sample(_clock);
-    _play(_loveFromHover ? 'hover' : 'love');
-    _loveFromHover = false;
+    _play('love');
   }
 
-  void _startHover(PointerEnterEvent _) {
-    if (!_canInteract) return;
+  void _startHover(PointerEnterEvent event) {
+    if (!_canInteract || _engine.isDizzy(_clock) || _clock - _lastLove < 6) {
+      return;
+    }
+    _hovering = true;
+    _hoverStart = event.localPosition;
     _engine.setHover(true, _clock);
-    _hoverTimer?.cancel();
-    _hoverTimer = Timer(const Duration(seconds: 2), () {
-      if (!mounted || !_canInteract) return;
-      _loveFromHover = true;
-      _love();
-    });
+    _hoverDue = _clock + 1.9;
+    _play('hover');
   }
 
   void _endHover(PointerExitEvent _) {
-    _hoverTimer?.cancel();
-    _engine.setHover(false, _clock);
-    _loveFromHover = false;
+    _cancelHover();
+  }
+
+  void _cancelHover() {
+    if (_hovering) _engine.setHover(false, _clock);
+    _hovering = false;
+    _hoverDue = null;
+    _hoverStart = null;
   }
 
   void _look(Offset local) {
-    if (!_canInteract) return;
+    if (!_canInteract || widget.isMini) return;
+    if (_hovering &&
+        _hoverStart != null &&
+        (local - _hoverStart!).distance > 40) {
+      _hoverStart = local;
+      _hoverDue = _clock + 1.9;
+    }
     final double w = widget.size;
     final double h = widget.size * 1.28;
     final double x = _tanh((local.dx - w / 2) / 260);
@@ -272,14 +348,19 @@ class _CoucouMochiState extends State<CoucouMochi>
   }
 
   void _greet() {
+    _sounds.removeWhere((cue) => cue.group == 'greet');
     _engine.greet(_clock);
     _frameSignal.value = _engine.sample(_clock);
-    _play('greet');
+    _schedule('greet', .25, group: 'greet');
   }
 
   void _triggerEmote(String emote) {
     _engine.triggerEmote(emote, _clock);
     _frameSignal.value = _engine.sample(_clock);
+    if (emote == 'annoyed') {
+      _schedule('annoyed', .06);
+      return;
+    }
     _play(switch (emote) {
       'love' => 'love',
       'proud' => 'proud',
@@ -293,8 +374,8 @@ class _CoucouMochiState extends State<CoucouMochi>
   void _consumeControllerCommand() {
     final _MochiCommand? command = widget.controller?._command;
     if (command == null || command.revision == _lastCommandRevision) return;
-    _lastCommandRevision = command.revision;
     if (_frozen) return;
+    _lastCommandRevision = command.revision;
     switch (command.type) {
       case _MochiCommandType.greet:
         _greet();
@@ -303,9 +384,15 @@ class _CoucouMochiState extends State<CoucouMochi>
         _triggerEmote(command.emote!.name);
         break;
       case _MochiCommandType.gulp:
-        _engine.gulp(_clock);
+        final delay = _engine.sample(_clock).morph < .5 ? .55 : 0.0;
+        if (delay > 0) _engine.setMorph(1, _clock);
+        _engine.gulp(_clock + delay);
         _frameSignal.value = _engine.sample(_clock);
-        _play('gulp');
+        if (delay == 0) {
+          _play('gulp');
+        } else {
+          _schedule('gulp', delay);
+        }
         break;
     }
   }
@@ -315,7 +402,7 @@ class _CoucouMochiState extends State<CoucouMochi>
   @override
   void dispose() {
     widget.controller?.removeListener(_consumeControllerCommand);
-    _hoverTimer?.cancel();
+    _sounds.clear();
     _ticker.dispose();
     _frameSignal.dispose();
     unawaited(_audio.dispose());
@@ -329,6 +416,8 @@ class _CoucouMochiState extends State<CoucouMochi>
       painter: _FramePainter(
         frames: _frameSignal,
         backgroundColor: widget.backgroundColor,
+        isMini: widget.isMini,
+        bodyColor: widget.miniColor,
       ),
     );
     return MouseRegion(
@@ -349,24 +438,34 @@ class _CoucouMochiState extends State<CoucouMochi>
 }
 
 class _FramePainter extends CustomPainter {
-  _FramePainter({required this.frames, required this.backgroundColor})
-    : super(repaint: frames);
+  _FramePainter({
+    required this.frames,
+    required this.backgroundColor,
+    required this.isMini,
+    required this.bodyColor,
+  }) : super(repaint: frames);
 
   final ValueListenable<CoucouMochiFrame> frames;
   final Color backgroundColor;
+  final bool isMini;
+  final Color bodyColor;
 
   @override
   void paint(Canvas canvas, Size size) {
     CoucouMochiPainter(
       frame: frames.value,
       backgroundColor: backgroundColor,
+      isMini: isMini,
+      bodyColor: bodyColor,
     ).paint(canvas, size);
   }
 
   @override
   bool shouldRepaint(covariant _FramePainter oldDelegate) =>
       oldDelegate.frames != frames ||
-      oldDelegate.backgroundColor != backgroundColor;
+      oldDelegate.backgroundColor != backgroundColor ||
+      oldDelegate.isMini != isMini ||
+      oldDelegate.bodyColor != bodyColor;
 }
 
 double _tanh(double value) {

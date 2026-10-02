@@ -1,6 +1,6 @@
 {
   "_generated": true,
-  "_generated_at": "2026-10-02T03:47:27.446570Z",
+  "_generated_at": "2026-10-02T07:30:30.351094Z",
   "_generated_flutter": "3.44.5",
   "_generated_dart": "3.12.2",
   "_generated_remote": "https://github.com/Khanq91/snipz",
@@ -1230,7 +1230,12 @@
         "coucou_mochi.dart": "entry, public API",
         "_audio.dart": "audio playback for copied WAV effects",
         "_engine.dart": "time-addressable motion and interaction model",
-        "_painter.dart": "Canvas renderer"
+        "_painter.dart": "Canvas renderer",
+        "_greeting.dart": "launch choreography and renderer",
+        "_upload.dart": "replayable file-follow, swallow and upload timeline",
+        "_upload_painter.dart": "upload body, file suction and progress renderer",
+        "_scene_math.dart": "shared scene easing and geometry",
+        "_scenes.dart": "interactive launch and upload scene widgets"
       },
       "vendored_from": null,
       "assets_required": [
@@ -1253,12 +1258,12 @@
       "platforms_initial": [
         "android"
       ],
-      "version": "1.0.0",
+      "version": "1.0.1",
       "latest_known_good": null,
       "last_verified": null,
       "status": null,
       "preview": null,
-      "file_count": 4,
+      "file_count": 9,
       "test_history": []
     },
     {

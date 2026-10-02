@@ -198,7 +198,7 @@ const Map<CoucouMochiState, _StateStyle> _styles = {
     badge: CoucouMochiBadge.dot,
   ),
   CoucouMochiState.ratelimit: _StateStyle(
-    color: 0xFFFB9250,
+    color: 0xFFFB923C,
     tint: .72,
     eye: CoucouMochiEye.tired,
     badge: CoucouMochiBadge.dot,
@@ -231,14 +231,32 @@ class _ParticleBurst {
 /// and particle bursts are retained as dated inputs; [sample] only evaluates
 /// those inputs and never advances hidden time.
 class CoucouMochiEngine {
-  CoucouMochiEngine({CoucouMochiState initial = CoucouMochiState.idle})
-    : _state = initial,
-      _stateAt = 0,
-      _fromColor = _styles[initial]!.color;
+  CoucouMochiEngine({
+    CoucouMochiState initial = CoucouMochiState.idle,
+    this.isMini = false,
+    this.behaviorSeed = 41,
+  }) : _state = initial,
+       _stateAt = 0,
+       _fromColor = _styles[initial]!.color;
+
+  final bool isMini;
+  final int behaviorSeed;
+  String? _permanentEmote;
+  double _miniAt = 0;
+  void setPermanentEmote(String? emote, double t) {
+    _permanentEmote = emote;
+    _miniAt = t;
+  }
 
   CoucouMochiState _state;
   double _stateAt;
   int _fromColor;
+  CoucouMochiFrame? _stateFrom;
+  CoucouMochiFrame? _emoteFrom;
+  CoucouMochiBadge? _oldBadge;
+  int _oldBadgeColor = 0;
+  double _oldBadgeScale = 0;
+  double _badgeAt = 0;
   final List<double> _taps = [];
   final List<_ParticleBurst> _bursts = [];
   int _seed = 41;
@@ -252,12 +270,17 @@ class CoucouMochiEngine {
   double _tapAt = -100;
   double _dizzyAt = -100;
   double _dizzyUntil = -100;
+  CoucouMochiFrame? _dizzyFrom;
   double _greetAt = -100;
+  double _greetInterruptedAt = -100;
+  double _interruptedHands = 0;
   double _emoteAt = -100;
   double _emoteDuration = 0;
   CoucouMochiEye? _emoteEye;
   String? _emote;
   double _hoverAt = -100;
+  double _hoverFrom = 1;
+  bool _hovering = false;
 
   double _morphFrom = 0;
   double _morphTo = 0;
@@ -266,29 +289,48 @@ class CoucouMochiEngine {
   double _gulpAt = -100;
 
   CoucouMochiState get state => _state;
+  bool isDizzy(double t) =>
+      _state == CoucouMochiState.dizzy || (t >= _dizzyAt && t < _dizzyUntil);
 
   void setState(CoucouMochiState next, double t, {bool force = false}) {
     _prune(t);
     if (!force && next == _state) return;
-    _fromColor = _styles[_state]!.color;
+    final previous = sample(t);
+    final prev = _state;
+    _stateFrom = previous;
+    _fromColor = previous.bodyColor;
+    if (previous.badge != _styles[next]!.badge ||
+        previous.badgeColor != _styles[next]!.color) {
+      _oldBadge = previous.badge;
+      _oldBadgeColor = previous.badgeColor;
+      _oldBadgeScale = previous.badgeScale;
+      _badgeAt = t;
+    }
     _state = next;
     _stateAt = t;
     if (next == CoucouMochiState.finished) {
-      _emit(CoucouMochiParticleType.spark, 5, t);
+      _emit(CoucouMochiParticleType.spark, 5, t + .5);
     }
     if (next == CoucouMochiState.ratelimit) {
       _emit(CoucouMochiParticleType.sweat, 1, t);
     }
-    if (next == CoucouMochiState.sleeping) {
-      _emit(CoucouMochiParticleType.z, 1, t + .45);
-    }
-    if (next != CoucouMochiState.idle) {
+    if (next == CoucouMochiState.question ||
+        (![
+              CoucouMochiState.finished,
+              CoucouMochiState.error,
+              CoucouMochiState.approval,
+              CoucouMochiState.dizzy,
+              CoucouMochiState.ratelimit,
+            ].contains(next) &&
+            (prev != CoucouMochiState.idle || next != CoucouMochiState.idle))) {
       _emitBlink(t);
     }
   }
 
   /// Returns true when this tap completes the three-hit dizzy gesture.
   bool tap(double t) {
+    interruptGreet(t);
+    if (isDizzy(t)) return false;
     _prune(t);
     _taps.removeWhere((at) => t - at >= 1.7);
     _taps.add(t);
@@ -298,9 +340,13 @@ class CoucouMochiEngine {
     _emoteAt = -100;
     if (_taps.length >= 3) {
       _taps.clear();
+      _dizzyFrom = sample(t);
+      _oldBadge = _dizzyFrom!.badge;
+      _oldBadgeColor = _dizzyFrom!.badgeColor;
+      _oldBadgeScale = _dizzyFrom!.badgeScale;
+      _badgeAt = t;
       _dizzyAt = t;
-      _dizzyUntil = t + 2.7;
-      _emit(CoucouMochiParticleType.star, 4, t);
+      _dizzyUntil = t + 3.3;
       return true;
     }
     return false;
@@ -309,15 +355,29 @@ class CoucouMochiEngine {
   void greet(double t) {
     _prune(t);
     _greetAt = t;
+    _greetInterruptedAt = -100;
     _emitBlink(t + .55);
     _emitBlink(t + 1.5);
   }
 
+  void interruptGreet(double t) {
+    if (_greetAt < 0 || t >= _greetAt + 2.05) return;
+    _interruptedHands = sample(t).hands;
+    _greetInterruptedAt = t;
+    _blinkEvents.removeWhere(
+      (at) =>
+          at > t &&
+          ((at - _greetAt - .55).abs() < .001 ||
+              (at - _greetAt - 1.5).abs() < .001),
+    );
+  }
+
   void triggerEmote(String emote, double t, {double duration = 1.8}) {
     _prune(t);
+    _emoteFrom = sample(t);
     _emote = emote;
     _emoteAt = t;
-    _emoteDuration = duration;
+    _emoteDuration = emote == 'annoyed' ? .8 : math.max(.6, duration);
     _emoteEye = switch (emote) {
       'love' => CoucouMochiEye.heart,
       'surprised' => CoucouMochiEye.dot,
@@ -335,9 +395,6 @@ class CoucouMochiEngine {
       case 'proud':
         _emit(CoucouMochiParticleType.star, 5, t);
         break;
-      case 'happy':
-        _emit(CoucouMochiParticleType.spark, 3, t);
-        break;
       case 'yawn':
         _emit(CoucouMochiParticleType.z, 2, t + .7);
         break;
@@ -348,7 +405,7 @@ class CoucouMochiEngine {
 
   void setLook(double x, double y, double t) {
     _prune(t);
-    final double k = 1 - math.exp(-14 * math.max(0.0, t - _lookAt));
+    final double k = 1 - math.pow(.0025, math.max(0.0, t - _lookAt)).toDouble();
     _lookFromX = _lookFromX + (_lookX - _lookFromX) * k;
     _lookFromY = _lookFromY + (_lookY - _lookFromY) * k;
     _lookX = x.clamp(-1.0, 1.0).toDouble();
@@ -358,11 +415,10 @@ class CoucouMochiEngine {
 
   void setHover(bool hovering, double t) {
     _prune(t);
-    if (hovering) {
-      _hoverAt = t;
-    } else {
-      _hoverAt = -100;
-    }
+    _hoverFrom = sample(t).eyeScale;
+    _hoverAt = t;
+    _hovering = hovering;
+    if (hovering) _emitBlink(t);
   }
 
   void setMorph(double target, double t, {double? duration}) {
@@ -376,17 +432,22 @@ class CoucouMochiEngine {
   void gulp(double t) {
     _prune(t);
     _gulpAt = t;
-    setMorph(1, t, duration: .55);
     _emitBlink(t);
   }
 
   CoucouMochiFrame sample(double t) {
-    final bool dizzy = t < _dizzyUntil;
-    final CoucouMochiState state = dizzy ? CoucouMochiState.dizzy : _state;
+    final bool tappedDizzy = t >= _dizzyAt && t < _dizzyUntil;
+    final bool dizzy = tappedDizzy || _state == CoucouMochiState.dizzy;
+    final CoucouMochiState state = tappedDizzy
+        ? CoucouMochiState.dizzy
+        : _state;
     final _StateStyle style = _styles[state]!;
-    final double stateAge = math.max(0.0, t - (dizzy ? _dizzyAt : _stateAt));
+    final double stateAge = math.max(
+      0.0,
+      t - (tappedDizzy ? _dizzyAt : _stateAt),
+    );
     final double lookAge = math.max(0.0, t - _lookAt);
-    final double lookEase = 1 - math.exp(-14 * lookAge);
+    final double lookEase = 1 - math.pow(.0025, lookAge).toDouble();
 
     double yaw = (_lookFromX + (_lookX - _lookFromX) * lookEase) * .62;
     double pitch = (_lookFromY + (_lookY - _lookFromY) * lookEase) * .5;
@@ -411,42 +472,72 @@ class CoucouMochiEngine {
     double offsetX = 0;
     double tilt = style.tilt;
     double roll = 0;
-    double eyeScale = 1;
+    double eyeScale = _hoverAt < 0
+        ? 1
+        : _lerp(
+            _hoverFrom,
+            _hovering ? 1.08 : 1,
+            1 - math.pow(.0008, math.max(0, t - _hoverAt)).toDouble(),
+          );
     double blush = style.tint * .5;
     double hands = 0;
     double handWave = 0;
 
-    final double tapAge = t - _tapAt;
-    if (tapAge >= 0 && tapAge < .37) {
-      final double p = tapAge / .37;
-      scaleY *= _key(p, const [0, .19, .54, 1], const [1, .78, 1.1, 1], const [
-        _out,
-        _out,
-        _inOut,
-      ]);
-      scaleX *= _key(p, const [0, .19, .54, 1], const [1, 1.16, .95, 1], const [
-        _out,
-        _out,
-        _inOut,
-      ]);
+    // Preserve the current pose on state changes; upstream eases its targets
+    // at these two exponential rates instead of snapping to the new pose.
+    if (_stateFrom != null && !tappedDizzy) {
+      final lookK = 1 - math.pow(.0025, stateAge).toDouble();
+      final k = 1 - math.pow(.0008, stateAge).toDouble();
+      yaw = _lerp(_stateFrom!.yaw, yaw, lookK);
+      pitch = _lerp(_stateFrom!.pitch, pitch, lookK);
+      tilt = _lerp(_stateFrom!.tilt, tilt, k);
+      scaleX = _lerp(_stateFrom!.scaleX, scaleX, k);
+      scaleY = _lerp(_stateFrom!.scaleY, scaleY, k);
+      offsetY = _lerp(_stateFrom!.offsetY, offsetY, k);
     }
 
-    if (dizzy) {
+    final double tapAge = t - _tapAt;
+    if (tapAge >= 0 && tapAge < .37) {
+      final double p = tapAge;
+      scaleY *= _key(p, const [0, .07, .2, .37], const [1, .78, 1.1, 1], const [
+        _out,
+        _out,
+        _inOut,
+      ]);
+      scaleX *= _key(
+        p,
+        const [0, .07, .2, .37],
+        const [1, 1.16, .95, 1],
+        const [_out, _out, _inOut],
+      );
+    }
+
+    if (dizzy && stateAge < 1.3) {
       roll = _easeInOut(_clamp01(stateAge / 1.3)) * _tau * 2;
     } else if (state == CoucouMochiState.finished && stateAge < .95) {
       roll = _easeInOut(_clamp01(stateAge / .95)) * _tau;
     }
     if (state == CoucouMochiState.error && stateAge < .28) {
       offsetX = _key(
-        stateAge / .28,
-        const [0, .18, .43, .68, 1],
+        stateAge,
+        const [0, .05, .12, .19, .28],
         const [0, .08, -.08, .05, 0],
         const [_out, _inOut, _inOut, _out],
       );
     }
+    if (state == CoucouMochiState.approval && stateAge < .45) {
+      offsetY = _key(
+        stateAge,
+        const [0, .15, .45],
+        [_stateFrom?.offsetY ?? 0, -.2, 0],
+        const [_out, _easeBack],
+      );
+    }
 
     final double greetingAge = t - _greetAt;
-    if (greetingAge >= 0 && greetingAge < 1.75) {
+    final greetingInterrupted =
+        _greetInterruptedAt >= _greetAt && t >= _greetInterruptedAt;
+    if (greetingAge >= 0 && greetingAge < 1.75 && !greetingInterrupted) {
       hands = greetingAge < .25
           ? 0
           : greetingAge < 1.55
@@ -456,7 +547,31 @@ class CoucouMochiEngine {
       tilt = greetingAge >= .45 && greetingAge < 1.55
           ? -.06 + math.sin(_tau * 1.2 * (greetingAge - .45)) * .07
           : style.tilt;
-      if (greetingAge < .46) offsetY = -.06 * _out(_clamp01(greetingAge / .22));
+      if (greetingAge < .44) {
+        offsetY = _key(
+          greetingAge,
+          const [0, .22, .44],
+          const [0, -.06, 0],
+          const [_out, _easeBack],
+        );
+      }
+      if (greetingAge >= .25 && greetingAge < .61) {
+        scaleY = _key(
+          greetingAge - .25,
+          const [0, .1, .36],
+          const [1, .95, 1],
+          const [_out, _easeBack],
+        );
+        scaleX = _key(
+          greetingAge - .25,
+          const [0, .1, .36],
+          const [1, 1.04, 1],
+          const [_out, _easeBack],
+        );
+      }
+    }
+    if (greetingInterrupted && t < _greetInterruptedAt + .15) {
+      hands = _interruptedHands * (1 - _inOut((t - _greetInterruptedAt) / .15));
     }
 
     final double emoteAge = t - _emoteAt;
@@ -464,57 +579,258 @@ class CoucouMochiEngine {
     CoucouMochiEye eye = style.eye;
     if (emoteOn && _emoteEye != null) eye = _emoteEye!;
     if (tapAge >= 0 && tapAge < .8 && !dizzy) eye = CoucouMochiEye.line;
-    if (greetingAge >= 0 && greetingAge < 2) eye = CoucouMochiEye.happy;
+    if (greetingAge >= 0 &&
+        greetingAge < 2.05 &&
+        !greetingInterrupted &&
+        _greetAt >= _emoteAt &&
+        _greetAt >= _tapAt) {
+      eye = CoucouMochiEye.happy;
+    }
     if (dizzy) eye = CoucouMochiEye.spiral;
+    final recoveryAge = t - _dizzyUntil;
+    if (_dizzyUntil > 0 &&
+        recoveryAge >= 0 &&
+        recoveryAge < 1.8 &&
+        _emoteAt < _dizzyUntil &&
+        _tapAt < _dizzyUntil) {
+      eye = CoucouMochiEye.happy;
+      blush = math.max(
+        blush,
+        _key(recoveryAge, const [0, .2, .8], const [0, .6, 0], const [
+          _out,
+          _inOut,
+        ]),
+      );
+    }
 
     if (emoteOn && _emote == 'love') {
       blush = math.max(
         blush,
-        _key(emoteAge, const [0, .3, .6], const [0, 1, 1], const [
-          _out,
-          _linear,
-        ]),
+        _key(
+          emoteAge,
+          [0, .3, _emoteDuration - .3, _emoteDuration],
+          [_emoteFrom?.blush ?? 0, 1, 1, 0],
+          const [_out, _linear, _inOut],
+        ),
       );
+      if (emoteAge < .46) {
+        offsetY = _key(
+          emoteAge,
+          const [0, .16, .46],
+          [_emoteFrom?.offsetY ?? 0, -.1, 0],
+          const [_out, _easeBack],
+        );
+      }
     } else if (emoteOn && _emote == 'happy') {
-      blush = math.max(blush, .6 * _out(_clamp01(1 - emoteAge / .8)));
-    } else if (emoteOn && _emote == 'proud') {
-      blush = math.max(blush, .7 * _out(_clamp01(1 - emoteAge / .55)));
+      blush = math.max(
+        blush,
+        _key(
+          emoteAge,
+          const [0, .2, .8],
+          [_emoteFrom?.blush ?? 0, .6, 0],
+          const [_out, _inOut],
+        ),
+      );
+    } else if (_emote == 'proud' &&
+        emoteAge >= 0 &&
+        emoteAge < _emoteDuration + .05) {
+      blush = math.max(
+        blush,
+        _key(
+          emoteAge,
+          [0, .25, _emoteDuration - .25, _emoteDuration + .05],
+          [_emoteFrom?.blush ?? 0, .7, .7, 0],
+          const [_out, _linear, _inOut],
+        ),
+      );
     }
     if (emoteOn && _emote == 'surprised') {
       eyeScale = _key(emoteAge, const [0, .12, .62], const [1, 1.25, 1], const [
         _out,
         _inOut,
       ]);
-      offsetY -= .3 * _out(_clamp01(1 - emoteAge / .52));
+      if (emoteAge < .52) {
+        offsetY = _key(
+          emoteAge,
+          const [0, .14, .52],
+          [_emoteFrom?.offsetY ?? 0, -.3, 0],
+          const [_out, _easeBack],
+        );
+      }
     }
     if (emoteOn && _emote == 'wink') {
-      tilt += .12 * _out(_clamp01(1 - emoteAge / .4));
+      tilt = _key(
+        emoteAge,
+        [0, .16, _emoteDuration - .24, _emoteDuration],
+        [_emoteFrom?.tilt ?? 0, .12, .12, 0],
+        const [_out, _linear, _inOut],
+      );
     }
     if (emoteOn && _emote == 'proud') {
-      tilt -= .14 * _out(_clamp01(1 - emoteAge / .5));
+      tilt = _key(
+        emoteAge,
+        [0, .22, _emoteDuration - .28, _emoteDuration],
+        [_emoteFrom?.tilt ?? 0, -.14, -.14, 0],
+        const [_out, _linear, _inOut],
+      );
     }
-    if (_hoverAt > -10 && t - _hoverAt >= 2 && t - _hoverAt < 4) {
-      eyeScale = math.max(eyeScale, 1.08);
+    if (emoteOn && _emote == 'yawn') {
+      scaleY = _key(emoteAge, const [0, .5, 1], const [1, 1.12, 1], const [
+        _inOut,
+        _inOut,
+      ]);
+      scaleX = _key(emoteAge, const [0, .5, 1], const [1, .94, 1], const [
+        _inOut,
+        _inOut,
+      ]);
+      if (emoteAge >= .7) eye = CoucouMochiEye.closed;
     }
     double eyeOpen = state == CoucouMochiState.sleeping ? .05 : 1;
-    for (final double at in _blinkTimes(t)) {
-      eyeOpen = math.min(eyeOpen, _blinkValue(t - at));
+    if (state != CoucouMochiState.sleeping && !dizzy) {
+      for (final double at in _blinkTimes(t)) {
+        eyeOpen = math.min(eyeOpen, _blinkValue(t - at));
+      }
     }
-    final double tintBlend = _easeOut(_clamp01(stateAge / .32));
-    final int color = _mixColor(_fromColor, style.color, tintBlend);
-    final double badgeScale = style.badge == null
+    final recovered =
+        _dizzyUntil > 0 && t >= _dizzyUntil && _stateAt < _dizzyUntil;
+    final colorAge = recovered ? t - _dizzyUntil : stateAge;
+    final double tintBlend = 1 - math.pow(.002, colorAge).toDouble();
+    final int color = _mixColor(
+      recovered
+          ? _styles[CoucouMochiState.dizzy]!.color
+          : tappedDizzy
+          ? _dizzyFrom!.bodyColor
+          : _fromColor,
+      style.color,
+      tintBlend,
+    );
+    final recoveringBadge = recovered && _dizzyUntil > _badgeAt;
+    final double badgeAge = t - (recoveringBadge ? _dizzyUntil : _badgeAt);
+    final double badgeScale = badgeAge < .1
+        ? (recoveringBadge ? 0 : _oldBadgeScale) *
+              (1 - _inOut(_clamp01(badgeAge / .09)))
+        : style.badge == null
         ? 0
-        : _easeBack(_clamp01((t - _stateAt - .1) / .28));
+        : _easeBack(_clamp01((badgeAge - .1) / .28));
 
     final double morph = _morphValue(t);
     final bool chewing = t >= _gulpAt + .46 && t < _gulpAt + 1.26;
-    double slotOpen = 0;
-    if (morph > .05 && t >= _gulpAt) {
-      final double gulpAge = t - _gulpAt;
-      final double openTarget = gulpAge < .46 ? .42 : 0;
-      slotOpen =
-          openTarget * (1 - math.exp(-math.max(0.0, gulpAge - .02) * 19));
-      if (gulpAge >= .46) slotOpen *= math.exp(-(gulpAge - .46) * 9);
+    final double gulpAge = t - _gulpAt;
+    final double slotOpen = math.max(
+      0,
+      .42 * (_springStep(gulpAge) - _springStep(gulpAge - .46)),
+    );
+    if (gulpAge >= 0 && gulpAge < .43 && _gulpAt >= _tapAt) {
+      scaleY = _key(
+        gulpAge,
+        const [0, .08, .21, .43],
+        const [1, .78, 1.18, 1],
+        const [_out, _out, _easeBack],
+      );
+      scaleX = _key(
+        gulpAge,
+        const [0, .08, .21, .43],
+        const [1, 1.28, .92, 1],
+        const [_out, _out, _easeBack],
+      );
+    }
+    if (morph > .5) {
+      if (chewing) {
+        eye = CoucouMochiEye.happy;
+      } else if ((gulpAge >= 0 && gulpAge < .46) || slotOpen > .1) {
+        eye = CoucouMochiEye.cup;
+      }
+    }
+
+    if (isMini) {
+      final amp = style.breathes ? .07 : .04;
+      scaleY = 1 + math.sin(t * (style.breathes ? 1.8 : 2.2)) * amp;
+      scaleX =
+          1 -
+          math.sin(t * (style.breathes ? 1.8 : 2.2)) *
+              (style.breathes ? amp * .57 : .02);
+      if (!style.scans && style.lookX == 0 && !dizzy && !style.breathes) {
+        double at = 0, fromX = 0, fromY = 0;
+        for (int n = 0; at <= t; n++) {
+          final x = (-.88 + _random01(behaviorSeed + n * 5) * 1.76) * .62;
+          final y = (-.55 + _random01(behaviorSeed + n * 5 + 1)) * .5;
+          final next = at + .5 + _random01(behaviorSeed + n * 5 + 2) * 1.5;
+          final k = 1 - math.pow(.0025, math.min(t, next) - at).toDouble();
+          fromX = _lerp(fromX, x, k);
+          fromY = _lerp(fromY, y, k);
+          at = next;
+        }
+        yaw = fromX;
+        pitch = fromY;
+      }
+      if (_permanentEmote != null && _permanentEmote != 'wink' && !emoteOn) {
+        eye = switch (_permanentEmote) {
+          'love' => CoucouMochiEye.heart,
+          'happy' => CoucouMochiEye.happy,
+          'annoyed' => CoucouMochiEye.line,
+          'proud' => CoucouMochiEye.star,
+          'yawn' => CoucouMochiEye.tired,
+          'surprised' => CoucouMochiEye.dot,
+          _ => eye,
+        };
+      }
+      final times = _miniTimes(t).toList();
+      if (times.isNotEmpty) {
+        final age = t - times.last;
+        switch (_permanentEmote) {
+          case 'happy':
+            if (age < .48) {
+              offsetY = _key(
+                age,
+                const [0, .12, .32, .48],
+                const [0, -.3, .03, 0],
+                const [_out, _inOut, _easeBack],
+              );
+            }
+            if (age < .57) {
+              scaleY = _key(
+                age,
+                const [0, .08, .21, .37, .57],
+                const [1, .82, 1.18, .88, 1],
+                const [_out, _out, _inOut, _easeBack],
+              );
+              scaleX = _key(
+                age,
+                const [0, .08, .21, .37, .57],
+                const [1, 1.15, .88, 1.06, 1],
+                const [_out, _out, _inOut, _easeBack],
+              );
+            }
+          case 'annoyed':
+            if (age < .505) {
+              yaw = _key(
+                age,
+                const [0, .05, .14, .22, .295, .365, .505],
+                const [0, -.65, .65, -.5, .4, -.2, 0],
+                const [_out, _inOut, _inOut, _inOut, _inOut, _out],
+              );
+            }
+          case 'wink':
+            if (age < .55) eye = CoucouMochiEye.wink;
+            if (age < .62) {
+              tilt = _key(
+                age,
+                const [0, .1, .42, .62],
+                const [0, .13, .13, 0],
+                const [_out, _linear, _inOut],
+              );
+            }
+          case 'love':
+            if (age < .74) {
+              tilt = _key(
+                age,
+                const [0, .18, .52, .74],
+                const [0, -.1, .1, 0],
+                const [_out, _inOut, _inOut],
+              );
+            }
+        }
+      }
     }
 
     return CoucouMochiFrame(
@@ -534,8 +850,8 @@ class CoucouMochiEngine {
       offsetX: offsetX,
       offsetY: offsetY,
       blush: blush.clamp(0.0, 1.0).toDouble(),
-      badge: style.badge,
-      badgeColor: style.color,
+      badge: badgeAge < .1 ? (recoveringBadge ? null : _oldBadge) : style.badge,
+      badgeColor: badgeAge < .1 ? _oldBadgeColor : style.color,
       badgeScale: badgeScale.clamp(0.0, 1.12).toDouble(),
       hands: hands,
       handWave: handWave,
@@ -566,60 +882,73 @@ class CoucouMochiEngine {
   }
 
   void _prune(double t) {
-    _bursts.removeWhere((b) => t - b.at > 2.1);
+    _bursts.removeWhere((b) => t - b.at > 3);
     _blinkEvents.removeWhere((v) => t - v > 1);
   }
 
   List<CoucouMochiParticle> _sampleParticles(double t, CoucouMochiState state) {
     final List<CoucouMochiParticle> result = [];
-    for (final _ParticleBurst burst in _bursts) {
+    final bursts = <_ParticleBurst>[..._bursts];
+    if (isMini && _permanentEmote == 'love') {
+      for (final at in _miniTimes(t)) {
+        if (t - at < 3) {
+          bursts.add(
+            _ParticleBurst(
+              CoucouMochiParticleType.heart,
+              2,
+              at,
+              behaviorSeed + at.hashCode,
+            ),
+          );
+        }
+      }
+    }
+    if (state == CoucouMochiState.sleeping ||
+        (!isMini && _styles[state]!.sweat)) {
+      final current = ((t - _stateAt) / 1.3).floor();
+      for (int n = math.max(1, current - 2); n <= current; n++) {
+        if (state == CoucouMochiState.sleeping || _random01(700 + n) < .5) {
+          bursts.add(
+            _ParticleBurst(
+              state == CoucouMochiState.sleeping
+                  ? CoucouMochiParticleType.z
+                  : CoucouMochiParticleType.sweat,
+              1,
+              _stateAt + n * 1.3,
+              900 + n,
+            ),
+          );
+        }
+      }
+    }
+    for (final burst in bursts) {
       for (int i = 0; i < burst.count; i++) {
-        final double age = t - burst.at + i * .14;
-        final double life = 1.45 + _random01(burst.seed + i * 17) * .35;
+        final age = t - burst.at - i * .14;
+        final seed = burst.seed * 101 + i * 31;
+        final life = 1.3 + _random01(seed + 1) * .5;
         if (age <= 0 || age >= life) continue;
-        final double k = age / life;
-        final double alpha = k < .2 ? k / .2 : 1 - (k - .2) / .8;
-        final bool isZ = burst.type == CoucouMochiParticleType.z;
-        final double x =
-            (_random01(burst.seed + i * 3) - .5) * .9 + (isZ ? .55 : 0);
-        final double y = -.7 - _random01(burst.seed + i * 5) * .2;
-        final double vx =
-            (_random01(burst.seed + i * 7) - .5) * .35 + (isZ ? .18 : 0);
-        final double vy = -(.45 + _random01(burst.seed + i * 11) * .35);
+        final k = age / life;
+        final isZ = burst.type == CoucouMochiParticleType.z;
+        final x = (_random01(seed + 2) - .5) * .9 + (isZ ? .55 : 0);
+        final y = -.7 - _random01(seed + 3) * .2;
+        final vx = (_random01(seed + 4) - .5) * .35 + (isZ ? .18 : 0);
+        final vy = -(.45 + _random01(seed + 5) * .35);
+        final rotation = switch (burst.type) {
+          CoucouMochiParticleType.heart => math.sin(age * 6) * .3,
+          CoucouMochiParticleType.star => _random01(seed + 6) * _tau + age * 2,
+          CoucouMochiParticleType.spark => _random01(seed + 6) * _tau,
+          _ => 0.0,
+        };
         result.add(
           CoucouMochiParticle(
             type: burst.type,
             x: x + vx * age,
             y: y + vy * age,
-            alpha: alpha.clamp(0.0, 1.0).toDouble(),
-            size: (.15 + _random01(burst.seed + i * 13) * .08) * (1 + k * .4),
-            rotation: _random01(burst.seed + i * 19) * _tau + age * 2,
+            alpha: _clamp01(k < .2 ? k / .2 : 1 - (k - .2) / .8),
+            size: (.15 + _random01(seed + 7) * .08) * (1 + k * .4),
+            rotation: rotation,
           ),
         );
-      }
-    }
-    if (state == CoucouMochiState.sleeping) {
-      final double asleepFor = t - _stateAt - .8;
-      if (asleepFor >= 0) {
-        final int current = (asleepFor / 1.3).floor();
-        for (int n = math.max(0, current - 1); n <= current; n++) {
-          final double at = _stateAt + .8 + n * 1.3;
-          final double age = t - at;
-          if (age <= 0 || age >= 1.65) continue;
-          final double k = age / 1.65;
-          result.add(
-            CoucouMochiParticle(
-              type: CoucouMochiParticleType.z,
-              x: .25 + age * .18,
-              y: -.84 - age * .55,
-              alpha: (k < .2 ? k / .2 : 1 - (k - .2) / .8)
-                  .clamp(0.0, 1.0)
-                  .toDouble(),
-              size: .17 * (1 + k * .4),
-              rotation: .25,
-            ),
-          );
-        }
       }
     }
     return result;
@@ -629,14 +958,35 @@ class CoucouMochiEngine {
     for (final double at in _blinkEvents) {
       if (t - at >= 0 && t - at < .21) yield at;
     }
-    const List<double> offsets = [2.25, 5.65, 9.2, 12.5, 16.65, 20.1, 23.15];
-    const double cycle = 26.4;
-    final int loop = (t / cycle).floor();
-    for (int n = math.max(0, loop - 1); n <= loop; n++) {
-      for (final double offset in offsets) {
-        final double at = n * cycle + offset;
-        if (t - at >= 0 && t - at < .21) yield at;
+    // Seeded scheduling retains the original random intervals and double blinks,
+    // while sampling out of order remains reproducible for gallery scrubbing.
+    while (_ambientBlinks.last < t) {
+      final n = _ambientBlinks.length;
+      _ambientBlinks.add(_ambientBlinks.last + 2.2 + _random01(3100 + n) * 3.2);
+    }
+    for (int n = 0; n < _ambientBlinks.length; n++) {
+      final at = _ambientBlinks[n];
+      if (t - at >= 0 && t - at < .21) yield at;
+      if (_random01(4100 + n) < .22 && t - at >= .23 && t - at < .44) {
+        yield at + .23;
       }
+    }
+  }
+
+  final List<double> _ambientBlinks = [1.5 + _random01(3000) * 2];
+
+  Iterable<double> _miniTimes(double t) sync* {
+    double at = _miniAt + .8 + _random01(behaviorSeed + 100) * 1.7;
+    for (int n = 0; at <= t; n++) {
+      yield at;
+      final r = _random01(behaviorSeed + 200 + n);
+      at += switch (_permanentEmote) {
+        'happy' => 2.2 + r * 1.2,
+        'annoyed' => 3 + r * 2.5,
+        'wink' => 2.2 + r * 2,
+        'love' => 2.6 + r * 1.5,
+        _ => 3 + r * 2,
+      };
     }
   }
 
@@ -648,13 +998,16 @@ class CoucouMochiEngine {
   }
 }
 
-double _random01(int seed) {
-  int x = seed == 0 ? 0x9e3779b9 : seed;
-  x &= 0xffffffff;
-  x ^= (x << 13) & 0xffffffff;
-  x ^= x >> 17;
-  x ^= (x << 5) & 0xffffffff;
-  return (x & 0xffffffff) / 0xffffffff;
+double _random01(int seed) => math.Random(seed).nextDouble();
+
+// Closed-form step response of the upstream mouth spring (0.25 s, damping .6).
+// Subtracting a second step at close time preserves both position and velocity.
+double _springStep(double t) {
+  if (t <= 0) return 0;
+  final omega = _tau / .25;
+  final wd = omega * .8;
+  return 1 -
+      math.exp(-.6 * omega * t) * (math.cos(wd * t) + .75 * math.sin(wd * t));
 }
 
 int _mixColor(int a, int b, double t) {
@@ -691,7 +1044,6 @@ double _linear(double t) => t;
 double _out(double t) => 1 - math.pow(1 - t, 3).toDouble();
 double _inOut(double t) =>
     t < .5 ? 4 * t * t * t : 1 - math.pow(-2 * t + 2, 3).toDouble() / 2;
-double _easeOut(double t) => _out(t);
 double _easeInOut(double t) => _inOut(t);
 double _easeBack(double t) {
   const double c1 = 1.7;
