@@ -244,7 +244,29 @@ class CoucouMochiPainter extends CustomPainter {
       canvas.save();
       canvas.translate(ex, ey);
       canvas.scale(fx, fy);
-      _drawEye(canvas, frame.eye, eyeW, eyeH, frame.eyeOpen, side, r);
+      final height =
+          eyeH * (side < 0 ? frame.leftEyeHeight : frame.rightEyeHeight);
+      final weights = frame.eyeWeights;
+      if (weights == null || weights.length == 1) {
+        _drawEye(
+          canvas,
+          weights?.keys.single ?? frame.eye,
+          eyeW,
+          height,
+          frame.eyeOpen,
+          side,
+          r,
+        );
+      } else {
+        for (final entry in weights.entries) {
+          canvas.saveLayer(
+            Rect.fromCircle(center: Offset.zero, radius: r),
+            Paint()..color = Colors.white.withValues(alpha: entry.value),
+          );
+          _drawEye(canvas, entry.key, eyeW, height, frame.eyeOpen, side, r);
+          canvas.restore();
+        }
+      }
       canvas.restore();
     }
     canvas.restore();
@@ -622,6 +644,34 @@ class CoucouMochiPainter extends CustomPainter {
           particle.type,
         ).withValues(alpha: particle.alpha);
       switch (particle.type) {
+        case CoucouMochiParticleType.question:
+          canvas.drawPath(
+            Path()
+              ..moveTo(-.45, -.45)
+              ..cubicTo(-.45, -1.05, .65, -1.05, .55, -.35)
+              ..cubicTo(.5, -.05, 0, -.05, 0, .35),
+            Paint()
+              ..color = paint.color
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = .24
+              ..strokeCap = StrokeCap.round,
+          );
+          canvas.drawCircle(const Offset(0, .8), .15, paint);
+          break;
+        case CoucouMochiParticleType.note:
+          canvas.drawOval(const Rect.fromLTWH(-.65, .1, .85, .6), paint);
+          canvas.drawPath(
+            Path()
+              ..moveTo(.08, .4)
+              ..lineTo(.08, -.9)
+              ..quadraticBezierTo(.6, -.7, .6, -.3),
+            Paint()
+              ..color = paint.color
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = .2
+              ..strokeCap = StrokeCap.round,
+          );
+          break;
         case CoucouMochiParticleType.heart:
           canvas.drawPath(_heartPath(1), paint);
           break;
@@ -671,6 +721,8 @@ class CoucouMochiPainter extends CustomPainter {
     CoucouMochiParticleType.spark => Colors.white,
     CoucouMochiParticleType.sweat => const Color(0xFF7CC7FF),
     CoucouMochiParticleType.z => const Color(0xFFD1DBEB),
+    CoucouMochiParticleType.question => const Color(0xFFF7D58B),
+    CoucouMochiParticleType.note => const Color(0xFFA3D9FF),
   };
 
   Path _heartPath(double size) {

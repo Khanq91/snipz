@@ -26,16 +26,39 @@ export '_upload.dart';
 export '_upload_painter.dart';
 
 /// Emotes that can be requested through [CoucouMochiController].
-enum CoucouMochiEmote { love, surprised, proud, wink, yawn, happy, annoyed }
+enum CoucouMochiEmote {
+  love,
+  surprised,
+  proud,
+  wink,
+  yawn,
+  happy,
+  annoyed,
+  suspicious,
+  confused,
+  chill,
+  music,
+  shy,
+}
 
-enum _MochiCommandType { greet, emote, gulp }
+enum _MochiCommandType { greet, emote, gulp, stopEmote }
 
 class _MochiCommand {
-  const _MochiCommand(this.revision, this.type, [this.emote]);
+  const _MochiCommand(
+    this.revision,
+    this.type, [
+    this.emote,
+    this.loop = false,
+    this.bpm = 100,
+    this.questionCue = false,
+  ]);
 
   final int revision;
   final _MochiCommandType type;
   final CoucouMochiEmote? emote;
+  final bool loop;
+  final double bpm;
+  final bool questionCue;
 }
 
 /// Sends one-shot character actions to a [CoucouMochi].
@@ -49,7 +72,33 @@ class CoucouMochiController extends ChangeNotifier {
 
   void greet() => _send(_MochiCommandType.greet);
 
-  void emote(CoucouMochiEmote emote) => _send(_MochiCommandType.emote, emote);
+  /// Only chill/music support [loop]. BPM controls motion, not audio playback.
+  void emote(
+    CoucouMochiEmote emote, {
+    bool loop = false,
+    double bpm = 100,
+    bool questionCue = false,
+  }) {
+    if (!bpm.isFinite || bpm < 40 || bpm > 240) {
+      throw ArgumentError.value(bpm, 'bpm', 'Must be between 40 and 240');
+    }
+    if (loop &&
+        emote != CoucouMochiEmote.chill &&
+        emote != CoucouMochiEmote.music) {
+      throw ArgumentError.value(emote, 'loop', 'Only chill and music can loop');
+    }
+    _command = _MochiCommand(
+      ++_revision,
+      _MochiCommandType.emote,
+      emote,
+      loop,
+      bpm,
+      questionCue,
+    );
+    notifyListeners();
+  }
+
+  void stopEmote() => _send(_MochiCommandType.stopEmote);
 
   void gulp() => _send(_MochiCommandType.gulp);
 
@@ -84,9 +133,18 @@ class CoucouMochi extends StatefulWidget {
     this.miniColor = const Color(0xFF3E86E0),
     this.permanentEmote,
     this.behaviorSeed = 41,
+    this.initialEmote,
+    this.emoteLoop = false,
+    this.musicBpm = 100,
   }) : assert(size > 0),
        assert(volume >= 0 && volume <= 1),
-       assert(morph >= 0 && morph <= 1);
+       assert(morph >= 0 && morph <= 1),
+       assert(musicBpm >= 40 && musicBpm <= 240),
+       assert(
+         !emoteLoop ||
+             initialEmote == CoucouMochiEmote.chill ||
+             initialEmote == CoucouMochiEmote.music,
+       );
 
   /// Width of the drawing area in logical pixels. Height is 1.28 times this
   /// value to leave room for the particles that float above Mochi.
@@ -135,6 +193,11 @@ class CoucouMochi extends StatefulWidget {
   final CoucouMochiEmote? permanentEmote;
   final int behaviorSeed;
 
+  /// Declarative emote at time zero, also sampled by frozen previews.
+  final CoucouMochiEmote? initialEmote;
+  final bool emoteLoop;
+  final double musicBpm;
+
   @override
   State<CoucouMochi> createState() => _CoucouMochiState();
 }
@@ -169,6 +232,14 @@ class _CoucouMochiState extends State<CoucouMochi>
     widget.controller?.addListener(_consumeControllerCommand);
     _engine.setState(widget.state, 0, force: true);
     _engine.setMorph(widget.morph, 0);
+    if (widget.initialEmote != null) {
+      _engine.triggerEmote(
+        widget.initialEmote!.name,
+        0,
+        loop: widget.emoteLoop,
+        bpm: widget.musicBpm,
+      );
+    }
     if (widget.greetingOnStart) {
       _engine.greet(0);
       _schedule('greet', .25, group: 'greet');
@@ -191,8 +262,7 @@ class _CoucouMochiState extends State<CoucouMochi>
           !_engine.isDizzy(at) &&
           at - _lastLove >= 6) {
         _lastLove = at;
-        _engine.triggerEmote('love', at);
-        _play('love');
+        if (_engine.triggerEmote('love', at)) _play('love');
       }
     }
     final due = _sounds.where((cue) => cue.at <= _clock).toList()
@@ -231,6 +301,14 @@ class _CoucouMochiState extends State<CoucouMochi>
       _engine.setState(widget.state, _clock, force: true);
       _engine.setMorph(widget.morph, _clock);
       _engine.setPermanentEmote(widget.permanentEmote?.name, _clock);
+      if (widget.initialEmote != null) {
+        _engine.triggerEmote(
+          widget.initialEmote!.name,
+          _clock,
+          loop: widget.emoteLoop,
+          bpm: widget.musicBpm,
+        );
+      }
     } else if (oldWidget.permanentEmote != widget.permanentEmote) {
       _engine.setPermanentEmote(widget.permanentEmote?.name, _clock);
     }
@@ -243,6 +321,20 @@ class _CoucouMochiState extends State<CoucouMochi>
     if (oldWidget.state != widget.state) {
       _engine.setState(widget.state, _clock);
       _play(_soundFor(widget.state));
+    }
+    if (oldWidget.initialEmote != widget.initialEmote ||
+        oldWidget.emoteLoop != widget.emoteLoop ||
+        oldWidget.musicBpm != widget.musicBpm) {
+      if (widget.initialEmote == null) {
+        _engine.stopEmote(_clock);
+      } else {
+        _engine.triggerEmote(
+          widget.initialEmote!.name,
+          _frozen ? 0 : _clock,
+          loop: widget.emoteLoop,
+          bpm: widget.musicBpm,
+        );
+      }
     }
     if (oldWidget.morph != widget.morph) {
       _engine.setMorph(widget.morph, _clock);
@@ -304,7 +396,7 @@ class _CoucouMochiState extends State<CoucouMochi>
 
   void _love() {
     if (!_canInteract) return;
-    _engine.triggerEmote('love', _clock);
+    if (!_engine.triggerEmote('love', _clock)) return;
     _frameSignal.value = _engine.sample(_clock);
     _play('love');
   }
@@ -354,8 +446,13 @@ class _CoucouMochiState extends State<CoucouMochi>
     _schedule('greet', .25, group: 'greet');
   }
 
-  void _triggerEmote(String emote) {
-    _engine.triggerEmote(emote, _clock);
+  void _triggerEmote(
+    String emote, {
+    bool loop = false,
+    double bpm = 100,
+    bool questionCue = false,
+  }) {
+    if (!_engine.triggerEmote(emote, _clock, loop: loop, bpm: bpm)) return;
     _frameSignal.value = _engine.sample(_clock);
     if (emote == 'annoyed') {
       _schedule('annoyed', .06);
@@ -367,6 +464,8 @@ class _CoucouMochiState extends State<CoucouMochi>
       'wink' => 'wink',
       'yawn' => 'yawn',
       'annoyed' => 'annoyed',
+      'confused' => questionCue ? 'question' : null,
+      'suspicious' || 'chill' || 'music' || 'shy' => null,
       _ => 'pop',
     });
   }
@@ -381,9 +480,19 @@ class _CoucouMochiState extends State<CoucouMochi>
         _greet();
         break;
       case _MochiCommandType.emote:
-        _triggerEmote(command.emote!.name);
+        _triggerEmote(
+          command.emote!.name,
+          loop: command.loop,
+          bpm: command.bpm,
+          questionCue: command.questionCue,
+        );
+        break;
+      case _MochiCommandType.stopEmote:
+        _engine.stopEmote(_clock);
+        _frameSignal.value = _engine.sample(_clock);
         break;
       case _MochiCommandType.gulp:
+        _engine.stopEmote(_clock);
         final delay = _engine.sample(_clock).morph < .5 ? .55 : 0.0;
         if (delay > 0) _engine.setMorph(1, _clock);
         _engine.gulp(_clock + delay);

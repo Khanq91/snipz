@@ -1,6 +1,7 @@
 # Current work batch drives the NEW/FIX badges and the gallery's New filter.
 # Keep one current batch; build_index.dart embeds it in assets/index.json and
 # validate.dart checks its IDs (#11).
+# Same study batch: five additional emotes, loop/stop controls and previews.
 id: 2026-10-02-coucou-mochi-study
 title: "Add Coucou Mochi for private local study"
 date: 2026-10-02

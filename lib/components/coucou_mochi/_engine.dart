@@ -40,7 +40,9 @@ enum CoucouMochiEye {
 
 enum CoucouMochiBadge { dots, bang, question, dot }
 
-enum CoucouMochiParticleType { heart, star, spark, sweat, z }
+enum CoucouMochiParticleType { heart, star, spark, sweat, z, question, note }
+
+const _newEmotes = {'suspicious', 'confused', 'chill', 'music', 'shy'};
 
 class CoucouMochiParticle {
   const CoucouMochiParticle({
@@ -87,6 +89,9 @@ class CoucouMochiFrame {
     required this.slotOpen,
     required this.chewing,
     required this.particles,
+    this.leftEyeHeight = 1,
+    this.rightEyeHeight = 1,
+    this.eyeWeights,
   });
 
   final double time;
@@ -114,6 +119,11 @@ class CoucouMochiFrame {
   final double slotOpen;
   final bool chewing;
   final List<CoucouMochiParticle> particles;
+  final double leftEyeHeight;
+  final double rightEyeHeight;
+
+  /// Bounded cross-fade between eye shapes, preserving interrupted transitions.
+  final Map<CoucouMochiEye, double>? eyeWeights;
 }
 
 class _StateStyle {
@@ -278,6 +288,28 @@ class CoucouMochiEngine {
   double _emoteDuration = 0;
   CoucouMochiEye? _emoteEye;
   String? _emote;
+  bool _emoteLoop = false;
+  double _bpm = 100;
+  double _stopAt = double.infinity;
+  CoucouMochiFrame? _stopFrom;
+
+  bool isEmoting(double t) =>
+      t >= _emoteAt &&
+      t < _stopAt &&
+      (_emoteLoop || t < _emoteAt + _emoteDuration);
+
+  /// Fade to the current business state, including its live gaze and motion.
+  void stopEmote(double t) {
+    if (!isEmoting(t)) return;
+    _stopFrom = sample(t);
+    _stopAt = t;
+  }
+
+  void _cancelEmote(double t) {
+    _stopAt = math.min(_stopAt, t);
+    _stopFrom = null;
+  }
+
   double _hoverAt = -100;
   double _hoverFrom = 1;
   bool _hovering = false;
@@ -296,6 +328,7 @@ class CoucouMochiEngine {
     _prune(t);
     if (!force && next == _state) return;
     final previous = sample(t);
+    stopEmote(t);
     final prev = _state;
     _stateFrom = previous;
     _fromColor = previous.bodyColor;
@@ -331,6 +364,7 @@ class CoucouMochiEngine {
   bool tap(double t) {
     interruptGreet(t);
     if (isDizzy(t)) return false;
+    _cancelEmote(t);
     _prune(t);
     _taps.removeWhere((at) => t - at >= 1.7);
     _taps.add(t);
@@ -354,6 +388,7 @@ class CoucouMochiEngine {
 
   void greet(double t) {
     _prune(t);
+    _cancelEmote(t);
     _greetAt = t;
     _greetInterruptedAt = -100;
     _emitBlink(t + .55);
@@ -372,12 +407,55 @@ class CoucouMochiEngine {
     );
   }
 
-  void triggerEmote(String emote, double t, {double duration = 1.8}) {
+  bool triggerEmote(
+    String emote,
+    double t, {
+    double? duration,
+    bool loop = false,
+    double bpm = 100,
+  }) {
+    if (!bpm.isFinite || bpm < 40 || bpm > 240) {
+      throw ArgumentError.value(bpm, 'bpm', 'Must be between 40 and 240');
+    }
+    if (duration != null && (!duration.isFinite || duration <= 0)) {
+      throw ArgumentError.value(
+        duration,
+        'duration',
+        'Must be finite and positive',
+      );
+    }
+    if (loop && emote != 'chill' && emote != 'music') {
+      throw ArgumentError.value(emote, 'loop', 'Only chill and music can loop');
+    }
+    if (isDizzy(t) ||
+        (t >= _gulpAt - .55 && t < _gulpAt + 1.26) ||
+        (t >= _greetAt &&
+            t < _greetAt + 2.05 &&
+            !(_greetInterruptedAt >= _greetAt && t >= _greetInterruptedAt))) {
+      return false;
+    }
     _prune(t);
     _emoteFrom = sample(t);
     _emote = emote;
     _emoteAt = t;
-    _emoteDuration = emote == 'annoyed' ? .8 : math.max(.6, duration);
+    _emoteDuration = emote == 'annoyed'
+        ? .8
+        : math.max(
+            .6,
+            duration ??
+                switch (emote) {
+                  'suspicious' => 2.4,
+                  'confused' => 2.8,
+                  'chill' => 6,
+                  'music' => 4,
+                  'shy' => 3,
+                  _ => 1.8,
+                },
+          );
+    _emoteLoop = loop;
+    _bpm = bpm;
+    _stopAt = double.infinity;
+    _stopFrom = null;
     _emoteEye = switch (emote) {
       'love' => CoucouMochiEye.heart,
       'surprised' => CoucouMochiEye.dot,
@@ -401,9 +479,11 @@ class CoucouMochiEngine {
       default:
         break;
     }
+    return true;
   }
 
   void setLook(double x, double y, double t) {
+    if (_emoteLoop) stopEmote(t);
     _prune(t);
     final double k = 1 - math.pow(.0025, math.max(0.0, t - _lookAt)).toDouble();
     _lookFromX = _lookFromX + (_lookX - _lookFromX) * k;
@@ -414,6 +494,7 @@ class CoucouMochiEngine {
   }
 
   void setHover(bool hovering, double t) {
+    if (hovering && _emoteLoop) stopEmote(t);
     _prune(t);
     _hoverFrom = sample(t).eyeScale;
     _hoverAt = t;
@@ -431,6 +512,7 @@ class CoucouMochiEngine {
 
   void gulp(double t) {
     _prune(t);
+    _cancelEmote(t);
     _gulpAt = t;
     _emitBlink(t);
   }
@@ -575,7 +657,11 @@ class CoucouMochiEngine {
     }
 
     final double emoteAge = t - _emoteAt;
-    final bool emoteOn = emoteAge >= 0 && emoteAge < _emoteDuration;
+    final bool emoteOn = isEmoting(t);
+    final bool newEmoteOn =
+        emoteOn &&
+        _newEmotes.contains(_emote) &&
+        !(t >= _gulpAt && t < _gulpAt + 1.26);
     CoucouMochiEye eye = style.eye;
     if (emoteOn && _emoteEye != null) eye = _emoteEye!;
     if (tapAge >= 0 && tapAge < .8 && !dizzy) eye = CoucouMochiEye.line;
@@ -686,7 +772,7 @@ class CoucouMochiEngine {
       if (emoteAge >= .7) eye = CoucouMochiEye.closed;
     }
     double eyeOpen = state == CoucouMochiState.sleeping ? .05 : 1;
-    if (state != CoucouMochiState.sleeping && !dizzy) {
+    if (state != CoucouMochiState.sleeping && !dizzy && !newEmoteOn) {
       for (final double at in _blinkTimes(t)) {
         eyeOpen = math.min(eyeOpen, _blinkValue(t - at));
       }
@@ -742,7 +828,7 @@ class CoucouMochiEngine {
       }
     }
 
-    if (isMini) {
+    if (isMini && !newEmoteOn) {
       final amp = style.breathes ? .07 : .04;
       scaleY = 1 + math.sin(t * (style.breathes ? 1.8 : 2.2)) * amp;
       scaleX =
@@ -833,6 +919,188 @@ class CoucouMochiEngine {
       }
     }
 
+    double leftEyeHeight = 1, rightEyeHeight = 1;
+    Map<CoucouMochiEye, double>? eyeWeights;
+    final particles = _sampleParticles(t, state);
+    if (newEmoteOn && !dizzy) {
+      final from = _emoteFrom!;
+      final canonicalDuration = switch (_emote) {
+        'suspicious' => 2.4,
+        'confused' => 2.8,
+        'chill' => 6.0,
+        'music' => 4.0,
+        _ => 3.0,
+      };
+      // Rhythm uses elapsed clock time, never a modulo of the emote duration.
+      final a = _emoteLoop
+          ? emoteAge
+          : emoteAge * canonicalDuration / _emoteDuration;
+      final entrance = switch (_emote) {
+        'suspicious' => .25,
+        'chill' => .6,
+        'music' => .35,
+        'shy' => .45,
+        _ => .3,
+      };
+      final exit = switch (_emote) {
+        'chill' || 'shy' => .6,
+        'music' => .4,
+        _ => .5,
+      };
+      final enter = _inOut(_clamp01(a / entrance));
+      final leave = _emoteLoop
+          ? 0.0
+          : _inOut(_clamp01((a - canonicalDuration + exit) / exit));
+      double targetYaw = 0, targetPitch = 0, targetTilt = 0;
+      double sx = 1, sy = 1, oy = 0, blushTarget = blush;
+      double left = 1, right = 1, open = 1;
+      switch (_emote) {
+        case 'suspicious':
+          targetYaw = .36;
+          targetTilt = -.075 * _inOut(_clamp01((a - .25) / .2));
+          left = .38;
+          right = .68;
+        case 'confused':
+          targetYaw = -.10;
+          targetPitch = .08;
+          targetTilt = _key(
+            a,
+            const [0, .3, .9, 1.5],
+            const [0, -.04, -.19, -.10],
+            const [_out, _inOut, _inOut],
+          );
+          left = 1.18;
+          right = .63;
+          open = math.min(_blinkValue(a - .98), _blinkValue(a - 1.27));
+        case 'chill':
+          final breath = math.sin(emoteAge * _tau / 3.2);
+          sy = 1 + breath * .025;
+          sx = 1 - breath * .014;
+          targetTilt = math.sin(emoteAge * _tau / 6.4) * .045;
+          left = .46;
+          right = .46;
+        case 'music':
+          final beat = emoteAge * _bpm / 60;
+          final pulse = (1 - math.cos(beat * _tau)) / 2;
+          sy = 1 - pulse * .045;
+          sx = 1 + pulse * .035;
+          oy = -pulse * .045;
+          targetTilt = math.sin(beat * math.pi) * .11;
+          targetYaw = math.sin(beat * math.pi) * .09;
+          left = .58;
+          right = .58;
+        case 'shy':
+          final avoid = _inOut(_clamp01((a - .45) / .35));
+          targetYaw = -.27 * avoid;
+          targetPitch = -.16 * avoid;
+          targetTilt = .065 * avoid;
+          sx = .96;
+          sy = .96;
+          blushTarget = 1;
+          left = .72;
+          right = .72;
+      }
+      double pose(double start, double target, double base) =>
+          _lerp(_lerp(start, target, enter), base, leave);
+      yaw = pose(from.yaw, targetYaw, yaw);
+      pitch = pose(from.pitch, targetPitch, pitch);
+      tilt = pose(from.tilt, targetTilt, tilt);
+      scaleX = pose(from.scaleX, sx, scaleX);
+      scaleY = pose(from.scaleY, sy, scaleY);
+      offsetX = pose(from.offsetX, 0, offsetX);
+      offsetY = pose(from.offsetY, oy, offsetY);
+      blush = pose(from.blush, blushTarget, blush);
+      eyeScale = pose(from.eyeScale, 1, eyeScale);
+      eyeOpen = pose(from.eyeOpen, open, eyeOpen);
+      leftEyeHeight = pose(from.leftEyeHeight, left, 1);
+      rightEyeHeight = pose(from.rightEyeHeight, right, 1);
+      eyeWeights = _mixEyes(
+        _mixEyes(from.eyeWeights ?? {from.eye: 1}, {
+          CoucouMochiEye.pill: 1,
+        }, enter),
+        {eye: 1},
+        leave,
+      );
+      if (leave < .5) eye = CoucouMochiEye.pill;
+      // Emote effects live on the upper right; the state badge stays on the left.
+      if (_emote == 'confused' && a >= .35 && a < 2.1) {
+        final p = (a - .35) / 1.75;
+        particles.add(
+          CoucouMochiParticle(
+            type: CoucouMochiParticleType.question,
+            x: .66,
+            y: -.86 - p * .35,
+            alpha: math.sin(p * math.pi),
+            size: .27,
+            rotation: -.08,
+          ),
+        );
+      }
+      if (_emote == 'music') {
+        final interval = 60 / _bpm;
+        final current = (emoteAge / interval).floor();
+        for (int n = math.max(0, current - 3); n <= current; n++) {
+          final age = emoteAge - n * interval;
+          final life = math.min(1.8, interval * 4);
+          if (age <= 0 || age >= life) continue;
+          final p = age / life;
+          particles.add(
+            CoucouMochiParticle(
+              type: CoucouMochiParticleType.note,
+              x: .66 + (n.isEven ? -.13 : .13),
+              y: -.8 - p * .65,
+              alpha: math.sin(p * math.pi) * enter * (1 - leave),
+              size: .19,
+              rotation: n.isEven ? -.18 : .18,
+            ),
+          );
+        }
+      }
+      particles.removeWhere((p) => p.type == CoucouMochiParticleType.z);
+    }
+    final stopAge = t - _stopAt;
+    final bridge =
+        emoteOn &&
+        !newEmoteOn &&
+        _emoteFrom?.eyeWeights != null &&
+        emoteAge < .25;
+    if (((_stopFrom != null && stopAge >= 0 && stopAge < .6) || bridge) &&
+        !dizzy) {
+      final from = bridge ? _emoteFrom! : _stopFrom!;
+      final k = _inOut(bridge ? emoteAge / .25 : stopAge / .6);
+      yaw = _lerp(from.yaw, yaw, k);
+      pitch = _lerp(from.pitch, pitch, k);
+      tilt = _lerp(from.tilt, tilt, k);
+      scaleX = _lerp(from.scaleX, scaleX, k);
+      scaleY = _lerp(from.scaleY, scaleY, k);
+      offsetX = _lerp(from.offsetX, offsetX, k);
+      offsetY = _lerp(from.offsetY, offsetY, k);
+      blush = _lerp(from.blush, blush, k);
+      eyeScale = _lerp(from.eyeScale, eyeScale, k);
+      eyeOpen = _lerp(from.eyeOpen, eyeOpen, k);
+      leftEyeHeight = _lerp(from.leftEyeHeight, 1, k);
+      rightEyeHeight = _lerp(from.rightEyeHeight, 1, k);
+      eyeWeights = _mixEyes(from.eyeWeights ?? {from.eye: 1}, {eye: 1}, k);
+      particles.addAll(
+        from.particles
+            .where(
+              (p) =>
+                  p.type == CoucouMochiParticleType.question ||
+                  p.type == CoucouMochiParticleType.note,
+            )
+            .map(
+              (p) => CoucouMochiParticle(
+                type: p.type,
+                x: p.x,
+                y: p.y - (bridge ? emoteAge : stopAge) * .2,
+                alpha: p.alpha * (1 - k),
+                size: p.size,
+                rotation: p.rotation,
+              ),
+            ),
+      );
+    }
+
     return CoucouMochiFrame(
       time: t,
       state: state,
@@ -858,7 +1126,10 @@ class CoucouMochiEngine {
       morph: morph,
       slotOpen: slotOpen,
       chewing: chewing,
-      particles: _sampleParticles(t, state),
+      particles: particles,
+      leftEyeHeight: leftEyeHeight,
+      rightEyeHeight: rightEyeHeight,
+      eyeWeights: eyeWeights,
     );
   }
 
@@ -889,7 +1160,9 @@ class CoucouMochiEngine {
   List<CoucouMochiParticle> _sampleParticles(double t, CoucouMochiState state) {
     final List<CoucouMochiParticle> result = [];
     final bursts = <_ParticleBurst>[..._bursts];
-    if (isMini && _permanentEmote == 'love') {
+    if (isMini &&
+        _permanentEmote == 'love' &&
+        !(isEmoting(t) && _newEmotes.contains(_emote))) {
       for (final at in _miniTimes(t)) {
         if (t - at < 3) {
           bursts.add(
@@ -960,12 +1233,30 @@ class CoucouMochiEngine {
     }
     // Seeded scheduling retains the original random intervals and double blinks,
     // while sampling out of order remains reproducible for gallery scrubbing.
-    while (_ambientBlinks.last < t) {
-      final n = _ambientBlinks.length;
-      _ambientBlinks.add(_ambientBlinks.last + 2.2 + _random01(3100 + n) * 3.2);
+    // Keep a bounded recent window. Historical scrubs reconstruct the exact
+    // seeded sequence locally, without retaining a growing session history.
+    Iterable<({double at, int index})> schedule() sync* {
+      if (t < _ambientBlinks.first.at) {
+        double at = 1.5 + _random01(3000) * 2;
+        for (int n = 0; at <= t; n++) {
+          yield (at: at, index: n);
+          at = at + 2.2 + _random01(3101 + n) * 3.2;
+        }
+      } else {
+        while (_ambientBlinks.last.at < t) {
+          final n = _ambientBlinks.last.index + 1;
+          _ambientBlinks.add((
+            at: _ambientBlinks.last.at + 2.2 + _random01(3100 + n) * 3.2,
+            index: n,
+          ));
+          if (_ambientBlinks.length > 32) _ambientBlinks.removeAt(0);
+        }
+        yield* _ambientBlinks;
+      }
     }
-    for (int n = 0; n < _ambientBlinks.length; n++) {
-      final at = _ambientBlinks[n];
+
+    for (final blink in schedule()) {
+      final at = blink.at, n = blink.index;
       if (t - at >= 0 && t - at < .21) yield at;
       if (_random01(4100 + n) < .22 && t - at >= .23 && t - at < .44) {
         yield at + .23;
@@ -973,7 +1264,9 @@ class CoucouMochiEngine {
     }
   }
 
-  final List<double> _ambientBlinks = [1.5 + _random01(3000) * 2];
+  final List<({double at, int index})> _ambientBlinks = [
+    (at: 1.5 + _random01(3000) * 2, index: 0),
+  ];
 
   Iterable<double> _miniTimes(double t) sync* {
     double at = _miniAt + .8 + _random01(behaviorSeed + 100) * 1.7;
@@ -999,6 +1292,16 @@ class CoucouMochiEngine {
 }
 
 double _random01(int seed) => math.Random(seed).nextDouble();
+
+Map<CoucouMochiEye, double> _mixEyes(
+  Map<CoucouMochiEye, double> a,
+  Map<CoucouMochiEye, double> b,
+  double t,
+) => {
+  for (final eye in {...a.keys, ...b.keys})
+    if (_lerp(a[eye] ?? 0, b[eye] ?? 0, t) > 0)
+      eye: _lerp(a[eye] ?? 0, b[eye] ?? 0, t),
+};
 
 // Closed-form step response of the upstream mouth spring (0.25 s, damping .6).
 // Subtracting a second step at close time preserves both position and velocity.
