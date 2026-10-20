@@ -29,6 +29,7 @@ import 'package:snipz/components/confetti_burst/confetti_burst_demo.dart';
 import 'package:snipz/components/contextual_dock/contextual_dock_demo.dart';
 import 'package:snipz/components/copy_button/copy_button_demo.dart';
 import 'package:snipz/components/coucou_mochi/coucou_mochi_demo.dart';
+import 'package:snipz/components/depth_page_transition/depth_page_transition_demo.dart';
 import 'package:snipz/components/dither/dither_demo.dart';
 import 'package:snipz/components/dock/dock_demo.dart';
 import 'package:snipz/components/drum_clock/drum_clock_demo.dart';
@@ -136,6 +137,7 @@ final Map<String, ComponentDemo> componentRegistry = <String, ComponentDemo>{
   'contextual_dock': contextualDockDemo,
   'copy_button': copyButtonDemo,
   'coucou_mochi': coucouMochiDemo,
+  'depth_page_transition': depthPageTransitionDemo,
   'dither': ditherDemo,
   'dock': dockDemo,
   'drum_clock': drumClockDemo,

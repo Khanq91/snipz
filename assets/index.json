@@ -1,15 +1,15 @@
 {
   "_generated": true,
-  "_generated_at": "2026-10-02T08:10:21.239406Z",
+  "_generated_at": "2026-10-20T01:26:14.522863Z",
   "_generated_flutter": "3.44.5",
   "_generated_dart": "3.12.2",
   "_generated_remote": "https://github.com/Khanq91/snipz",
   "session": {
-    "id": "2026-10-02-coucou-mochi-study",
-    "title": "Add Coucou Mochi for private local study",
-    "date": "2026-10-02",
+    "id": "2026-10-20-depth-page-transition",
+    "title": "Port Muzicz depth page transition",
+    "date": "2026-10-20",
     "added": [
-      "coucou_mochi"
+      "depth_page_transition"
     ],
     "fixed": []
   },
@@ -1265,6 +1265,61 @@
       "preview": null,
       "file_count": 9,
       "test_history": []
+    },
+    {
+      "id": "depth_page_transition",
+      "title": "Depth Page Transition",
+      "kind": "effect",
+      "tags": [
+        "navigation",
+        "transition",
+        "push",
+        "pop",
+        "slide",
+        "fade",
+        "depth"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "depth_page_transition.dart",
+      "files": {
+        "depth_page_transition.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "original",
+      "source": null,
+      "author": "Khang",
+      "license": null,
+      "created": "2026-10-20",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": "3.44.5",
+      "last_verified": "2026-10-20",
+      "status": "verified",
+      "preview": null,
+      "file_count": 1,
+      "test_history": [
+        {
+          "date": "2026-10-20",
+          "flutter": "3.44.5",
+          "dart": "3.12.2",
+          "deps_resolved": "—",
+          "platform": "windows",
+          "result": "pass_warning",
+          "note": "Flutter widget tests: push/pop, retained background, reduced motion, isolated demo, thumbnail and scrub passed; analyzer clean. No Android device visual review yet."
+        }
+      ]
     },
     {
       "id": "dither",
