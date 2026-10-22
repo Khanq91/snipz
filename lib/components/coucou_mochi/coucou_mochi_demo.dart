@@ -18,7 +18,7 @@ const _emotions = [
 
 final ComponentDemo coucouMochiDemo = ComponentDemo(
   id: 'coucou_mochi',
-  builder: (context) => const _CoucouMochiShowcase(),
+  builder: (context) => const _MochiSkinShowcase(),
   thumbnailBuilder: (context) => const ColoredBox(
     color: _stageColor,
     child: Center(
@@ -31,21 +31,19 @@ final ComponentDemo coucouMochiDemo = ComponentDemo(
       ),
     ),
   ),
-  scrubBuilder: (context, t) => ColoredBox(
-    color: _stageColor,
-    child: Center(
-      child: CoucouMochi(
-        size: 220,
-        frozenAt: t % 6,
-        initialEmote: _emotions[(t / 6).floor().clamp(0, 4)],
-        animate: false,
-        interactive: false,
-        soundEnabled: false,
-      ),
-    ),
+  scrubBuilder: (context, t) => _frozenSkinShowcase(
+    time: t % 6,
+    emote: _emotions[(t / 6).floor().clamp(0, 4)],
   ),
   scrubDuration: 30,
   variants: [
+    for (final skin in CoucouMochiSkin.values)
+      DemoVariant(
+        id: 'skin-${skin.name}',
+        label: skin.label,
+        builder: (context) => _MochiSkinShowcase(initialSkin: skin),
+        frozenBuilder: (context) => _frozenSkinShowcase(skin: skin),
+      ),
     for (final emote in _emotions)
       DemoVariant(
         id: emote.name,
@@ -75,7 +73,44 @@ final ComponentDemo coucouMochiDemo = ComponentDemo(
       builder: (context) => const _MiniMochis(),
       frozenBuilder: (context) => const _MiniMochis(frozen: true),
     ),
+    for (final skin in CoucouMochiSkin.values.where(
+      (skin) => skin != CoucouMochiSkin.original,
+    )) ...[
+      DemoVariant(
+        id: '${skin.name}-mini',
+        label: '${skin.label} · Minis',
+        builder: (context) => _MiniMochis(skin: skin),
+        frozenBuilder: (context) => _MiniMochis(skin: skin, frozen: true),
+      ),
+      for (final scene in CoucouMochiSceneType.values)
+        DemoVariant(
+          id: '${skin.name}-${scene.name}',
+          label:
+              '${skin.label} · ${scene == CoucouMochiSceneType.launch ? 'Launch' : 'Upload'}',
+          builder: (context) => _ScenePreview(type: scene, skin: skin),
+          frozenBuilder: (context) =>
+              _ScenePreview(type: scene, skin: skin, frozen: true),
+        ),
+    ],
   ],
+);
+
+// PreviewStage's live path is TickerMode -> Builder -> showcase. Matching it
+// in frozen builders retains this preview's skin/mute state without a shared
+// cache, and keeps its live controller mounted while the scrub frame is shown.
+Widget _frozenSkinShowcase({
+  CoucouMochiSkin skin = CoucouMochiSkin.original,
+  double time = 1.65,
+  CoucouMochiEmote emote = CoucouMochiEmote.shy,
+}) => TickerMode(
+  enabled: false,
+  child: Builder(
+    builder: (context) => _MochiSkinShowcase(
+      initialSkin: skin,
+      frozenAt: time,
+      frozenEmote: emote,
+    ),
+  ),
 );
 
 class _MochiVariant extends StatelessWidget {
@@ -100,8 +135,154 @@ class _MochiVariant extends StatelessWidget {
   );
 }
 
+/// Keep the picker outside the keyed interaction tree: changing a skin starts
+/// with a fresh controller, scene clock and gesture state.
+class _MochiSkinShowcase extends StatefulWidget {
+  const _MochiSkinShowcase({
+    this.initialSkin = CoucouMochiSkin.original,
+    this.frozenAt,
+    this.frozenEmote = CoucouMochiEmote.shy,
+  });
+
+  final CoucouMochiSkin initialSkin;
+  final double? frozenAt;
+  final CoucouMochiEmote frozenEmote;
+
+  @override
+  State<_MochiSkinShowcase> createState() => _MochiSkinShowcaseState();
+}
+
+class _MochiSkinShowcaseState extends State<_MochiSkinShowcase> {
+  late CoucouMochiSkin _skin = widget.initialSkin;
+  int _revision = 0;
+  bool _sound = true;
+
+  @override
+  void didUpdateWidget(_MochiSkinShowcase oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialSkin != oldWidget.initialSkin) {
+      _skin = widget.initialSkin;
+      _revision++;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => Material(
+    color: _stageColor,
+    child: SafeArea(
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 4, 8, 4),
+            child: Row(
+              children: [
+                Expanded(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: .06),
+                      border: Border.all(color: Colors.white12),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: Semantics(
+                        label: 'Mochi skin',
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<CoucouMochiSkin>(
+                            key: const ValueKey('mochi-skin-dropdown'),
+                            value: _skin,
+                            isExpanded: true,
+                            dropdownColor: const Color(0xFF171B27),
+                            borderRadius: BorderRadius.circular(12),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            iconEnabledColor: Colors.white70,
+                            icon: const Icon(Icons.expand_more),
+                            items: [
+                              for (final skin in CoucouMochiSkin.values)
+                                DropdownMenuItem(
+                                  value: skin,
+                                  child: Text(
+                                    skin.label,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                            ],
+                            onChanged: (skin) {
+                              if (skin == null || skin == _skin) return;
+                              setState(() {
+                                _skin = skin;
+                                _revision++;
+                              });
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                IconButton(
+                  key: const ValueKey('mochi-reload-skin'),
+                  tooltip: 'Reload skin',
+                  onPressed: () => setState(() => _revision++),
+                  color: Colors.white70,
+                  icon: const Icon(Icons.replay_rounded),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                Offstage(
+                  offstage: widget.frozenAt != null,
+                  child: TickerMode(
+                    enabled: widget.frozenAt == null,
+                    child: ExcludeFocus(
+                      excluding: widget.frozenAt != null,
+                      child: _CoucouMochiShowcase(
+                        key: ValueKey((_skin, _revision)),
+                        skin: _skin,
+                        sound: _sound,
+                        onSoundChanged: (value) =>
+                            setState(() => _sound = value),
+                      ),
+                    ),
+                  ),
+                ),
+                if (widget.frozenAt != null)
+                  _EmotionPreview(
+                    skin: _skin,
+                    emote: widget.frozenEmote,
+                    frozen: true,
+                    frozenTime: widget.frozenAt!,
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
 class _CoucouMochiShowcase extends StatefulWidget {
-  const _CoucouMochiShowcase();
+  const _CoucouMochiShowcase({
+    super.key,
+    required this.skin,
+    required this.sound,
+    required this.onSoundChanged,
+  });
+
+  final CoucouMochiSkin skin;
+  final bool sound;
+  final ValueChanged<bool> onSoundChanged;
 
   @override
   State<_CoucouMochiShowcase> createState() => _CoucouMochiShowcaseState();
@@ -111,7 +292,6 @@ class _CoucouMochiShowcaseState extends State<_CoucouMochiShowcase> {
   final CoucouMochiController _controller = CoucouMochiController();
   CoucouMochiState _state = CoucouMochiState.idle;
   double _morph = 0;
-  bool _sound = true;
   CoucouMochiSceneType? _scene;
   int _sceneRevision = 0;
   bool _minis = false;
@@ -136,18 +316,20 @@ class _CoucouMochiShowcaseState extends State<_CoucouMochiShowcase> {
               child: LayoutBuilder(
                 builder: (context, constraints) => Center(
                   child: _minis
-                      ? const _MiniMochis()
+                      ? _MiniMochis(skin: widget.skin)
                       : _scene != null
                       ? CoucouMochiScene(
                           key: ValueKey(_sceneRevision),
                           type: _scene!,
+                          skin: widget.skin,
                           width: math.min(
                             constraints.maxWidth - 24,
                             constraints.maxHeight * 640 / 176,
                           ),
-                          soundEnabled: _sound,
+                          soundEnabled: widget.sound,
                         )
                       : CoucouMochi(
+                          skin: widget.skin,
                           size: math.max(
                             1,
                             math.min(
@@ -161,7 +343,7 @@ class _CoucouMochiShowcaseState extends State<_CoucouMochiShowcase> {
                           state: _state,
                           controller: _controller,
                           morph: _morph,
-                          soundEnabled: _sound,
+                          soundEnabled: widget.sound,
                         ),
                 ),
               ),
@@ -345,10 +527,12 @@ class _CoucouMochiShowcaseState extends State<_CoucouMochiShowcase> {
                           setState(() => _morph = 1);
                         }),
                         IconButton(
-                          tooltip: _sound ? 'Mute sounds' : 'Enable sounds',
-                          onPressed: () => setState(() => _sound = !_sound),
+                          tooltip: widget.sound
+                              ? 'Mute sounds'
+                              : 'Enable sounds',
+                          onPressed: () => widget.onSoundChanged(!widget.sound),
                           icon: Icon(
-                            _sound ? Icons.volume_up : Icons.volume_off,
+                            widget.sound ? Icons.volume_up : Icons.volume_off,
                           ),
                         ),
                       ],
@@ -410,9 +594,16 @@ class _CoucouMochiShowcaseState extends State<_CoucouMochiShowcase> {
 }
 
 class _EmotionPreview extends StatelessWidget {
-  const _EmotionPreview({required this.emote, this.frozen = false});
+  const _EmotionPreview({
+    required this.emote,
+    this.skin = CoucouMochiSkin.original,
+    this.frozen = false,
+    this.frozenTime = 1.65,
+  });
   final CoucouMochiEmote emote;
+  final CoucouMochiSkin skin;
   final bool frozen;
+  final double frozenTime;
 
   @override
   Widget build(BuildContext context) => ColoredBox(
@@ -420,7 +611,8 @@ class _EmotionPreview extends StatelessWidget {
     child: LayoutBuilder(
       builder: (context, constraints) => Center(
         child: CoucouMochi(
-          key: ValueKey(emote),
+          key: ValueKey((skin, emote)),
+          skin: skin,
           size: math.max(
             1,
             math.min(
@@ -429,7 +621,9 @@ class _EmotionPreview extends StatelessWidget {
             ),
           ),
           initialEmote: emote,
-          frozenAt: frozen ? 1.65 : null,
+          frozenAt: frozen ? frozenTime : null,
+          animate: !frozen,
+          interactive: !frozen,
           soundEnabled: false,
         ),
       ),
@@ -438,8 +632,13 @@ class _EmotionPreview extends StatelessWidget {
 }
 
 class _ScenePreview extends StatelessWidget {
-  const _ScenePreview({required this.type, this.frozen = false});
+  const _ScenePreview({
+    required this.type,
+    this.skin = CoucouMochiSkin.original,
+    this.frozen = false,
+  });
   final CoucouMochiSceneType type;
+  final CoucouMochiSkin skin;
   final bool frozen;
   @override
   Widget build(BuildContext context) => ColoredBox(
@@ -448,6 +647,7 @@ class _ScenePreview extends StatelessWidget {
       builder: (context, constraints) => Center(
         child: CoucouMochiScene(
           type: type,
+          skin: skin,
           width: math.max(
             1,
             math.min(constraints.maxWidth, constraints.maxHeight * 640 / 176),
@@ -463,7 +663,11 @@ class _ScenePreview extends StatelessWidget {
 }
 
 class _MiniMochis extends StatelessWidget {
-  const _MiniMochis({this.frozen = false});
+  const _MiniMochis({
+    this.skin = CoucouMochiSkin.original,
+    this.frozen = false,
+  });
+  final CoucouMochiSkin skin;
   final bool frozen;
   @override
   Widget build(BuildContext context) => ColoredBox(
@@ -489,6 +693,7 @@ class _MiniMochis extends StatelessWidget {
                 for (int i = 0; i < 4; i++)
                   CoucouMochi(
                     size: size,
+                    skin: skin,
                     isMini: true,
                     behaviorSeed: 41 + i * 97,
                     miniColor: const [

@@ -13,14 +13,15 @@ portability: folder_with_assets
 entry: coucou_mochi.dart
 files:
   - coucou_mochi.dart: "entry, public API"
-  - _audio.dart: "audio playback for copied WAV effects"
-  - _engine.dart: "time-addressable motion and interaction model"
-  - _painter.dart: "Canvas renderer"
-  - _greeting.dart: "launch choreography and renderer"
-  - _upload.dart: "replayable file-follow, swallow and upload timeline"
-  - _upload_painter.dart: "upload body, file suction and progress renderer"
-  - _scene_math.dart: "shared scene easing and geometry"
-  - _scenes.dart: "interactive launch and upload scene widgets"
+  - _audio.dart: "required by coucou_mochi.dart"
+  - _engine.dart: "required by coucou_mochi.dart"
+  - _painter.dart: "required by coucou_mochi.dart"
+  - _skins.dart: "required by coucou_mochi.dart"
+  - _greeting.dart: "required by coucou_mochi.dart"
+  - _scenes.dart: "required by coucou_mochi.dart"
+  - _upload.dart: "required by coucou_mochi.dart"
+  - _upload_painter.dart: "required by coucou_mochi.dart"
+  - _scene_math.dart: "required by _greeting.dart"
 vendored_from: null
 assets_required: [lib/components/coucou_mochi/audio/]
 shaders_required: []
@@ -40,7 +41,7 @@ created_deps:
   audioplayers: 6.8.1
 platforms_initial: [android]
 
-version: 1.1.0
+version: 1.2.0
 latest_known_good: null
 last_verified: null
 status: null
@@ -78,6 +79,7 @@ The widget uses Flutter SDK APIs and `audioplayers` 6.8.1. WAVs are loaded into 
 | --- | --- | --- |
 | `CoucouMochi.size` | `double`, `220` | Drawing width; height is 1.28× width. |
 | `state` | `CoucouMochiState`, `idle` | Idle, working, thinking, searching, approval, question, error, finished, rate limit, sleeping, or dizzy pose. |
+| `skin` | `CoucouMochiSkin`, `original` | Original Mochi, `nekoPudding` (Neko Pudding), or `cloud` (Mây Bông). Applies to the body, accessories and mailbox; also available on `CoucouMochiScene` and the painters. |
 | `controller` | `CoucouMochiController?`, `null` | `greet()`, `emote(...)`, `stopEmote()`, and `gulp()` commands. The owner disposes it. |
 | `frozenAt` | `double?`, `null` | Render one deterministic frame at the given time in seconds, without a ticker. |
 | `animate` | `bool`, `true` | Run the `Ticker`; `TickerMode` still pauses it. |
@@ -137,6 +139,45 @@ class _MochiPreviewState extends State<MochiPreview> {
 
 The standalone `_engine.dart` and `_painter.dart` contain the time-addressable motion model and renderer. Sound assets and the `audioplayers` package are kept at the widget boundary. The controller's `gulp()` first morphs a normal body into a mailbox if needed; the lower-level engine's `gulp(t)` only performs the original swallow, leaving morph control to its caller.
 
+## Character skins
+
+The showcase's **Skin** dropdown selects Mochi, Neko Pudding or Mây Bông.
+Changing the selection remounts the preview with a new controller and resets
+the state, emote, loop, mailbox and active scene. The sound preference stays
+unchanged. The reload button restarts the selected skin.
+
+- **Neko Pudding** has a custard body, caramel cap, pink ears, curved tail and
+  a small cat muzzle. Ears and tail react to the displayed expression and pose.
+- **Mây Bông** has a scalloped cloud silhouette, cool soft shading and small
+  weather accents driven by the displayed expression.
+- **Mochi** keeps the original appearance and animation behavior.
+
+All skins support the same eleven states, twelve emotes, tap/hold/gaze,
+greeting, mini companions, mailbox/gulp and full launch/upload scenes. Skin
+details share the existing animation clock: freezing, scrubbing and pausing
+also freeze their motion. No image assets, packages or sounds were added.
+Mini colors act as accents on the new skins, preserving their identity.
+The viewer's Freeze/scrub controls keep the selected skin. The live preview
+is paused while the deterministic frame is shown; Resume restores its
+previous scene and interaction state.
+
+```dart
+CoucouMochi(
+  skin: CoucouMochiSkin.nekoPudding,
+  controller: controller,
+);
+
+const CoucouMochiScene(
+  type: CoucouMochiSceneType.upload,
+  skin: CoucouMochiSkin.cloud,
+);
+```
+
+For hosts outside the showcase, changing `skin` changes appearance while
+keeping the current animation clock. Use `key: ValueKey(skin)` when a full
+restart is desired. The state board includes live/frozen skin, mini, launch
+and upload examples.
+
 ## Five additional emotions
 
 These are Snipz extensions to the ported engine, not additional upstream business states. Existing enum values and positional controller calls are unchanged.
@@ -181,6 +222,15 @@ Both scenes support `frozenAt`, `soundEnabled`, `volume`, `onSound` and `onCompl
 
 ## Regression checks
 
+`test/coucou_mochi_skins_test.dart` checks distinct deterministic renders at
+normal/mini/mailbox sizes, launch/upload skin identity, tap/hold/dizzy/gulp,
+pause behavior, and dropdown/reload resets across all scene modes.
+`test/coucou_mochi_preview_test.dart` covers selected skins through the actual
+viewer's Freeze, scrub, Resume and frozen deep links. To generate a local
+visual atlas, set `MOCHI_SKINS_REVIEW=build/mochi_skins_review.png` before
+running the skins test. The optional atlas uses the installed Windows Arial
+font for labels.
+
 `test/coucou_mochi_test.dart` covers the 28 actual bundle keys, dizzy recovery, mouth continuity, emote keyframes, particle staggering, hover/cue timing, interrupted greetings, pause behavior and gallery rendering. `test/fixtures/coucou_mochi_upstream.json` contains 12 launch and 13 upload frames executed from the local Coucou TypeScript reference at commit `8a5c263`; the tests compare the Flutter port against those independently generated values.
 
 These automated checks do not certify physical Android speaker output or pixel-identical text rasterization. `latest_known_good` and platform verification fields remain unset until device verification.
@@ -198,6 +248,7 @@ For an optional visual review atlas on Windows, set `MOCHI_EMOTIONS_REVIEW` to a
 
 ## Changelog
 
+- `1.2.0` — added procedural Neko Pudding and Mây Bông skins across mascot, mini, mailbox, launch and upload; skin dropdown with preview reload, preserved mute preference and skin variants; added interaction and visual regression coverage.
 - `1.1.0` — added suspicious/confused/chill/music/shy, continuous loop/stop transitions, BPM motion and bounded vector effects, frozen emote previews, responsive demo controls and regression coverage. No additional sounds or music playback.
 - `1.0.1` — fixed audio asset resolution/retry, state entrances and recovery, swallow spring and eyes, emote keyframes, greeting interruption/cues, hover cooldown, particles and reference geometry; added the separate launch/upload scenes, mini behavior loops and upstream-frame regression checks.
 - `1.0.0` — created the Flutter private-study port with procedural animation, interactive controls, gallery states, and local WAV playback.

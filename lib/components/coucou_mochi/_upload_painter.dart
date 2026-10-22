@@ -3,15 +3,18 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 import 'package:flutter/rendering.dart';
 import '_scene_math.dart';
+import '_skins.dart';
 import '_upload.dart';
 
 class CoucouMochiUploadPainter extends CustomPainter {
   const CoucouMochiUploadPainter({
     required this.frame,
     this.fileName = 'sample.txt',
+    this.skin = CoucouMochiSkin.original,
   });
   final CoucouMochiUploadFrame frame;
   final String fileName;
+  final CoucouMochiSkin skin;
   @override
   void paint(Canvas c, Size size) {
     final f = frame;
@@ -185,30 +188,55 @@ class CoucouMochiUploadPainter extends CustomPainter {
   void _mochi(Canvas c, CoucouMochiUploadFrame f) {
     final r = f.d / 2 / 1.04, m = f.morph.clamp(0.0, 1.0);
     final rx = r * (1.04 - .04 * m), ry = r * (.97 - .03 * m);
+    final material = skin == CoucouMochiSkin.original
+        ? null
+        : CoucouMochiSkinPainter(
+            skin: skin,
+            pose: CoucouMochiSkinPose(
+              time: f.t,
+              morph: m,
+              yaw: f.lookX,
+              pitch: f.lookY,
+              tilt: f.tilt,
+              scaleX: f.sx,
+              scaleY: f.sy,
+              eye: f.eye,
+              blush: f.eye == 'content' ? .35 : 0,
+              stateColor: const Color(0xFF34D399),
+              stateTint: f.greenWash * .25,
+            ),
+          );
     c.save();
     c.translate(f.x, f.y + f.hop);
     c.rotate(f.tilt);
     c.scale(f.sx, f.sy);
-    final body = mochiSuperellipse(rx, ry, 2.15 + (5.5 - 2.15) * m);
-    c.drawPath(
-      body,
-      Paint()
-        ..shader = ui.Gradient.linear(
-          Offset(rx * .7, -ry * .9),
-          Offset(-rx * .8, ry * .9),
-          const [Color(0xFFEDEDEF), Color(0xFFC4C5CA)],
-        ),
-    );
-    c.drawPath(
-      body,
-      Paint()
-        ..shader = ui.Gradient.radial(
-          Offset.zero,
-          r * 1.3,
-          const [Color(0x00000000), Color(0x00000000), Color(0x1F000000)],
-          const [0, .67846, 1],
-        ),
-    );
+    final body =
+        material?.bodyPath(r, rx, ry) ??
+        mochiSuperellipse(rx, ry, 2.15 + (5.5 - 2.15) * m);
+    if (material == null) {
+      c.drawPath(
+        body,
+        Paint()
+          ..shader = ui.Gradient.linear(
+            Offset(rx * .7, -ry * .9),
+            Offset(-rx * .8, ry * .9),
+            const [Color(0xFFEDEDEF), Color(0xFFC4C5CA)],
+          ),
+      );
+      c.drawPath(
+        body,
+        Paint()
+          ..shader = ui.Gradient.radial(
+            Offset.zero,
+            r * 1.3,
+            const [Color(0x00000000), Color(0x00000000), Color(0x1F000000)],
+            const [0, .67846, 1],
+          ),
+      );
+    } else {
+      material.paintBehind(c, r, rx, ry);
+      material.paintBody(c, body, r, rx, ry);
+    }
     c.save();
     c.clipPath(body);
     if (m > .3) {
@@ -226,7 +254,16 @@ class CoucouMochiUploadPainter extends CustomPainter {
           ..shader = ui.Gradient.linear(
             Offset(0, my),
             Offset(0, my + mh),
-            const [Color(0xFF030304), Color(0xFF101114)],
+            material == null
+                ? const [Color(0xFF030304), Color(0xFF101114)]
+                : [
+                    Color.lerp(
+                      material.inkColor,
+                      const Color(0xFF000000),
+                      .75,
+                    )!,
+                    material.inkColor,
+                  ],
           ),
       );
       if (mh > 4) {
@@ -247,7 +284,8 @@ class CoucouMochiUploadPainter extends CustomPainter {
     for (final side in [-1, 1]) {
       c.save();
       c.translate(side * sp + lx, ey + ly);
-      final ink = Paint()..color = const Color(0xFF0E0F12);
+      final ink = Paint()
+        ..color = material?.inkColor ?? const Color(0xFF0E0F12);
       if (f.eye == 'content') {
         c.drawArc(
           Rect.fromCircle(center: Offset(0, -eh * .12), radius: ew * .85),
@@ -281,6 +319,14 @@ class CoucouMochiUploadPainter extends CustomPainter {
       c.restore();
     }
     c.restore();
+    material?.paintForeground(
+      c,
+      body,
+      r,
+      rx,
+      ry,
+      faceOffset: Offset(lx, ey + ly),
+    );
     c.restore();
   }
 
@@ -395,5 +441,7 @@ class CoucouMochiUploadPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(CoucouMochiUploadPainter oldDelegate) =>
-      frame != oldDelegate.frame || fileName != oldDelegate.fileName;
+      frame != oldDelegate.frame ||
+      fileName != oldDelegate.fileName ||
+      skin != oldDelegate.skin;
 }

@@ -1,6 +1,6 @@
-id: 2026-10-20-depth-page-transition
-title: "Port Muzicz depth page transition"
-date: 2026-10-20
-added:
-  - depth_page_transition
-fixed: []
+id: 2026-10-22-mochi-skins
+title: "Mochi Neko Pudding and Cloud skins"
+date: 2026-10-22
+added: []
+fixed:
+  - coucou_mochi

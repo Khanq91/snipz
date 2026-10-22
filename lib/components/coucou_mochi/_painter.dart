@@ -8,6 +8,7 @@ import 'package:flutter/material.dart' show Colors;
 import 'package:flutter/rendering.dart';
 
 import '_engine.dart';
+import '_skins.dart';
 
 const Color _baseTop = Color(0xFFEDEDEF);
 const Color _baseBottom = Color(0xFFC4C5CA);
@@ -17,6 +18,7 @@ const double _tau = math.pi * 2;
 class CoucouMochiPainter extends CustomPainter {
   const CoucouMochiPainter({
     required this.frame,
+    this.skin = CoucouMochiSkin.original,
     this.isMini = false,
     this.bodyColor,
     this.backgroundColor,
@@ -24,10 +26,37 @@ class CoucouMochiPainter extends CustomPainter {
   });
 
   final CoucouMochiFrame frame;
+  final CoucouMochiSkin skin;
   final bool isMini;
   final Color? bodyColor;
-  Color get _eyeInk => isMini ? const Color(0xFF10131A) : _ink;
+  Color get _eyeInk => skin == CoucouMochiSkin.original
+      ? (isMini ? const Color(0xFF10131A) : _ink)
+      : _skinPainter.inkColor;
   final Color? backgroundColor;
+
+  CoucouMochiSkinPainter get _skinPainter => CoucouMochiSkinPainter(
+    skin: skin,
+    pose: CoucouMochiSkinPose(
+      time: frame.time,
+      morph: frame.morph,
+      yaw: frame.yaw,
+      pitch: frame.pitch,
+      roll: frame.roll,
+      tilt: frame.tilt,
+      scaleX: frame.scaleX,
+      scaleY: frame.scaleY,
+      blush: frame.blush,
+      eyeOpen: frame.eyeOpen,
+      eye: frame.eye.name,
+      eyeWeights: frame.eyeWeights?.map(
+        (key, value) => MapEntry(key.name, value),
+      ),
+      isMini: isMini,
+      accent: bodyColor,
+      stateColor: Color(frame.bodyColor),
+      stateTint: frame.tint,
+    ),
+  );
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -48,13 +77,21 @@ class CoucouMochiPainter extends CustomPainter {
     if (frame.tilt != 0) canvas.rotate(frame.tilt);
     canvas.scale(frame.scaleX, frame.scaleY);
 
-    final Path body = _bodyPath(rx, ry, r, frame.morph);
-    _drawBody(canvas, body, r, rx, ry);
+    final material = skin == CoucouMochiSkin.original ? null : _skinPainter;
+    material?.paintBehind(canvas, r, rx, ry);
+    final Path body =
+        material?.bodyPath(r, rx, ry) ?? _bodyPath(rx, ry, r, frame.morph);
+    if (material == null) {
+      _drawBody(canvas, body, r, rx, ry);
+    } else {
+      material.paintBody(canvas, body, r, rx, ry);
+    }
     final double blushValue =
         math.max(frame.blush, frame.tint * .5) * (1 - frame.morph);
     if (blushValue > .01) _drawBlush(canvas, body, rx, ry, r, blushValue);
     _drawEyes(canvas, body, r, rx, ry);
     if (frame.morph > .05) _drawMouth(canvas, body, r);
+    material?.paintForeground(canvas, body, r, rx, ry);
     canvas.restore();
 
     if (frame.badge != null && frame.badgeScale > .01 && frame.morph < .25) {
@@ -533,7 +570,16 @@ class CoucouMochiPainter extends CustomPainter {
           ..shader = ui.Gradient.linear(
             Offset(handW * .7, -handH * .85),
             Offset(-handW * .8, handH * .9),
-            const [_baseTop, _baseBottom],
+            skin == CoucouMochiSkin.original
+                ? const [_baseTop, _baseBottom]
+                : [
+                    Color.lerp(
+                      _skinPainter.limbColor,
+                      const Color(0xFFFFFFFF),
+                      .35,
+                    )!,
+                    _skinPainter.limbColor,
+                  ],
           ),
       );
       canvas.drawOval(
@@ -759,6 +805,7 @@ class CoucouMochiPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CoucouMochiPainter oldDelegate) =>
       oldDelegate.frame != frame ||
+      oldDelegate.skin != skin ||
       oldDelegate.isMini != isMini ||
       oldDelegate.backgroundColor != backgroundColor ||
       oldDelegate.bodyColor != bodyColor;

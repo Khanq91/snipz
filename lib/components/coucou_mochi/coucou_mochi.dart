@@ -16,12 +16,14 @@ import 'package:flutter/widgets.dart';
 import '_audio.dart';
 import '_engine.dart';
 import '_painter.dart';
+import '_skins.dart';
 
 export '_audio.dart';
 export '_engine.dart';
 export '_greeting.dart';
 export '_painter.dart';
 export '_scenes.dart';
+export '_skins.dart';
 export '_upload.dart';
 export '_upload_painter.dart';
 
@@ -118,6 +120,7 @@ class CoucouMochi extends StatefulWidget {
     super.key,
     this.size = 220,
     this.state = CoucouMochiState.idle,
+    this.skin = CoucouMochiSkin.original,
     this.controller,
     this.frozenAt,
     this.animate = true,
@@ -153,6 +156,10 @@ class CoucouMochi extends StatefulWidget {
   /// Live state supplied by the host. State changes use Coucou's color, eye,
   /// badge, and entry reactions.
   final CoucouMochiState state;
+
+  /// Procedural character appearance. All skins share the same interactions,
+  /// expressions and animation clock. Use a new key to restart the character.
+  final CoucouMochiSkin skin;
 
   /// Optional one-shot controls for greeting, emotes, and gulp animation.
   final CoucouMochiController? controller;
@@ -527,6 +534,7 @@ class _CoucouMochiState extends State<CoucouMochi>
         backgroundColor: widget.backgroundColor,
         isMini: widget.isMini,
         bodyColor: widget.miniColor,
+        skin: widget.skin,
       ),
     );
     return MouseRegion(
@@ -552,12 +560,14 @@ class _FramePainter extends CustomPainter {
     required this.backgroundColor,
     required this.isMini,
     required this.bodyColor,
+    required this.skin,
   }) : super(repaint: frames);
 
   final ValueListenable<CoucouMochiFrame> frames;
   final Color backgroundColor;
   final bool isMini;
   final Color bodyColor;
+  final CoucouMochiSkin skin;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -566,6 +576,7 @@ class _FramePainter extends CustomPainter {
       backgroundColor: backgroundColor,
       isMini: isMini,
       bodyColor: bodyColor,
+      skin: skin,
     ).paint(canvas, size);
   }
 
@@ -574,7 +585,8 @@ class _FramePainter extends CustomPainter {
       oldDelegate.frames != frames ||
       oldDelegate.backgroundColor != backgroundColor ||
       oldDelegate.isMini != isMini ||
-      oldDelegate.bodyColor != bodyColor;
+      oldDelegate.bodyColor != bodyColor ||
+      oldDelegate.skin != skin;
 }
 
 double _tanh(double value) {

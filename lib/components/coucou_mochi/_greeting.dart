@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 import 'package:flutter/rendering.dart';
 import '_scene_math.dart';
+import '_skins.dart';
 
 class CoucouMochiGreetingFrame {
   double hb = 58, x = 320, y = 90, sx = 1, sy = 1, tilt = 0;
@@ -110,9 +111,14 @@ class CoucouMochiGreetingEngine {
 }
 
 class CoucouMochiGreetingPainter extends CustomPainter {
-  CoucouMochiGreetingPainter({required this.time, this.collapseAt});
+  CoucouMochiGreetingPainter({
+    required this.time,
+    this.collapseAt,
+    this.skin = CoucouMochiSkin.original,
+  });
   final double time;
   final double? collapseAt;
+  final CoucouMochiSkin skin;
   @override
   void paint(Canvas c, Size size) {
     final p = CoucouMochiGreetingEngine().sample(time, collapseAt: collapseAt);
@@ -138,10 +144,32 @@ class CoucouMochiGreetingPainter extends CustomPainter {
         c.save();
         c.translate(437 + (i % 2 == 0 ? -6 : 6), 16 + (i < 2 ? -6 : 6));
         c.scale(p.minis);
-        c.drawPath(
-          mochiSuperellipse(5.3, 4, 3.2),
-          Paint()..color = Color(colors[i]),
-        );
+        if (skin == CoucouMochiSkin.original) {
+          c.drawPath(
+            mochiSuperellipse(5.3, 4, 3.2),
+            Paint()..color = Color(colors[i]),
+          );
+        } else {
+          final material = CoucouMochiSkinPainter(
+            skin: skin,
+            pose: CoucouMochiSkinPose(
+              time: time + i * .4,
+              isMini: true,
+              accent: Color(colors[i]),
+            ),
+          );
+          final body = material.bodyPath(4, 5.3, 4);
+          material.paintBehind(c, 4, 5.3, 4);
+          material.paintBody(c, body, 4, 5.3, 4);
+          for (final side in [-1, 1]) {
+            c.drawCircle(
+              Offset(side * 1.35, .35),
+              .42,
+              Paint()..color = material.inkColor,
+            );
+          }
+          material.paintForeground(c, body, 4, 5.3, 4);
+        }
         c.restore();
       }
     }
@@ -152,9 +180,31 @@ class CoucouMochiGreetingPainter extends CustomPainter {
   void _body(Canvas c, CoucouMochiGreetingFrame p) {
     final hh = p.hb / 2, hw = p.hb / 2 * 1.34;
     if (hh <= .4) return;
+    final material = skin == CoucouMochiSkin.original
+        ? null
+        : CoucouMochiSkinPainter(
+            skin: skin,
+            pose: CoucouMochiSkinPose(
+              time: time,
+              yaw: p.lookX,
+              pitch: p.lookY,
+              tilt: p.tilt,
+              scaleX: p.sx,
+              scaleY: p.sy,
+              eye: p.eye,
+              eyeOpen: p.open,
+              blush: p.eye == 'happy' || p.eye == 'content' ? .35 : 0,
+              stateColor: const Color(0xFF7FB4EA),
+              stateTint: p.tint * .35,
+            ),
+          );
     final halo = Color.lerp(
-      const Color(0xFFE8C39A),
-      const Color(0xFF3B9EFF),
+      skin == CoucouMochiSkin.cloud
+          ? const Color(0xFFC8DFF7)
+          : const Color(0xFFE8C39A),
+      skin == CoucouMochiSkin.nekoPudding
+          ? const Color(0xFFDCA96D)
+          : const Color(0xFF3B9EFF),
       p.haloBlue,
     )!;
     for (final pair in [(2.6, .18), (4.2, .07)]) {
@@ -172,6 +222,7 @@ class CoucouMochiGreetingPainter extends CustomPainter {
     c.translate(p.x, p.y);
     c.rotate(p.tilt);
     c.scale(p.sx, p.sy);
+    material?.paintBehind(c, hh, hw, hh);
     if (p.handL > .01) {
       final r = p.hb * .15 * p.handL;
       final x = mochiLerp(-hw * .35, -hw - p.hb * .22, p.handL);
@@ -212,18 +263,25 @@ class CoucouMochiGreetingPainter extends CustomPainter {
       );
       c.restore();
     }
-    final body = mochiSuperellipse(hw, hh, 3.2);
-    _white(c, body, Offset(hw * .6, -hh), Offset(-hw * .6, hh));
+    final body =
+        material?.bodyPath(hh, hw, hh) ?? mochiSuperellipse(hw, hh, 3.2);
+    if (material == null) {
+      _white(c, body, Offset(hw * .6, -hh), Offset(-hw * .6, hh));
+    } else {
+      material.paintBody(c, body, hh, hw, hh);
+    }
     c.save();
     c.clipPath(body);
-    c.drawPath(
-      body,
-      Paint()
-        ..shader = ui.Gradient.linear(Offset(0, hh), Offset(0, -hh * .1), [
-          Color.fromRGBO(127, 180, 234, p.tint),
-          const Color(0x007FB4EA),
-        ]),
-    );
+    if (material == null) {
+      c.drawPath(
+        body,
+        Paint()
+          ..shader = ui.Gradient.linear(Offset(0, hh), Offset(0, -hh * .1), [
+            Color.fromRGBO(127, 180, 234, p.tint),
+            const Color(0x007FB4EA),
+          ]),
+      );
+    }
     final er = p.hb * .06, sp = p.hb * .19;
     final lx = p.lookX * hw * .42,
         ly = p.lookY * hh * .28 + hh * .12 + p.eyeRoll * hh * 1.25;
@@ -232,7 +290,11 @@ class CoucouMochiGreetingPainter extends CustomPainter {
       c.translate(side * sp + lx, ly);
       if (p.eye == 'dot') {
         c.scale(1, math.max(.12, p.open));
-        c.drawCircle(Offset.zero, er, Paint()..color = const Color(0xFF16171A));
+        c.drawCircle(
+          Offset.zero,
+          er,
+          Paint()..color = material?.inkColor ?? const Color(0xFF16171A),
+        );
       } else {
         final happy = p.eye == 'happy';
         c.drawArc(
@@ -243,12 +305,13 @@ class CoucouMochiGreetingPainter extends CustomPainter {
           math.pi * (happy ? 1.15 : .15),
           math.pi * .7,
           false,
-          mochiStroke(const Color(0xFF16171A), er * .95),
+          mochiStroke(material?.inkColor ?? const Color(0xFF16171A), er * .95),
         );
       }
       c.restore();
     }
     c.restore();
+    material?.paintForeground(c, body, hh, hw, hh, faceOffset: Offset(lx, ly));
     if (p.badge > .01) {
       final br = hh * .3;
       c.save();
@@ -279,6 +342,55 @@ class CoucouMochiGreetingPainter extends CustomPainter {
     Offset end, {
     bool outline = false,
   }) {
+    if (skin != CoucouMochiSkin.original) {
+      final material = CoucouMochiSkinPainter(
+        skin: skin,
+        pose: CoucouMochiSkinPose(time: time),
+      );
+      var limb = p;
+      final bounds = p.getBounds(), unit = bounds.shortestSide;
+      if (outline && skin == CoucouMochiSkin.cloud && unit > .5) {
+        // Small overlapping puffs keep the same hand anchors and wave arc.
+        for (final side in [-1, 0, 1]) {
+          final puff = Path()
+            ..addOval(
+              Rect.fromCircle(
+                center:
+                    bounds.center +
+                    Offset(side * bounds.width * .23, -unit * .2),
+                radius: unit * (side == 0 ? .39 : .31),
+              ),
+            );
+          limb = Path.combine(PathOperation.union, limb, puff);
+        }
+      }
+      c.drawPath(
+        limb,
+        Paint()
+          ..shader = ui.Gradient.linear(start, end, [
+            Color.lerp(material.limbColor, const Color(0xFFFFFFFF), .45)!,
+            material.limbColor,
+          ]),
+      );
+      if (outline) {
+        c.drawPath(
+          limb,
+          mochiStroke(material.inkColor.withValues(alpha: .12), .8),
+        );
+        if (skin == CoucouMochiSkin.nekoPudding) {
+          if (unit > 3) {
+            for (final side in [-1, 0, 1]) {
+              c.drawCircle(
+                bounds.center + Offset(side * unit * .19, -unit * .12),
+                unit * .075,
+                Paint()..color = const Color(0xFFDA9B94),
+              );
+            }
+          }
+        }
+      }
+      return;
+    }
     c.drawPath(
       p,
       Paint()
@@ -345,5 +457,7 @@ class CoucouMochiGreetingPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(CoucouMochiGreetingPainter oldDelegate) =>
-      time != oldDelegate.time || collapseAt != oldDelegate.collapseAt;
+      time != oldDelegate.time ||
+      collapseAt != oldDelegate.collapseAt ||
+      skin != oldDelegate.skin;
 }

@@ -4,6 +4,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 import '_audio.dart';
 import '_greeting.dart';
+import '_skins.dart';
 import '_upload.dart';
 import '_upload_painter.dart';
 
@@ -16,6 +17,7 @@ class CoucouMochiScene extends StatefulWidget {
   const CoucouMochiScene({
     super.key,
     required this.type,
+    this.skin = CoucouMochiSkin.original,
     this.width = 640,
     this.frozenAt,
     this.soundEnabled = true,
@@ -25,6 +27,9 @@ class CoucouMochiScene extends StatefulWidget {
   }) : assert(width > 0),
        assert(volume >= 0 && volume <= 1);
   final CoucouMochiSceneType type;
+
+  /// Changes the character's appearance without restarting its choreography.
+  final CoucouMochiSkin skin;
   final double width;
   final double? frozenAt;
   final bool soundEnabled;
@@ -173,11 +178,12 @@ class _CoucouMochiSceneState extends State<CoucouMochiScene>
     final painter = launch
         ? CoucouMochiGreetingPainter(
             time: t,
+            skin: widget.skin,
             collapseAt: widget.frozenAt != null
                 ? (t >= 4.9 ? 4.9 : null)
                 : _collapse,
           )
-        : CoucouMochiUploadPainter(frame: _upload.sample(t));
+        : CoucouMochiUploadPainter(frame: _upload.sample(t), skin: widget.skin);
     return MouseRegion(
       onEnter: launch && widget.frozenAt == null
           ? (PointerEnterEvent _) {
