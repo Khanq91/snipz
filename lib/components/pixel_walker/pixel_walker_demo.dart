@@ -15,7 +15,16 @@ final ComponentDemo pixelWalkerDemo = ComponentDemo(
   ),
 );
 
-/// Cảnh trong khung header 200px + điều khiển trực tiếp các param chính:
+final _mascots = <(String, String, PixelSprite)>[
+  ('clawd', 'Clawd', PixelSprite.clawd()),
+  ('miu', 'Miu', PixelSprite.miu()),
+  ('capy', 'Capy', PixelSprite.capy()),
+  ('duck', 'Quạc', PixelSprite.duck()),
+  ('crab', 'Cáu', PixelSprite.crab()),
+  ('axolotl', 'Axo', PixelSprite.axolotl()),
+];
+
+/// Cảnh trong khung header 160px + điều khiển trực tiếp các param chính:
 /// nút đổi `scene` (thành phố / thành phố đêm) và `sprite` (6 mascot: Clawd,
 /// Miu, Capy, Quạc, Cáu, Axo), kéo slider `progress` để thấy hiệu ứng hiện
 /// dần, bật `walking` để mascot bước và các layer trôi parallax.
@@ -30,19 +39,12 @@ class _PixelWalkerShowcaseState extends State<_PixelWalkerShowcase> {
   double _progress = 1.0;
   double _scale = 1.0;
   bool _walking = true;
+  bool _ready = false;
+  bool _scrubbing = false;
+  double _sampleTime = .38;
+  double _speed = 1;
   PixelWalkerScene _scene = PixelWalkerScene.city;
   int _mascot = 0;
-
-  // null = Clawd mặc định (tô bằng mascotColor); thứ tự 4 con mới theo đề
-  // xuất: Capy → Vịt → Cua → Axolotl.
-  static final List<(String, PixelSprite?)> _mascots = <(String, PixelSprite?)>[
-    ('Clawd (bọ cam)', null),
-    ('Miu (mèo)', PixelSprite.miu()),
-    ('Capy (capybara)', PixelSprite.capy()),
-    ('Quạc (vịt)', PixelSprite.duck()),
-    ('Cáu (cua)', PixelSprite.crab()),
-    ('Axo (axolotl)', PixelSprite.axolotl()),
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -56,14 +58,17 @@ class _PixelWalkerShowcaseState extends State<_PixelWalkerShowcase> {
       child: Column(
         children: <Widget>[
           SizedBox(
-            height: 200,
+            height: 160,
             width: double.infinity,
             child: PixelWalker(
               progress: _progress,
               walking: _walking,
+              readiness: _ready ? 1 : 0,
+              frozenAt: _scrubbing ? _sampleTime : null,
+              speed: _speed,
               scale: _scale,
               scene: _scene,
-              sprite: _mascots[_mascot].$2,
+              sprite: _mascots[_mascot].$3,
               skylineColor: night
                   ? const Color(0xFF93A1BE)
                   : const Color(0xFFB9B4AE),
@@ -75,7 +80,7 @@ class _PixelWalkerShowcaseState extends State<_PixelWalkerShowcase> {
               padding: const EdgeInsets.all(16),
               children: <Widget>[
                 const Text(
-                  'background',
+                  'Khung cảnh',
                   style: TextStyle(color: Colors.white54),
                 ),
                 const SizedBox(height: 8),
@@ -99,7 +104,7 @@ class _PixelWalkerShowcaseState extends State<_PixelWalkerShowcase> {
                 ),
                 const SizedBox(height: 16),
                 const Text(
-                  'pixel art',
+                  'Bạn đồng hành',
                   style: TextStyle(color: Colors.white54),
                 ),
                 const SizedBox(height: 8),
@@ -109,7 +114,7 @@ class _PixelWalkerShowcaseState extends State<_PixelWalkerShowcase> {
                   children: <Widget>[
                     for (int i = 0; i < _mascots.length; i++)
                       _PickChip(
-                        label: _mascots[i].$1,
+                        label: _mascots[i].$2,
                         selected: _mascot == i,
                         onTap: () => setState(() => _mascot = i),
                       ),
@@ -118,14 +123,55 @@ class _PixelWalkerShowcaseState extends State<_PixelWalkerShowcase> {
                 const SizedBox(height: 8),
                 SwitchListTile(
                   title: const Text(
-                    'walking',
+                    'Đi bộ',
                     style: TextStyle(color: Colors.white70),
                   ),
                   value: _walking,
-                  onChanged: (bool v) => setState(() => _walking = v),
+                  onChanged: (bool v) => setState(() {
+                    _walking = v;
+                    if (v) _ready = false;
+                  }),
+                ),
+                SwitchListTile(
+                  title: const Text(
+                    'Sẵn sàng',
+                    style: TextStyle(color: Colors.white70),
+                  ),
+                  value: _ready,
+                  onChanged: (value) => setState(() {
+                    _ready = value;
+                    if (value) _walking = false;
+                  }),
                 ),
                 Text(
-                  'progress ${_progress.toStringAsFixed(2)}',
+                  'Nhịp bước ${_speed.toStringAsFixed(2)}×',
+                  style: const TextStyle(color: Colors.white54),
+                ),
+                Slider(
+                  key: const ValueKey('pixel-speed'),
+                  value: _speed,
+                  min: .4,
+                  max: 1.8,
+                  onChanged: (value) => setState(() => _speed = value),
+                ),
+                SwitchListTile(
+                  title: const Text(
+                    'Xem từng nhịp',
+                    style: TextStyle(color: Colors.white70),
+                  ),
+                  value: _scrubbing,
+                  onChanged: (value) => setState(() => _scrubbing = value),
+                ),
+                if (_scrubbing)
+                  Slider(
+                    key: const ValueKey('pixel-scrub'),
+                    value: _sampleTime,
+                    max: 4,
+                    label: '${_sampleTime.toStringAsFixed(2)} s',
+                    onChanged: (value) => setState(() => _sampleTime = value),
+                  ),
+                Text(
+                  'Độ mở ${(_progress * 100).round()}%',
                   style: const TextStyle(color: Colors.white54),
                 ),
                 Slider(
@@ -133,7 +179,7 @@ class _PixelWalkerShowcaseState extends State<_PixelWalkerShowcase> {
                   onChanged: (double v) => setState(() => _progress = v),
                 ),
                 Text(
-                  'scale ${_scale.toStringAsFixed(2)}',
+                  'Cỡ pixel ${_scale.toStringAsFixed(2)}×',
                   style: const TextStyle(color: Colors.white54),
                 ),
                 Slider(

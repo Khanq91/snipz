@@ -14,35 +14,74 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
+/// Movement personality; custom sprites default to [clawd].
+enum PixelGait { clawd, miu, capy, duck, crab, axolotl }
+
+/// Deterministic pose: [bob]/[sway] in sprite cells, [lean] in radians.
+/// Pixel frames change discretely; the body transform remains continuous.
+@immutable
+class PixelSpritePose {
+  const PixelSpritePose({
+    required this.frameIndex,
+    this.lean = 0,
+    this.bob = 0,
+    this.sway = 0,
+    this.scaleX = 1,
+    this.scaleY = 1,
+  });
+
+  final int frameIndex;
+  final double lean;
+  final double bob;
+  final double sway;
+  final double scaleX;
+  final double scaleY;
+}
+
 /// Sprite pixel-art dạng ma trận ký tự: mỗi frame là một list dòng, mỗi ký tự
 /// tra màu trong [palette]; `.` (hoặc ký tự không có trong palette) là trong
 /// suốt. Mọi dòng trong một frame phải dài bằng nhau, mọi frame cùng kích cỡ.
 ///
-/// Frame 0 là pose đứng yên; các frame còn lại là chu kỳ bước đi. Frame lẻ
-/// được nghiêng nhẹ + nhấc người (bob) khi đi bộ.
+/// Frame 0 là pose đứng yên; các frame còn lại là chu kỳ bước đi. [gait]
+/// quyết định nhịp bước và chuyển động thân liên tục giữa các frame pixel.
 class PixelSprite {
-  const PixelSprite({required this.frames, required this.palette})
-    : assert(frames.length > 0);
+  const PixelSprite({
+    required this.frames,
+    required this.palette,
+    this.gait = PixelGait.clawd,
+  }) : assert(frames.length > 0);
 
   /// Mascot mặc định: con bọ cam kiểu Clawd — thân vuông bo, 2 hốc mắt,
-  /// 3 cặp chân, 2 frame bước.
+  /// 3 cặp chân chạy nhanh, 1 pose đứng và 6 frame bước có màu sáng/tối.
   factory PixelSprite.clawd({Color color = const Color(0xFFE8875C)}) {
     return PixelSprite(
       frames: _clawdFrames,
-      palette: <String, Color>{'X': color},
+      palette: <String, Color>{
+        'X': color,
+        'H': Color.lerp(color, Colors.white, 0.23)!,
+        'S': Color.lerp(color, const Color(0xFF663B2C), 0.30)!,
+        'E': const Color(0xFF35251F),
+      },
     );
   }
 
   /// Mascot mèo "Miu" (tự chế): nhìn nghiêng bước sang phải, tai nhọn, mắt
-  /// khe dọc, sọc lưng + chóp đuôi màu [stripe], đuôi vẫy theo nhịp bước —
-  /// 4 frame (đứng / sải chân / đứng / thu chân).
+  /// khe dọc, sọc lưng + chóp đuôi màu [stripe]. Sáu frame bước nhẹ, đuôi
+  /// đi sau nhịp chân; thêm màu tai, mũi và vùng lông sáng.
   factory PixelSprite.miu({
     Color body = const Color(0xFFEBD3A0),
     Color stripe = const Color(0xFFC9884A),
   }) {
     return PixelSprite(
       frames: _miuFrames,
-      palette: <String, Color>{'X': body, 'S': stripe},
+      gait: PixelGait.miu,
+      palette: <String, Color>{
+        'X': body,
+        'S': stripe,
+        'H': Color.lerp(body, Colors.white, 0.40)!,
+        'E': const Color(0xFF35291F),
+        'N': const Color(0xFFB66E66),
+      },
     );
   }
 
@@ -56,13 +95,19 @@ class PixelSprite {
   }) {
     return PixelSprite(
       frames: _capyFrames,
-      palette: <String, Color>{'X': body, 'S': dark, 'E': eye},
+      gait: PixelGait.capy,
+      palette: <String, Color>{
+        'X': body,
+        'S': dark,
+        'E': eye,
+        'H': Color.lerp(body, const Color(0xFFF3DEB8), 0.35)!,
+      },
     );
   }
 
   /// Mascot vịt "Quạc": đầu tròn nhô trước, mỏ bè 2 ô, thân bầu đuôi hất,
-  /// chân mảnh bàn bè — frame lẻ đuôi hất lên + chân sải, cộng tilt/bob của
-  /// painter thành dáng lạch bạch. [beak] tô mỏ + chân.
+  /// chân mảnh bàn bè, cánh và đuôi theo nhịp chân, thân nghiêng liên tục
+  /// thành dáng lạch bạch. [beak] tô mỏ + chân.
   factory PixelSprite.duck({
     Color body = const Color(0xFFF2DE96),
     Color beak = const Color(0xFFE8963F),
@@ -70,7 +115,14 @@ class PixelSprite {
   }) {
     return PixelSprite(
       frames: _duckFrames,
-      palette: <String, Color>{'X': body, 'B': beak, 'E': eye},
+      gait: PixelGait.duck,
+      palette: <String, Color>{
+        'X': body,
+        'B': beak,
+        'E': eye,
+        'H': Color.lerp(body, Colors.white, 0.42)!,
+        'S': Color.lerp(body, beak, 0.35)!,
+      },
     );
   }
 
@@ -85,7 +137,14 @@ class PixelSprite {
   }) {
     return PixelSprite(
       frames: _crabFrames,
-      palette: <String, Color>{'X': body, 'W': eyeWhite, 'E': eye},
+      gait: PixelGait.crab,
+      palette: <String, Color>{
+        'X': body,
+        'W': eyeWhite,
+        'E': eye,
+        'H': Color.lerp(body, const Color(0xFFFFD4A8), 0.35)!,
+        'S': Color.lerp(body, const Color(0xFF762D36), 0.30)!,
+      },
     );
   }
 
@@ -99,286 +158,639 @@ class PixelSprite {
   }) {
     return PixelSprite(
       frames: _axoFrames,
-      palette: <String, Color>{'X': body, 'S': accent, 'E': eye},
+      gait: PixelGait.axolotl,
+      palette: <String, Color>{
+        'X': body,
+        'S': accent,
+        'E': eye,
+        'H': Color.lerp(body, Colors.white, 0.45)!,
+      },
     );
   }
 
   final List<List<String>> frames;
   final Map<String, Color> palette;
+  final PixelGait gait;
 
   int get rowCount => frames.first.length;
   int get colCount => frames.first.first.length;
+
+  /// Samples phase seconds (already speed-scaled), independently of a widget.
+  /// [motion] scales gestures, not [time]. Readiness keeps the feet anchored.
+  /// Celebration is one 0-to-1 gesture with neutral endpoints.
+  PixelSpritePose samplePose(
+    double time, {
+    bool walking = true,
+    double motion = 1,
+    double readiness = 0,
+    double celebration = 0,
+  }) {
+    final double amount = walking ? motion.clamp(0.0, 1.0) : 0;
+    final double ready = readiness.clamp(0.0, 1.0);
+    final double done = celebration.clamp(0.0, 1.0);
+    final double cheer = done > 0 && done < 1 ? math.sin(done * math.pi) : 0;
+    // A cycle contains two steps, with a character-specific cadence.
+    final double hz = switch (gait) {
+      PixelGait.clawd => 2.15,
+      PixelGait.miu => 1.45,
+      PixelGait.capy => 0.85,
+      PixelGait.duck => 1.60,
+      PixelGait.crab => 1.90,
+      PixelGait.axolotl => 1.05,
+    };
+    final double cycle = time * hz;
+    final double phase = (cycle % 1) * math.pi * 2;
+    final double step = math.sin(phase);
+    final double lift = (1 - math.cos(phase * 2)) / 2;
+    final (
+      double lean,
+      double bob,
+      double sway,
+      double squash,
+    ) = switch (gait) {
+      PixelGait.clawd => (
+        0.045 * step,
+        -0.28 * lift,
+        0.07 * step,
+        0.025 * lift,
+      ),
+      PixelGait.miu => (0.026 * step, -0.24 * lift, 0.04 * step, 0.012 * lift),
+      PixelGait.capy => (0.018 * step, -0.09 * lift, 0.05 * step, 0.035 * lift),
+      PixelGait.duck => (0.080 * step, -0.23 * lift, 0.23 * step, 0.020 * lift),
+      PixelGait.crab => (0.022 * step, -0.08 * lift, 0.34 * step, 0.012 * lift),
+      PixelGait.axolotl => (
+        0.030 * step,
+        -0.16 * lift,
+        0.11 * step,
+        0.022 * lift,
+      ),
+    };
+    final double prepareLean = switch (gait) {
+      PixelGait.miu => -0.035,
+      PixelGait.capy => -0.018,
+      PixelGait.duck => 0.045,
+      PixelGait.crab => 0,
+      PixelGait.axolotl => -0.025,
+      PixelGait.clawd => -0.020,
+    };
+    final double jump = switch (gait) {
+      PixelGait.clawd => 0.75,
+      PixelGait.miu => 0.90,
+      PixelGait.capy => 0.28,
+      PixelGait.duck => 0.70,
+      PixelGait.crab => 0.42,
+      PixelGait.axolotl => 0.55,
+    };
+    final double compressed = ready * (gait == PixelGait.capy ? 0.035 : 0.060);
+    final double stretch = cheer * 0.045;
+    final int walkFrames = frames.length - 1;
+    return PixelSpritePose(
+      frameIndex: amount > 0 && walkFrames > 0
+          ? 1 + ((cycle % 1) * walkFrames).floor().clamp(0, walkFrames - 1)
+          : 0,
+      lean:
+          lean * amount +
+          prepareLean * ready +
+          0.035 * cheer * math.sin(done * math.pi * 2),
+      bob: bob * amount - jump * cheer * cheer,
+      sway: sway * amount,
+      scaleX: 1 + compressed + squash * amount - stretch * 0.5,
+      scaleY: 1 - compressed - squash * amount + stretch,
+    );
+  }
 }
 
-const List<String> _clawdStand = <String>[
-  '..XXXXXXXX..',
-  '.XXXXXXXXXX.',
-  'XXXXXXXXXXXX',
-  'XXX..XX..XXX',
-  'XXX..XX..XXX',
-  'XXXXXXXXXXXX',
-  'XXXXXXXXXXXX',
-  '.XXXXXXXXXX.',
-  '..XX.XX.XX..',
-  '..XX.XX.XX..',
-];
-
+// One rest pose followed by six hand-authored pixel walk poses per mascot.
 const List<List<String>> _clawdFrames = <List<String>>[
-  _clawdStand,
   <String>[
-    '..XXXXXXXX..',
-    '.XXXXXXXXXX.',
+    '..HHHHXXXX..',
+    '.HXXXXXXXXX.',
     'XXXXXXXXXXXX',
-    'XXX..XX..XXX',
-    'XXX..XX..XXX',
+    'XXXEEXXEEXXX',
+    'XXXEEXXEEXXX',
     'XXXXXXXXXXXX',
-    'XXXXXXXXXXXX',
-    '.XXXXXXXXXX.',
-    '.XX...XX.XX.',
-    'XX....XX..XX',
+    'SXXXXXXXXXXS',
+    '.SSXXXXXXSS.',
+    '..XX.SS.XX..',
+    '..SS.SS.SS..',
   ],
-  _clawdStand,
   <String>[
-    '..XXXXXXXX..',
-    '.XXXXXXXXXX.',
+    '..HHHHXXXX..',
+    '.HXXXXXXXXX.',
     'XXXXXXXXXXXX',
-    'XXX..XX..XXX',
-    'XXX..XX..XXX',
+    'XXXEEXXEEXXX',
+    'XXXEEXXEEXXX',
     'XXXXXXXXXXXX',
-    'XXXXXXXXXXXX',
-    '.XXXXXXXXXX.',
-    '.XX.XX...XX.',
-    'XX..XX....XX',
+    'SXXXXXXXXXXS',
+    '.SSXXXXXXSS.',
+    '.XX...SS.XX.',
+    'SS....SS..SS',
   ],
-];
-
-const List<String> _miuStand = <String>[
-  '..........X....X',
-  '..........XX..XX',
-  '..S.......XXXXXX',
-  '.X........XXX.XX',
-  '.X........XXX.XX',
-  '.XXXSXSXSXXXXXXX',
-  '..XXSXSXSXXXXXXX',
-  '..XXXXXXXXXX....',
-  '..XXXXXXXXXX....',
-  '...XX....XX.....',
-  '...XX....XX.....',
+  <String>[
+    '..HHHHXXXX..',
+    '.HXXXXXXXXX.',
+    'XXXXXXXXXXXX',
+    'XXXEEXXEEXXX',
+    'XXXEEXXEEXXX',
+    'XXXXXXXXXXXX',
+    'SXXXXXXXXXXS',
+    '.SSXXXXXXSS.',
+    '..XX..SSXX..',
+    '..SS..SS.SS.',
+  ],
+  <String>[
+    '..HHHHXXXX..',
+    '.HXXXXXXXXX.',
+    'XXXXXXXXXXXX',
+    'XXXEEXXEEXXX',
+    'XXXEEXXEEXXX',
+    'XXXXXXXXXXXX',
+    'SXXXXXXXXXXS',
+    '.SSXXXXXXSS.',
+    '...XXSS..XX.',
+    '...SS.SS..SS',
+  ],
+  <String>[
+    '..HHHHXXXX..',
+    '.HXXXXXXXXX.',
+    'XXXXXXXXXXXX',
+    'XXXEEXXEEXXX',
+    'XXXEEXXEEXXX',
+    'XXXXXXXXXXXX',
+    'SXXXXXXXXXXS',
+    '.SSXXXXXXSS.',
+    '.XX.SS...XX.',
+    'SS..SS....SS',
+  ],
+  <String>[
+    '..HHHHXXXX..',
+    '.HXXXXXXXXX.',
+    'XXXXXXXXXXXX',
+    'XXXEEXXEEXXX',
+    'XXXEEXXEEXXX',
+    'XXXXXXXXXXXX',
+    'SXXXXXXXXXXS',
+    '.SSXXXXXXSS.',
+    '..XXSS..XX..',
+    '..SS.SS.SS..',
+  ],
+  <String>[
+    '..HHHHXXXX..',
+    '.HXXXXXXXXX.',
+    'XXXXXXXXXXXX',
+    'XXXEEXXEEXXX',
+    'XXXEEXXEEXXX',
+    'XXXXXXXXXXXX',
+    'SXXXXXXXXXXS',
+    '.SSXXXXXXSS.',
+    '.XX..SSXX...',
+    'SS..SS.SS...',
+  ],
 ];
 
 const List<List<String>> _miuFrames = <List<String>>[
-  _miuStand,
   <String>[
     '..........X....X',
-    '..........XX..XX',
-    'S.........XXXXXX',
-    '.X........XXX.XX',
-    '.X........XXX.XX',
-    '.XXXSXSXSXXXXXXX',
-    '..XXSXSXSXXXXXXX',
-    '..XXXXXXXXXX....',
-    '..XXXXXXXXXX....',
-    '..XX.....XX.....',
-    '.XX........XX...',
+    '..........XS..SX',
+    '..S.......XXXXXX',
+    '.X........XXEXXX',
+    '.X........XXEXXN',
+    '.XXXSSXSSXXXXHXX',
+    '..XXXSXXSXXXXXX.',
+    '..XXXXHXXXXX....',
+    '..SXXXXXXSSX....',
+    '...XX....XX.....',
+    '...SS....SS.....',
   ],
-  _miuStand,
   <String>[
     '..........X....X',
-    '..........XX..XX',
+    '..........XS..SX',
     '.S........XXXXXX',
-    '.X........XXX.XX',
-    '.X........XXX.XX',
-    '.XXXSXSXSXXXXXXX',
-    '..XXSXSXSXXXXXXX',
-    '..XXXXXXXXXX....',
-    '..XXXXXXXXXX....',
-    '....XX..XX......',
-    '....XX..XX......',
+    'X.........XXEXXX',
+    'X.........XXEXXN',
+    '.X.XSSXSSXXXXHXX',
+    '..XXXSXXSXXXXXX.',
+    '..XXXXHXXXXX....',
+    '..SXXXXXXSSX....',
+    '..XX......XX....',
+    '..SS......SS....',
   ],
-];
-
-// Capy 18×10: thân dài lưng ngang, đầu liền thân, mõm vuông chóp mũi S,
-// tai S trên đỉnh, chân S ngắn — frame bước chỉ đảo chéo 2 cặp chân.
-const List<String> _capyStand = <String>[
-  '............S..S..',
-  '...........XXXXXX.',
-  '...........XXXEXXX',
-  '..XXXXXXXXXXXXXXXS',
-  '.XXXXXXXXXXXXXXXXS',
-  '.XXXXXXXXXXXXXXXX.',
-  '.XXXXXXXXXXXXXXX..',
-  '..XXXXXXXXXXXXXX..',
-  '...SS.......SS....',
-  '...SS.......SS....',
+  <String>[
+    '..........X....X',
+    '..........XS..SX',
+    'S.........XXXXXX',
+    'X.........XXEXXX',
+    '.X........XXEXXN',
+    '.X.XSSXSSXXXXHXX',
+    '..XXXSXXSXXXXXX.',
+    '..XXXXHXXXXX....',
+    '..SXXXXXXSSX....',
+    '...XX.....XX....',
+    '...SS.....SS....',
+  ],
+  <String>[
+    '..........X....X',
+    '..........XS..SX',
+    '..........XXXXXX',
+    'SX........XXEXXX',
+    '.X........XXEXXN',
+    '.X.XSSXSSXXXXHXX',
+    '..XXXSXXSXXXXXX.',
+    '..XXXXHXXXXX....',
+    '..SXXXXXXSSX....',
+    '....XX...XX.....',
+    '....SS...SS.....',
+  ],
+  <String>[
+    '..........X....X',
+    '..........XS..SX',
+    '..........XXXXXX',
+    '.S........XXEXXX',
+    'X.........XXEXXN',
+    '.X.XSSXSSXXXXHXX',
+    '..XXXSXXSXXXXXX.',
+    '..XXXXHXXXXX....',
+    '..SXXXXXXSSX....',
+    '....XX..XX......',
+    '....SS..SS......',
+  ],
+  <String>[
+    '..........X....X',
+    '..........XS..SX',
+    '..........XXXXXX',
+    '..........XXEXXX',
+    '.S........XXEXXN',
+    'X..XSSXSSXXXXHXX',
+    '.XXXXSXXSXXXXXX.',
+    '..XXXXHXXXXX....',
+    '..SXXXXXXSSX....',
+    '...XX...XX......',
+    '...SS...SS......',
+  ],
+  <String>[
+    '..........X....X',
+    '..........XS..SX',
+    '..........XXXXXX',
+    'S.........XXEXXX',
+    'X.........XXEXXN',
+    '.X.XSSXSSXXXXHXX',
+    '..XXXSXXSXXXXXX.',
+    '..XXXXHXXXXX....',
+    '..SXXXXXXSSX....',
+    '..XX.....XX.....',
+    '..SS.....SS.....',
+  ],
 ];
 
 const List<List<String>> _capyFrames = <List<String>>[
-  _capyStand,
   <String>[
     '............S..S..',
-    '...........XXXXXX.',
+    '...........HXXXXX.',
     '...........XXXEXXX',
-    '..XXXXXXXXXXXXXXXS',
-    '.XXXXXXXXXXXXXXXXS',
-    '.XXXXXXXXXXXXXXXX.',
-    '.XXXXXXXXXXXXXXX..',
-    '..XXXXXXXXXXXXXX..',
+    '..HHHHXXXXXXXXXXXS',
+    '.HXXXXXXXXXXXXXXXS',
+    '.XXXXXXXXXXXXHXXX.',
+    '.SXXXXXXXXXXXXXX..',
+    '..SSXXXXXXXXSSSS..',
+    '...SS.......SS....',
+    '...SS.......SS....',
+  ],
+  <String>[
+    '............S..S..',
+    '...........HXXXXX.',
+    '...........XXXEXXX',
+    '..HHHHXXXXXXXXXXXS',
+    '.HXXXXXXXXXXXXXXXS',
+    '.XXXXXXXXXXXXHXXX.',
+    '.SXXXXXXXXXXXXXX..',
+    '..SSXXXXXXXXSSSS..',
     '..SS.........SS...',
     '..SS.........SS...',
   ],
-  _capyStand,
   <String>[
     '............S..S..',
-    '...........XXXXXX.',
+    '...........HXXXXX.',
     '...........XXXEXXX',
-    '..XXXXXXXXXXXXXXXS',
-    '.XXXXXXXXXXXXXXXXS',
-    '.XXXXXXXXXXXXXXXX.',
-    '.XXXXXXXXXXXXXXX..',
-    '..XXXXXXXXXXXXXX..',
+    '..HHHHXXXXXXXXXXXS',
+    '.HXXXXXXXXXXXXXXXS',
+    '.XXXXXXXXXXXXHXXX.',
+    '.SXXXXXXXXXXXXXX..',
+    '..SSXXXXXXXXSSSS..',
+    '...SS........SS...',
+    '...SS........SS...',
+  ],
+  <String>[
+    '............S..S..',
+    '...........HXXXXX.',
+    '...........XXXEXXX',
+    '..HHHHXXXXXXXXXXXS',
+    '.HXXXXXXXXXXXXXXXS',
+    '.XXXXXXXXXXXXHXXX.',
+    '.SXXXXXXXXXXXXXX..',
+    '..SSXXXXXXXXSSSS..',
+    '....SS......SS....',
+    '.....SS.....SS....',
+  ],
+  <String>[
+    '............S..S..',
+    '...........HXXXXX.',
+    '...........XXXEXXX',
+    '..HHHHXXXXXXXXXXXS',
+    '.HXXXXXXXXXXXXXXXS',
+    '.XXXXXXXXXXXXHXXX.',
+    '.SXXXXXXXXXXXXXX..',
+    '..SSXXXXXXXXSSSS..',
     '....SS.....SS.....',
     '....SS.....SS.....',
   ],
-];
-
-// Vịt 14×10: đầu tròn nhô trước, mỏ B bè 2 ô, thân bầu, đuôi hất 1 ô sau
-// lưng (frame sải hất lên 1 hàng), chân B mảnh + bàn bè.
-const List<String> _duckStand = <String>[
-  '........XXXX..',
-  '........XXEX..',
-  '........XXXXBB',
-  '........XXXX..',
-  '.X......XXXX..',
-  '.XXXXXXXXXXX..',
-  '..XXXXXXXXXXX.',
-  '..XXXXXXXXXX..',
-  '....B....B....',
-  '...BB...BB....',
+  <String>[
+    '............S..S..',
+    '...........HXXXXX.',
+    '...........XXXEXXX',
+    '..HHHHXXXXXXXXXXXS',
+    '.HXXXXXXXXXXXXXXXS',
+    '.XXXXXXXXXXXXHXXX.',
+    '.SXXXXXXXXXXXXXX..',
+    '..SSXXXXXXXXSSSS..',
+    '...SS......SS.....',
+    '...SS......SS.....',
+  ],
+  <String>[
+    '............S..S..',
+    '...........HXXXXX.',
+    '...........XXXEXXX',
+    '..HHHHXXXXXXXXXXXS',
+    '.HXXXXXXXXXXXXXXXS',
+    '.XXXXXXXXXXXXHXXX.',
+    '.SXXXXXXXXXXXXXX..',
+    '..SSXXXXXXXXSSSS..',
+    '..SS........SS....',
+    '..SS.......SS.....',
+  ],
 ];
 
 const List<List<String>> _duckFrames = <List<String>>[
-  _duckStand,
   <String>[
-    '........XXXX..',
+    '........HHXX..',
     '........XXEX..',
     '........XXXXBB',
+    '........HXXX..',
     '.X......XXXX..',
+    '.XXHHXXXXXXX..',
+    '..XXXSSXXXXXX.',
+    '..SSXXXXXXSS..',
+    '....B....B....',
+    '...BB...BB....',
+  ],
+  <String>[
+    '........HHXX..',
+    '........XXEX..',
+    '........XXXXBB',
+    '.X......HXXX..',
     '........XXXX..',
-    '.XXXXXXXXXXX..',
-    '..XXXXXXXXXXX.',
-    '..XXXXXXXXXX..',
+    '.XXHHSSXXXXX..',
+    '..XXXSSXXXXXX.',
+    '..SSXXXXXXSS..',
     '...B......B...',
     '..BB.....BB...',
   ],
-  _duckStand,
   <String>[
-    '........XXXX..',
+    '........HHXX..',
     '........XXEX..',
     '........XXXXBB',
+    '.X......HXXX..',
     '........XXXX..',
+    '.XXHHXXXXXXX..',
+    '..XXSSSXXXXXX.',
+    '..SSXXXXXXSS..',
+    '....B.....B...',
+    '...BB....BB...',
+  ],
+  <String>[
+    '........HHXX..',
+    '........XXEX..',
+    '........XXXXBB',
+    '........HXXX..',
     '.X......XXXX..',
-    '.XXXXXXXXXXX..',
-    '..XXXXXXXXXXX.',
-    '..XXXXXXXXXX..',
-    '.....B..B.....',
+    '.XXHHXXXXXXX..',
+    '..XXSSSXXXXXX.',
+    '..SSXXXXXXSS..',
+    '.....B...B....',
     '....BB..BB....',
   ],
-];
-
-// Cua 16×10: front-facing — mắt lồi 2×2 (W lòng trắng, E đồng tử lé vào
-// trong) trên cuống, thân 8 ô tách rời 2 càng (khối kiểu chữ C, kìm há ra
-// ngoài) nối bằng cánh tay 1 hàng; frame bước thay phiên giơ hẳn một càng
-// lên ngang mắt, chân chỉ xoè nhẹ — "cáu nhưng ngáo".
-const List<String> _crabStand = <String>[
-  '.....WW..WW.....',
-  '.....WE..EW.....',
-  '......X..X......',
-  '....XXXXXXXX....',
-  'XX..XXXXXXXX..XX',
-  '.XXXXXXXXXXXXXX.',
-  'XX..XXXXXXXX..XX',
-  '....XXXXXXXX....',
-  '....XX.XX.XX....',
-  '....XX.XX.XX....',
+  <String>[
+    '........HHXX..',
+    '........XXEX..',
+    '........XXXXBB',
+    '........HXXX..',
+    '.X......XXXX..',
+    '.XXHHXXXXXXX..',
+    '..XXXXSSXXXXX.',
+    '..SSXXXXXXSS..',
+    '.....B..B.....',
+    '....BB.BB.....',
+  ],
+  <String>[
+    '........HHXX..',
+    '........XXEX..',
+    '........XXXXBB',
+    '........HXXX..',
+    '.X......XXXX..',
+    '.XXHHXXXXXXX..',
+    '..XXXXSSXXXXX.',
+    '..SSXXXXXXSS..',
+    '....B...B.....',
+    '...BB..BB.....',
+  ],
+  <String>[
+    '........HHXX..',
+    '........XXEX..',
+    '........XXXXBB',
+    '.X......HXXX..',
+    '........XXXX..',
+    '.XXHHSSXXXXX..',
+    '..XXXSSXXXXXX.',
+    '..SSXXXXXXSS..',
+    '...B.....B....',
+    '..BB....BB....',
+  ],
 ];
 
 const List<List<String>> _crabFrames = <List<String>>[
-  _crabStand,
   <String>[
-    'XX...WW..WW.....',
+    '.....WW..WW.....',
+    '.....WE..EW.....',
+    '......X..X......',
+    '....XHHHHXXX....',
+    'XX..XXXXXXXX..XX',
+    '.XXXXXXXXXXXXXX.',
+    'SS..XXXXXXXX..SS',
+    '....SSXXXXSS....',
+    '....XX.XX.XX....',
+    '....SS.SS.SS....',
+  ],
+  <String>[
+    'HX...WW..WW.....',
     '.X...WE..EW.....',
-    'XXX...X..X......',
-    '..XXXXXXXXXX....',
-    '....XXXXXXXX..XX',
+    'XSX...X..X......',
+    '..XXXHHHHXXX....',
+    '....XXXXXXXX..XH',
     '....XXXXXXXXXXX.',
-    '....XXXXXXXX..XX',
-    '....XXXXXXXX....',
+    '....XXXXXXXX..SS',
+    '....SSXXXXSS....',
     '....XX.XX.XX....',
-    '...XX..XX..XX...',
+    '...SS..SS..SS...',
   ],
-  _crabStand,
   <String>[
-    '.....WW..WW...XX',
-    '.....WE..EW...X.',
-    '......X..X...XXX',
-    '....XXXXXXXXXX..',
-    'XX..XXXXXXXX....',
-    '.XXXXXXXXXXX....',
-    'XX..XXXXXXXX....',
-    '....XXXXXXXX....',
+    '.....WW..WW.....',
+    '.....WE..EW.....',
+    'HX....X..X......',
+    '.X..XHHHHXXX....',
+    'SXX.XXXXXXXX..XH',
+    '..XXXXXXXXXXXXX.',
+    '....XXXXXXXX..SS',
+    '....SSXXXXSS....',
     '....XX.XX.XX....',
-    '...XX..XX..XX...',
+    '....SS.SS.SS....',
   ],
-];
-
-// Axo 18×10: đầu to vuông bo bên phải, quạt mang S 7 ô xoè sau gáy (rung 1 ô
-// ở frame sải), thân ngắn, đuôi S dài phía sau cong lên/xuống theo nhịp.
-const List<String> _axoStand = <String>[
-  '.........S.S......',
-  '........SSXXXXXX..',
-  '........SSXXXXEX..',
-  '.........SXXXXXX..',
-  '..........XXXXXX..',
-  '....XXXXXXXXXXXX..',
-  '.SXXXXXXXXXXXXXX..',
-  'SS..XXXXXXXXXX....',
-  '.....XX......XX...',
-  '....XXX.....XXX...',
+  <String>[
+    '.....WW..WW.....',
+    '.....WE..EW.....',
+    '......X..X....XH',
+    '....XHHHHXXX..X.',
+    'HX..XXXXXXXX.XXS',
+    '.XXXXXXXXXXXXX..',
+    'SS..XXXXXXXX....',
+    '....SSXXXXSS....',
+    '....XX.XX.XX....',
+    '.....SSSSSS.....',
+  ],
+  <String>[
+    '.....WW..WW...XH',
+    '.....WE..EW...X.',
+    '......X..X...XSX',
+    '....XHHHHXXXXX..',
+    'HX..XXXXXXXX....',
+    '.XXXXXXXXXXX....',
+    'SS..XXXXXXXX....',
+    '....SSXXXXSS....',
+    '....XX.XX.XX....',
+    '...SS.SS..SS....',
+  ],
+  <String>[
+    '.....WW..WW.....',
+    '.....WE..EW.....',
+    '......X..X....XH',
+    '....XHHHHXXX..X.',
+    'HX..XXXXXXXX.XXS',
+    '.XXXXXXXXXXXXX..',
+    'SS..XXXXXXXX....',
+    '....SSXXXXSS....',
+    '....XX.XX.XX....',
+    '....SS.SS.SS....',
+  ],
+  <String>[
+    '.....WW..WW.....',
+    '.....WE..EW.....',
+    'HX....X..X......',
+    '.X..XHHHHXXX....',
+    'SXX.XXXXXXXX..XH',
+    '..XXXXXXXXXXXXX.',
+    '....XXXXXXXX..SS',
+    '....SSXXXXSS....',
+    '....XX.XX.XX....',
+    '.....SS.SS.SS...',
+  ],
 ];
 
 const List<List<String>> _axoFrames = <List<String>>[
-  _axoStand,
-  <String>[
-    '........S.S.......',
-    '........SSXXXXXX..',
-    '........SSXXXXEX..',
-    '.........SXXXXXX..',
-    '..........XXXXXX..',
-    '....XXXXXXXXXXXX..',
-    '.SXXXXXXXXXXXXXX..',
-    '.SS.XXXXXXXXXX....',
-    '....XX.......XX...',
-    '...XXX......XXX...',
-  ],
-  _axoStand,
   <String>[
     '.........S.S......',
-    '........SSXXXXXX..',
+    '........SSHHHHXX..',
     '........SSXXXXEX..',
     '.........SXXXXXX..',
-    '..........XXXXXX..',
+    '..........XHXXSX..',
+    '....XXXXXXXXXXXX..',
+    '.SXXXXXHHXXXXXXX..',
+    'SS..SXXXXXXXXS....',
+    '.....XX......XX...',
+    '....SSS.....SSS...',
+  ],
+  <String>[
+    '........S.S.......',
+    '........SSHHHHXX..',
+    '.........SXXXXEX..',
+    '........SSXXXXXX..',
+    '..........XHXXSX..',
     'S...XXXXXXXXXXXX..',
-    '.SXXXXXXXXXXXXXX..',
-    '....XXXXXXXXXX....',
+    '.SXXXXXHHXXXXXXX..',
+    '....SXXXXXXXXS....',
+    '....XX........XX..',
+    '...SSS.......SSS..',
+  ],
+  <String>[
+    '........S.S.......',
+    '........SSHHHHXX..',
+    '.........SXXXXEX..',
+    '........SSXXXXXX..',
+    'S.........XHXXSX..',
+    'S...XXXXXXXXXXXX..',
+    '.SXXXXXHHXXXXXXX..',
+    '....SXXXXXXXXS....',
+    '.....XX.......XX..',
+    '....SSS......SSS..',
+  ],
+  <String>[
+    '........S.........',
+    '.........SHHHHXX..',
+    '........SSXXXXEX..',
+    '........S.XXXXXX..',
+    '..........XHXXSX..',
+    'SX..XXXXXXXXXXXX..',
+    '..XXXXXHHXXXXXXX..',
+    '....SXXXXXXXXS....',
+    '......XX.....XX...',
+    '.....SSS....SSS...',
+  ],
+  <String>[
+    '........S.........',
+    '.........SHHHHXX..',
+    '........SSXXXXEX..',
+    '........S.XXXXXX..',
+    '..........XHXXSX..',
+    '....XXXXXXXXXXXX..',
+    '.SXXXXXHHXXXXXXX..',
+    'S...SXXXXXXXXS....',
     '......XX....XX....',
-    '.....XXX...XXX....',
+    '.....SSS...SSS....',
+  ],
+  <String>[
+    '.........S.S......',
+    '........SSHHHHXX..',
+    '........SSXXXXEX..',
+    '.........SXXXXXX..',
+    '..........XHXXSX..',
+    '....XXXXXXXXXXXX..',
+    '..XXXXXHHXXXXXXX..',
+    'SS..SXXXXXXXXS....',
+    '.....XX.....XX....',
+    '....SSS....SSS....',
+  ],
+  <String>[
+    '.........S.S......',
+    '........SSHHHHXX..',
+    '........SSXXXXEX..',
+    '.........SXXXXXX..',
+    '..........XHXXSX..',
+    '....XXXXXXXXXXXX..',
+    '.SXXXXXHHXXXXXXX..',
+    '.S..SXXXXXXXXS....',
+    '....XX.......XX...',
+    '...SSS......SSS...',
   ],
 ];
 
-/// Bố cục cảnh nền. [city] là cảnh gốc (skyline dither trung tính + mây);
-/// [nightCity] là thành phố đêm: nhà cao tầng cửa sổ sáng đèn, dãy núi
-/// parallax phía xa, sao + trăng khuyết, mây. Cả hai đều procedural — không
-/// asset ngoài.
+/// Procedural skyline, or a night city with moon, stars and mountains.
 enum PixelWalkerScene { city, nightCity }
 
 /// Cảnh pixel-art neo đáy: mascot đứng giữa, skyline thành phố + mây vẽ bằng
@@ -405,6 +817,10 @@ class PixelWalker extends StatefulWidget {
     this.starColor = const Color(0xFFC7D3E6),
     this.backgroundColor = Colors.transparent,
     this.speed = 1.0,
+    this.motion = 1.0,
+    this.readiness = 0.0,
+    this.celebration = 0.0,
+    this.frozenAt,
     this.seed = 7,
   });
 
@@ -445,6 +861,22 @@ class PixelWalker extends StatefulWidget {
   /// Nhân tốc độ bước đi + trôi skyline.
   final double speed;
 
+  /// 0-to-1 gait strength and travel rate. Useful when easing out a refresh.
+  /// Changing this or [speed] preserves the accumulated animation phase.
+  final double motion;
+
+  /// 0-to-1 preparation pose, driven by pull distance. No clock is needed.
+  final double readiness;
+
+  /// One completion gesture: 0 and 1 are neutral, 0.5 is its peak.
+  /// The caller advances this value; it does not start a ticker.
+  final double celebration;
+
+  /// Freeze elapsed seconds for previews/tests, including a walking pose.
+  /// Multiplied by [speed] and [motion]; bypasses the live startup ramp and
+  /// disables the ticker. Null resumes the accumulated live clock.
+  final double? frozenAt;
+
   /// Đổi seed để được skyline/mây bố cục khác (deterministic).
   final int seed;
 
@@ -461,7 +893,22 @@ class _PixelWalkerState extends State<PixelWalker>
 
   // Thời gian animation tích lũy qua các lần start/stop ticker.
   double _timeSec = 0;
-  double _timeBase = 0;
+  Duration? _lastTick;
+  double _walkAge = 0;
+  bool _tickerMode = true;
+  bool _disableAnimations = false;
+  late PixelSprite _defaultSprite;
+
+  double get _motion {
+    final double ramp = widget.frozenAt != null
+        ? 1
+        : (_walkAge / 0.18).clamp(0.0, 1.0);
+    return widget.motion.clamp(0.0, 1.0) * ramp * ramp * (3 - 2 * ramp);
+  }
+
+  double get _phase => widget.frozenAt == null
+      ? _timeSec
+      : widget.frozenAt! * widget.speed * widget.motion.clamp(0.0, 1.0);
 
   // Bố cục skyline/mây/núi cho một chu kỳ, sinh từ seed (núi rỗng khi scene
   // không có núi).
@@ -472,7 +919,7 @@ class _PixelWalkerState extends State<PixelWalker>
   late Int16List _mountains;
   int _mountPeriod = 1;
 
-  // Buffer điểm tái dùng giữa các frame (không cấp phát trong paint).
+  // Reused point buffers. Views and pose samples still allocate small objects.
   final _PointSink _skySink = _PointSink();
   final _PointSink _cloudSink = _PointSink();
   final _PointSink _spriteSink = _PointSink();
@@ -485,23 +932,48 @@ class _PixelWalkerState extends State<PixelWalker>
   void initState() {
     super.initState();
     _ticker = createTicker(_onTick);
+    _defaultSprite = PixelSprite.clawd(color: widget.mascotColor);
     _rebuildLayout();
-    if (widget.walking) _ticker.start();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _tickerMode = TickerMode.valuesOf(context).enabled;
+    _disableAnimations =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    _syncTicker();
   }
 
   @override
   void didUpdateWidget(PixelWalker old) {
     super.didUpdateWidget(old);
     if (widget.seed != old.seed || widget.scene != old.scene) _rebuildLayout();
-    if (widget.walking != old.walking) {
-      if (widget.walking) {
-        _ticker.start();
-      } else {
-        _timeBase = _timeSec;
-        _ticker.stop();
-      }
+    if (widget.mascotColor != old.mascotColor) {
+      _defaultSprite = PixelSprite.clawd(color: widget.mascotColor);
     }
+    if (widget.walking && !old.walking) _walkAge = 0;
+    _syncTicker();
     _repaint.bump();
+  }
+
+  void _syncTicker() {
+    final bool run =
+        widget.walking &&
+        widget.frozenAt == null &&
+        _tickerMode &&
+        !_disableAnimations &&
+        widget.speed != 0 &&
+        widget.motion > 0;
+    if (run == _ticker.isActive) return;
+    // Restart elapsed tracking on every pause. A muted/offscreen ticker must
+    // not jump by the wall time that passed while the scene was hidden.
+    _lastTick = null;
+    if (run) {
+      _ticker.start();
+    } else {
+      _ticker.stop();
+    }
   }
 
   @override
@@ -512,7 +984,13 @@ class _PixelWalkerState extends State<PixelWalker>
   }
 
   void _onTick(Duration elapsed) {
-    _timeSec = _timeBase + elapsed.inMicroseconds / 1e6;
+    final Duration? last = _lastTick;
+    _lastTick = elapsed;
+    if (last == null) return;
+    // Avoid a large visible jump after an app pause or a stalled frame.
+    final double dt = ((elapsed - last).inMicroseconds / 1e6).clamp(0.0, 0.064);
+    _walkAge += dt;
+    _timeSec += dt * widget.speed * _motion;
     _repaint.bump();
   }
 
@@ -638,6 +1116,7 @@ class _PixelWalkerPainter extends CustomPainter {
   final _PixelWalkerState state;
 
   static final Paint _dotPaint = Paint()
+    ..isAntiAlias = false
     ..strokeCap = StrokeCap.square
     ..style = PaintingStyle.stroke;
   static final Paint _fillPaint = Paint();
@@ -668,23 +1147,28 @@ class _PixelWalkerPainter extends CustomPainter {
 
     final double cell = (3.0 * w.scale).clamp(1.0, 100.0);
     final double spriteCell = cell * 2;
-    final double t = state._timeSec * w.speed;
+    final double t = state._phase;
 
-    final PixelSprite sprite =
-        w.sprite ?? PixelSprite.clawd(color: w.mascotColor);
+    final PixelSprite sprite = w.sprite ?? state._defaultSprite;
     final double spriteH = sprite.rowCount * spriteCell;
     final double spriteW = sprite.colCount * spriteCell;
 
     final double feetY = size.height - cell;
     // Chân trời: đáy skyline ngang tầm đầu mascot (như bản gốc).
     final double skylineBaseY = feetY - spriteH * 0.9 + (1 - eased) * 3 * cell;
+    // Reserve a strip of sky even in the 110px refresh header. Compress the
+    // number of skyline rows, not the pixel grid, to keep square dither dots.
+    final double skyScale =
+        ((skylineBaseY - 8 * cell) /
+                ((w.scene == PixelWalkerScene.nightCity ? 24 : 17) * cell))
+            .clamp(0.12, 1.0);
 
     if (w.scene == PixelWalkerScene.nightCity) {
       // Đêm: sao/trăng tĩnh sau cùng, rồi núi (parallax chậm nhất), mây, và
       // toà nhà vẽ SAU mây để tháp cao che mây → có chiều sâu.
       _paintStars(canvas, size, w, cell, skylineBaseY, eased);
       _paintMoon(canvas, size, w, cell, skylineBaseY, eased);
-      _paintMountains(canvas, size, w, cell, t, skylineBaseY, eased);
+      _paintMountains(canvas, size, w, cell, t, skylineBaseY, eased, skyScale);
       _paintClouds(
         canvas,
         size,
@@ -695,9 +1179,28 @@ class _PixelWalkerPainter extends CustomPainter {
         eased,
         bandCells: 26,
       );
-      _paintSkyline(canvas, size, w, cell, t, skylineBaseY, eased, night: true);
+      _paintSkyline(
+        canvas,
+        size,
+        w,
+        cell,
+        t,
+        skylineBaseY,
+        eased,
+        skyScale: skyScale,
+        night: true,
+      );
     } else {
-      _paintSkyline(canvas, size, w, cell, t, skylineBaseY, eased);
+      _paintSkyline(
+        canvas,
+        size,
+        w,
+        cell,
+        t,
+        skylineBaseY,
+        eased,
+        skyScale: skyScale,
+      );
       _paintClouds(canvas, size, w, cell, t, skylineBaseY, eased);
     }
     // Độ trồi của mascot dùng reveal TUYẾN TÍNH (không ease): chân chỉ chạm
@@ -710,8 +1213,13 @@ class _PixelWalkerPainter extends CustomPainter {
       spriteW,
       spriteH,
       feetY,
-      t,
-      w.walking,
+      sprite.samplePose(
+        t,
+        walking: w.walking && (!state._disableAnimations || w.frozenAt != null),
+        motion: state._motion,
+        readiness: w.readiness,
+        celebration: state._disableAnimations ? 0 : w.celebration,
+      ),
       eased,
       reveal,
     );
@@ -725,6 +1233,7 @@ class _PixelWalkerPainter extends CustomPainter {
     double t,
     double baseY,
     double eased, {
+    required double skyScale,
     bool night = false,
   }) {
     final _PointSink sink = state._skySink..clear();
@@ -738,9 +1247,9 @@ class _PixelWalkerPainter extends CustomPainter {
       final int wx = first + i;
       final double sx = (i - frac) * cell + cell / 2;
       final int pi = wx % state._period;
-      final int h = state._heights[pi];
+      final int h = (state._heights[pi] * skyScale).round();
       if (h == 0) continue;
-      final int extra = state._antennae[pi];
+      final int extra = (state._antennae[pi] * skyScale).round();
       for (int y = 0; y < h + extra; y++) {
         final double py = baseY - y * cell - cell / 2;
         if (py < 0) break;
@@ -788,13 +1297,17 @@ class _PixelWalkerPainter extends CustomPainter {
     final double scroll = t * 3.0;
     // Mây bay trên đỉnh skyline: city đỉnh chạm 13 + antenna 4 ô → band 19;
     // nightCity tháp tới 20 + antenna → caller đẩy band lên 26.
-    final double cloudBandY = baseY - bandCells * cell;
+    final double cloudBandY = math.max(7 * cell, baseY - bandCells * cell);
 
     for (final _CloudSpec c in state._clouds) {
       double pos = (c.start - scroll) % periodCells;
       if (pos < 0) pos += periodCells;
       // Vẽ cả bản wrap trước đó để mây đi vào từ mép phải liền mạch.
-      for (final double base in <double>[pos, pos - periodCells]) {
+      for (
+        double base = pos - periodCells;
+        base * cell <= size.width;
+        base += periodCells
+      ) {
         final double leftPx = base * cell;
         if (leftPx > size.width || leftPx + c.width * cell < 0) continue;
         for (int dx = 0; dx < c.width; dx++) {
@@ -832,6 +1345,7 @@ class _PixelWalkerPainter extends CustomPainter {
     double t,
     double baseY,
     double eased,
+    double skyScale,
   ) {
     if (state._mountains.isEmpty) return;
     final _PointSink sink = state._fxSink..clear();
@@ -844,7 +1358,8 @@ class _PixelWalkerPainter extends CustomPainter {
     for (int i = 0; i <= cols; i++) {
       final int wx = first + i;
       final double sx = (i - frac) * cell + cell / 2;
-      final int h = state._mountains[wx % state._mountPeriod];
+      final int h = (state._mountains[wx % state._mountPeriod] * skyScale)
+          .round();
       for (int y = 0; y < h; y++) {
         final double py = baseY - y * cell - cell / 2;
         if (py < 0) break;
@@ -908,7 +1423,9 @@ class _PixelWalkerPainter extends CustomPainter {
     // Trăng khuyết dither: đĩa bán kính 3.6 ô trừ đĩa "cắn" lệch trên-phải.
     // Neo theo baseY để trăng mọc cùng cảnh lúc reveal; snap vào lưới ô.
     final double cx = (size.width * 0.78 / cell).floor() * cell + cell / 2;
-    final double cy = ((baseY - 22 * cell) / cell).floor() * cell + cell / 2;
+    final double cy =
+        (math.max(5 * cell, baseY - 22 * cell) / cell).floor() * cell +
+        cell / 2;
     for (int dy = -4; dy <= 4; dy++) {
       for (int dx = -4; dx <= 4; dx++) {
         if (dx * dx + dy * dy > 3.6 * 3.6) continue;
@@ -934,23 +1451,20 @@ class _PixelWalkerPainter extends CustomPainter {
     double spriteW,
     double spriteH,
     double feetY,
-    double t,
-    bool walking,
+    PixelSpritePose pose,
     double eased,
     double reveal,
   ) {
-    final int frameCount = sprite.frames.length;
-    final int fi = walking && frameCount > 1 ? (t * 7).floor() % frameCount : 0;
-    final List<String> frame = sprite.frames[fi];
-    final double lean = walking && fi.isOdd
-        ? (fi % 4 == 1 ? 0.09 : -0.09)
-        : 0.0;
-    final double bob = walking && fi.isOdd ? -spriteCell * 0.35 : 0.0;
+    final List<String> frame = sprite.frames[pose.frameIndex];
     final double rise = (1 - reveal) * (spriteH + spriteCell);
 
     canvas.save();
-    canvas.translate(size.width / 2, feetY + rise + bob);
-    if (lean != 0) canvas.rotate(lean);
+    canvas.translate(
+      size.width / 2 + pose.sway * spriteCell,
+      feetY + rise + pose.bob * spriteCell,
+    );
+    if (pose.lean != 0) canvas.rotate(pose.lean);
+    canvas.scale(pose.scaleX, pose.scaleY);
 
     for (final MapEntry<String, Color> entry in sprite.palette.entries) {
       final _PointSink sink = state._spriteSink..clear();

@@ -1,289 +1,148 @@
-# Pixel-art animation brief — PixelWalker + PullRevealRefresh
+﻿# Pixel-art animation brief — PixelWalker + PullRevealRefresh
 
-Tài liệu handoff cho việc **thiết kế thêm animation / art mới** (mascot mới,
-scene mới, chỉnh chuyển động mượt mà – dễ thương hơn) trên hệ pixel-art của
-Snipz. Đưa doc này + bộ file ở mục 1 cho Claude Design (hoặc bất kỳ agent
-thiết kế nào) là đủ ngữ cảnh để làm việc, không cần đọc thêm repo.
+Handoff cho việc vẽ mascot hoặc chỉnh chuyển động của hệ pixel-art Snipz.
+Phiên bản 1.3.0 giữ sáu nhân vật và hai cảnh, bổ sung nhịp đi riêng, pose
+chuẩn bị/hoàn tất và preview xác định theo thời gian. Art và engine vẫn nằm
+trong một file, không cần ảnh sprite sheet hoặc dependency ngoài Flutter.
 
----
-
-## 1. Bộ file cần và đủ
-
-### Lõi (bắt buộc)
+## 1. Các file cần đọc
 
 | File | Vai trò |
 |---|---|
-| `lib/components/pixel_walker/pixel_walker.dart` | **Toàn bộ engine art**: format sprite ma trận ký tự, 6 bộ frame mascot, painter dither/parallax, mọi hằng số animation. Art mới sinh ra ở đây. |
-| `lib/components/pixel_walker/README.md` | API contract, spec parallax, caveats, changelog (ghi các quyết định thiết kế đã chốt). |
-| `docs/pixel_art_animation_brief.md` | Chính doc này — bản đồ animation + ràng buộc + núm vặn. |
+| `lib/components/pixel_walker/pixel_walker.dart` | Sprite dạng ký tự, `PixelGait`, pose sampler, đồng hồ, painter procedural. |
+| `lib/components/pixel_walker/README.md` | API public, cách dùng, giới hạn, changelog. |
+| `lib/components/pixel_walker/pixel_walker_demo.dart` | Playground sáu mascot, scene, motion và frozen preview. |
+| `lib/components/pull_reveal_refresh/pull_reveal_refresh.dart` | Gesture, extent và state machine của header. |
+| `lib/components/pull_reveal_refresh/pull_reveal_refresh_demo.dart` | Ghép scene với kéo/nhả/loading; giữ header cho động tác hoàn tất. |
+| `lib/components/pull_reveal_refresh/README.md` | Contract của refresh và caveat về scroll physics. |
+| `CLAUDE.md` | Luật version, session và bàn giao của repo. |
 
-### Ngữ cảnh interaction (cần nếu design đụng tới cảm giác kéo/nhả)
+`assets/sources/*.json` là snapshot được sinh từ README và source. Không sửa
+tay; chạy tool của repo sau khi sửa component.
 
-| File | Vai trò |
+## 2. Ranh giới giữa refresh và sprite
+
+`PullRevealRefresh` quyết định header cao bao nhiêu và phát
+`PullRevealStatus`. `PixelWalker` chỉ vẽ, không biết về networking hoặc scroll
+notification. Bộ điều khiển nối hai tầng nằm trong demo hoặc app sử dụng:
+
+| Giai đoạn | Đầu vào cho cảnh |
 |---|---|
-| `lib/components/pull_reveal_refresh/pull_reveal_refresh.dart` | Vật lý header: lực cản kéo, settle/collapse, state machine — nguồn của `progress`/`isRefreshing`. |
-| `lib/components/pull_reveal_refresh/README.md` | Contract + caveats (physics, translate-not-relayout). |
-| `lib/components/pull_reveal_refresh/pull_reveal_refresh_demo.dart` | Wiring chuẩn 2 component + số đo thật đang dùng (trigger 110 / max 190, màu nền từng scene). |
+| Kéo chưa đủ ngưỡng | `progress` mở cảnh; `readiness` tăng ở đoạn cuối của hành trình kéo. |
+| Đủ ngưỡng | `readiness = 1`: mascot chuyển sang pose chuẩn bị. |
+| Đang tải | `walking = true`, `motion = 1`: bước và parallax hoạt động. |
+| Tải xong | Demo giữ callback refresh thêm 360ms, giảm `motion`, tăng `celebration` khi header còn mở. |
+| Thu header | `progress` giảm; `celebration = 1`, `motion = 0` giữ pose nghỉ sau động tác hoàn tất. |
 
-### Tham khảo thêm (không bắt buộc)
+Điệu bộ hoàn tất là choreography của **demo**, không phải mode mới trong
+core refresh. `onRefresh` của ứng dụng khác chỉ giữ header trong thời gian
+Future của nó chưa hoàn tất; muốn có đoạn chào hoàn tất thì ứng dụng tự
+chờ animation tương tự demo.
 
-- `lib/components/pixel_walker/pixel_walker_demo.dart` — playground các param,
-  danh sách 6 mascot.
-- `assets/sources/pixel_walker.json`, `assets/sources/pull_reveal_refresh.json`
-  — file **generated** (README + full source gói trong 1 JSON, app dùng để xem
-  source). Tiện làm "1 file duy nhất" đưa cho agent, nhưng là bản snapshot:
-  sửa code thì phải regenerate, **không sửa tay**.
-- `CLAUDE.md` — luật repo nếu design dẫn tới sửa code (bump version...).
+Core giữ nguyên luồng
+`idle → dragging → armed → refreshing → settling → idle`, ngưỡng mặc định
+96px, settle 200ms và collapse 320ms. Demo dùng trigger 110px / max 190px.
+`status.progress` clamp ở 1, nên kéo quá ngưỡng chỉ làm vùng header cao thêm.
 
----
+Lực cản khi kéo là `delta * (0.25 + 0.75 * room)`, với
+`room = clamp(1 - extent / maxExtent)`. Haptic phát khi chuyển sang armed.
+Nội dung list được translate, không relayout theo từng frame. Nhánh chính là
+`ClampingScrollPhysics`; nhánh `BouncingScrollPhysics` vẫn có caveat về nhịp
+spring lúc nhả. Đợt sprite này không thay đổi vật lý, haptic hay xử lý Future
+hoàn tất tức thì trong core.
 
-## 2. Kiến trúc: 2 tầng, nối bằng 2 giá trị
+## 3. Art và cá tính của sáu mascot
 
-```
-Tay kéo → PullRevealRefresh (extent px, state machine, settle/collapse)
-              │
-              ├─ status.progress (0→1 so với ngưỡng) ──→ PixelWalker.progress  (cảnh hiện dần)
-              └─ status.isRefreshing (bool)           ──→ PixelWalker.walking   (bước + parallax trôi)
-```
-
-- `PullRevealRefresh` không vẽ gì — chỉ quyết định header cao bao nhiêu px và
-  đang ở mode nào. `headerBuilder` được gọi lại **mỗi frame** extent đổi.
-- `PixelWalker` nhận đúng 2 giá trị đó và tự lo 100% phần nhìn thấy.
-- Lúc **đang kéo** mascot chưa bước (`walking` chỉ bật khi `refreshing`);
-  `progress` clamp ở 1 nên kéo lố chỉ giãn header, cảnh không đổi thêm.
-
-Wiring chuẩn (demo):
-
-```dart
-PullRevealRefresh(
-  onRefresh: _load,
-  triggerExtent: 110,
-  maxExtent: 190,
-  headerBuilder: (context, status) => PixelWalker(
-    progress: status.progress,
-    walking: status.isRefreshing,
-    backgroundColor: bg,
-  ),
-  child: ListView(
-    physics: const AlwaysScrollableScrollPhysics(parent: ClampingScrollPhysics()),
-    ...
-  ),
-)
-```
-
----
-
-## 3. Tầng 1 — PullRevealRefresh (motion của header)
-
-File: `pull_reveal_refresh.dart` (~316 dòng, single file).
-
-**State machine** (contract public, không đổi luồng):
-`idle → dragging → armed → refreshing → settling → idle`.
-
-**Driver**: một `AnimationController.unbounded` tên `_extent` — vừa nhận giá
-trị kéo tay trực tiếp, vừa chạy 2 animation lúc nhả.
-
-**Lực cản đàn hồi** (`_onPulled`):
-
-```dart
-final room = (1 - _extent.value / maxExtent).clamp(0.0, 1.0);
-_setExtent(_extent.value + delta * (0.25 + 0.75 * room));
-// đầu hành trình ăn ~100% delta, sát trần maxExtent chỉ còn 25%
-```
-
-**Haptic**: `HapticFeedback.mediumImpact()` đúng khoảnh khắc extent vượt
-`triggerExtent` (chuyển sang armed), tắt được qua `hapticOnArm`.
-
-**Hai animation nhả tay**:
-
-| Animation | Khi nào | Đích | Duration | Curve |
-|---|---|---|---|---|
-| settle | nhả lúc armed | `triggerExtent` | `settleDuration` = 200ms | `easeOutCubic` (hard-code) |
-| collapse | refresh xong / nhả non | 0 | `collapseDuration` = 320ms | `collapseCurve` = `easeOutCubic` |
-
-Collapse dùng `.orCancel` — người dùng kéo tiếp giữa chừng sẽ cướp quyền êm,
-không giật.
-
-**Render**: header là `Positioned` cao đúng `extent` trong `Stack`; nội dung
-list chỉ bị `Transform.translate` xuống (không relayout). Hệ quả: nền phía
-sau phải cùng màu app (caveat trong README).
-
-**Input**: `NotificationListener<ScrollNotification>` — nhánh chính cho
-`ClampingScrollPhysics` (Android, đọc `OverscrollNotification` âm), nhánh
-fallback cho `BouncingScrollPhysics` (iOS, đọc `metrics.pixels` âm, có thể
-giật nhẹ 1 nhịp lúc nhả).
-
----
-
-## 4. Tầng 2 — PixelWalker (toàn bộ animation pixel)
-
-File: `pixel_walker.dart` (~978 dòng, single file, không asset — 100%
-procedural).
-
-### 4.1. Đồng hồ và repaint
-
-- `Ticker` chỉ chạy khi `walking == true`; thời gian tích lũy qua `_timeBase`
-  nên tắt/bật walking đi tiếp đúng pha, không giật về 0.
-- `walking: false` = **không ticker, 0 frame/giây** — bất biến cần giữ (cảnh
-  tĩnh nhúng lâu dài trong tree, thumbnail).
-- Repaint qua `ChangeNotifier` truyền vào `CustomPainter(repaint:)`, không
-  `setState` mỗi frame.
-- Mọi tốc độ nhân `t = _timeSec * speed`.
-
-### 4.2. Reveal theo progress — 2 đường cong, có chủ đích
-
-```dart
-final reveal = progress.clamp(0.0, 1.0);          // TUYẾN TÍNH → độ trồi mascot
-final eased  = Curves.easeOutCubic.transform(reveal); // → mật độ dither + alpha mọi layer
-```
-
-Mascot trồi theo `reveal` tuyến tính để **chân chạm đất đúng lúc
-progress = 1** — tự thân là chỉ báo "đủ ngưỡng refresh" (quyết định đã chốt,
-changelog 1.0.1 — giữ nguyên khi redesign).
-
-### 4.3. Lưới pixel
-
-```dart
-cell       = 3.0 * scale;      // ô dither nền
-spriteCell = cell * 2;         // ô mascot
-feetY      = size.height - cell;
-skylineBaseY = feetY - spriteH * 0.9 + (1 - eased) * 3 * cell;
-// đáy skyline ngang tầm đầu mascot; cả cảnh lún 3 ô khi chưa hiện đủ
-```
-
-Mọi thứ vẽ bằng `canvas.drawRawPoints(PointMode.points, Float32List, paint)`
-với `strokeCap: square`, `strokeWidth = cell` — mỗi điểm là một ô vuông. Đó
-là toàn bộ "chất pixel". Buffer `_PointSink` tái dùng giữa các frame —
-**không cấp phát trong `paint()`**.
-
-### 4.4. Chu kỳ bước của mascot (trái tim của độ dễ thương)
-
-```dart
-fi   = walking && frameCount > 1 ? (t * 7).floor() % frameCount : 0;  // 7 bước frame/giây
-lean = walking && fi.isOdd ? (fi % 4 == 1 ? 0.09 : -0.09) : 0.0;      // ±0.09 rad (~5.2°)
-bob  = walking && fi.isOdd ? -spriteCell * 0.35 : 0.0;                // nhấc người ~2px
-rise = (1 - reveal) * (spriteH + spriteCell);                          // trồi từ mép dưới
-// translate(size.width/2, feetY + rise + bob) rồi rotate(lean), vẽ frame
-```
-
-- `walking == false` → ép frame 0 (pose đứng), không đứng hình giữa bước.
-- Frame count không cứng: painter lấy `frames.length` — **thêm frame là chu
-  kỳ tự dài ra**, không phải sửa painter.
-- Lean/bob là bậc thang (chỉ frame lẻ, giá trị cố định). Muốn mượt kiểu
-  "lượn" thì thay bằng hàm liên tục theo `t` (vd `0.09 * sin(2π·t·3.5)`) —
-  đổi cảm giác từ giật-pixel sang mềm; cân nhắc giữ chất retro.
-
-### 4.5. Spec format sprite — contract cho artist
-
-- Mỗi mascot = `PixelSprite(frames, palette)`:
-  - `frames`: list các frame; mỗi frame là list dòng string; mỗi ký tự tra
-    màu trong `palette`; `.` (hoặc ký tự lạ) = trong suốt.
-  - Mọi dòng trong 1 frame dài bằng nhau; mọi frame cùng kích cỡ.
-- **Quy ước động tác**: frame 0 = pose đứng; các frame sau là chu kỳ bước;
-  **frame lẻ được painter tự cộng lean + bob** — đừng vẽ nghiêng sẵn trong
-  data. Pattern hiện tại của cả 6 con: `[đứng, sải, đứng, thu]`.
-- Kích cỡ hiện dùng: 12–18 cột × 10–11 hàng, palette 1–3 màu. Mascot vẽ bằng
-  ô `spriteCell` (gấp đôi ô nền) nên đứng nổi trên cảnh.
-- Sáu mascot có sẵn (đều trong `pixel_walker.dart`):
-
-| Factory | Cỡ | Palette | Nét động riêng ở frame bước |
-|---|---|---|---|
-| `clawd({color})` | 12×10 | `X` | chỉ đảo 2 hàng chân |
-| `miu({body, stripe})` | 16×11 | `X`,`S` | chóp đuôi `S` đổi chỗ từng frame → vẫy đuôi |
-| `capy({body, dark, eye})` | 18×10 | `X`,`S`,`E` | chân đảo chéo, thân bất động (mặt đơ) |
-| `duck({body, beak, eye})` | 14×10 | `X`,`B`,`E` | đuôi hất lên 1 hàng khi sải → lạch bạch |
-| `crab({body, eyeWhite, eye})` | 16×10 | `X`,`W`,`E` | mỗi frame bước giơ hẳn 1 càng ngang mắt |
-| `axolotl({body, accent, eye})` | 18×10 | `X`,`S`,`E` | mang rung 1 ô + đuôi cong lên/xuống |
-
-Mascot mới = vẽ ma trận + palette mới, painter không đụng.
-
-### 4.6. Parallax + thứ tự layer
-
-Tốc độ (ô/giây, nhân `speed`), chậm → nhanh = xa → gần:
-
-| Layer | Tốc độ | Ghi chú |
-|---|---|---|
-| Sao + trăng (nightCity) | 0 | neo màn hình; sao 2 tầng alpha 0.25/0.85; trăng khuyết = đĩa r3.6 trừ đĩa cắn r3.1, neo `width*0.78`, `baseY − 22 ô` |
-| Núi (nightCity) | 2.2 | ridge chu kỳ 160 ô = max 5 đỉnh tam giác |
-| Mây | 3.0 | 4 blob ellipse, chu kỳ 160 ô, vẽ thêm bản wrap để vào từ mép phải liền mạch |
-| Toà nhà | 9.0 | chu kỳ ~96 ô; scroll dùng cả phần lẻ → trôi liên tục, vốn đã mượt |
-
-Thứ tự vẽ `nightCity`: sao → trăng → núi → mây → **toà nhà (đè mây → chiều
-sâu)** → mascot. `city`: skyline → mây → mascot.
-
-### 4.7. Dither — hash deterministic + mật độ từng vùng
-
-Mọi chấm quyết định bởi `_hash(x, y, seed) < density * eased` — hash 2D
-deterministic (không `Random()` runtime) nên chấm "dính" vào toà nhà khi trôi
-và `seed` tái lập được bố cục.
-
-| Vùng | Mật độ (city / night) |
+| Mascot | Cá tính chuyển động |
 |---|---|
-| Antenna | 0.30 / 0.35 |
-| Mép nóc toà (2 hàng) | 0.38 / 0.50 |
-| Thân toà | 0.62 / 0.78 |
-| Cửa sổ đèn (night) | xác suất 0.10 × eased, chỉ trong thân toà |
-| Mây | `0.55·(1−r²) + 0.08` (đặc giữa, thưa mép), vẽ ở alpha 0.55 |
-| Núi | mép ridge 0.60, thân 0.40, alpha 0.60 |
+| Clawd | Nhịp nhanh, thân nhún gọn, nhiều chân đảo liên tiếp. |
+| Miu | Nhịp nhẹ, đuôi có các vị trí riêng trong chu kỳ, thân hơi nén/nghiêng khi chuẩn bị. |
+| Capy | Nhịp chậm, thân nặng, độ nghiêng nhỏ; giữ nét mặt bình thản. |
+| Quạc | Lạch bạch, nghiêng ngang rõ hơn, cánh và đuôi tạo điểm nhấn. |
+| Cáu | Dịch ngang, thân ít nhấc; càng đổi tư thế thay vì nhún như vịt. |
+| Axo | Nhún thấp, mang và đuôi thay đổi qua chu kỳ; chuyển động mềm. |
 
-### 4.8. Sinh bố cục từ seed (`_rebuildLayout`)
+Sprite tiếp tục đổi frame theo nhịp rời rạc để giữ nét pixel. Độ nghiêng,
+nhún và dịch ngang của toàn thân lấy từ hàm liên tục theo thời gian, không
+còn phụ thuộc điều kiện frame lẻ. `PixelGait` xác định bộ chuyển động;
+factory có sẵn chọn gait phù hợp cho từng nhân vật.
 
-LCG tự chế từ `seed`: skyline lặp {gap 3–8 đêm / 3–9 ngày, rộng 5–10 / 6–16,
-cao 8–20 / 4–13} tới ~96 cột, mỗi toà 1 antenna cao 2–4 ô; núi 5 đỉnh (cao
-12–24, slope 0.30–0.65) trên 160 ô; mây 4 blob (start `i·40 + rand 0–24`,
-rộng 10–18, cao 3–5, lift 0–5 ô).
+### Hợp đồng dữ liệu sprite
 
----
+- `frames` là list các frame; mỗi frame là list dòng string.
+- Các dòng phải có cùng chiều dài; mọi frame cùng kích thước.
+- Ký tự tra màu trong `palette`; ký tự không có màu, thường là `.`, trong suốt.
+- Frame 0 là pose nghỉ. Giữ silhouette và vị trí bàn chân ổn định giữa các
+  frame; animator phụ trách chuyển động tổng thể của thân.
+- Custom sprite vẫn dùng được với `PixelSprite(frames: ..., palette: ...)`.
+  Có thể chọn `gait`; widget/sampler nhận tiến độ pose phản ứng, không cần sửa painter.
+- Màu custom nên truyền qua factory/palette. Không thêm asset chỉ để đổi màu.
 
-## 5. Bảng núm vặn cho redesign
+`PixelSprite.samplePose(t, walking: ..., motion: ..., readiness: ...,
+celebration: ...)` là điểm kiểm tra một pose xác định. Dùng cùng thời điểm và
+đầu vào để so sánh art trước/sau mà không phụ thuộc tốc độ máy.
 
-**Độ mượt:**
+Mỗi mascot có sẵn có 7 frame riêng (1 nghỉ + 6 bước), 4–5 màu. Một chu kỳ có
+hai bước; nhịp Clawd/Miu/Capy/Quạc/Cáu/Axo lần lượt là
+2.15/1.45/0.85/1.60/1.90/1.05 vòng mỗi giây ở tốc độ 1. `celebration` lấy
+tiến độ một lần nhún/nhảy và kéo dài thân; hai đầu 0 và 1 đều trung tính.
 
-| Núm | Hiện tại | Ở đâu (symbol) |
+## 4. Đồng hồ và khả năng tái lập
+
+- `walking: false` là cảnh tĩnh, không có ticker hoạt động. Thay đổi các đầu
+  vào phản ứng vẫn cập nhật pose qua lần build của parent.
+- `frozenAt` lấy một frame tại số giây được chỉ định nhân `speed × motion`;
+  không chạy ticker, không áp dụng đoạn tăng tốc đầu.
+- `TickerMode` và cài đặt giảm chuyển động của hệ thống cần được tôn trọng.
+  Đồng hồ tạm dừng không bù thời gian đã trôi khi hoạt động lại.
+- Đổi `speed` không nhân lại toàn bộ thời gian đã chạy; vị trí nền tiếp tục
+  từ điểm hiện tại, tốc độ mới áp dụng cho phần thời gian tiếp theo.
+- Clock live tích lũy `delta × speed × motion × ramp`, với ramp tăng mượt
+  từ 0→1 trong 180ms đầu; sampler nhận thời gian pha
+  đã nhân tốc độ và chỉ dùng `motion` để điều chỉnh biên độ. `speed: 0` hoặc
+  `motion: 0` dừng ticker. Bắt đầu đi tăng biên độ trong 180ms; giảm `motion`
+  từ parent trước khi tắt `walking` để dừng êm.
+- Repaint dùng tín hiệu của painter; không cần rebuild toàn widget mỗi tick.
+- `seed` quyết định bố cục procedural. Không dùng `Random()` trong `paint()`.
+
+Playground có picker sáu mascot và công tắc **Xem từng nhịp** để chuyển sang
+slider thời gian dùng `frozenAt`; mascot, scene và tốc độ đang chọn được giữ
+nguyên. Đây là điều khiển trong demo, không phải scrubber/state board chung
+của viewer. Thumbnail phải tĩnh.
+
+## 5. Reveal, pixel grid và cảnh thấp
+
+`progress` điều khiển hai thứ: mascot trồi lên **tuyến tính**, còn alpha và
+mật độ dither dùng `easeOutCubic`. Ở pose nghỉ, chân mascot chạm đường đất
+đúng `progress = 1`; giữ quan hệ này khi chỉnh reveal.
+
+Ô nền là `3 * scale`, ô mascot gấp đôi ô nền. Painter vẽ các điểm vuông với
+buffer tái dùng; pose sampling và các view buffer vẫn có thể tạo object nhỏ.
+Không coi đây là cam kết không cấp phát hoặc FPS đã đo trên thiết bị.
+
+| Layer | Tốc độ tương đối | Ghi chú |
 |---|---|---|
-| Nhịp frame sprite | `(t * 7)` — 7 fps | `_paintSprite` |
-| Lean / bob | ±0.09 rad / −0.35 ô, bậc thang frame lẻ | `_paintSprite` |
-| Settle / collapse | 200ms / 320ms, easeOutCubic | params `PullRevealRefresh`; curve settle hard-code trong `_finishDrag` |
-| Lực cản kéo | `0.25 + 0.75·room` | `_onPulled` |
-| Tốc độ parallax | 9.0 / 3.0 / 2.2 | `_paintSkyline` / `_paintClouds` / `_paintMountains` |
-| Reveal easing | easeOutCubic cho dither, tuyến tính cho mascot | `paint()` — giữ mascot tuyến tính |
-| Tốc độ tổng | `speed` | param |
+| Sao/trăng | 0 | Neo vào vùng trời đang hiển thị. |
+| Núi | 2.2 | Lớp xa của `nightCity`. |
+| Mây | 3.0 | Lặp qua cả hai mép viewport. |
+| Tòa nhà | 9.0 | Lớp gần, cửa sổ sáng trong cảnh đêm. |
 
-**Độ dễ thương:**
+Tất cả tốc độ chịu tác động của `speed` và lượng chuyển động. Thứ tự cảnh
+đêm: sao → trăng → núi → mây → tòa nhà → mascot. Cảnh ngày: skyline → mây →
+mascot. Header thấp phải giữ được bầu trời thay vì dùng cố định tọa độ dành
+cho preview lớn. Kiểm tra cả chiều cao 110px của refresh lẫn khung 160px
+trong playground; mây cần nối vòng liên tục ở viewport rộng.
 
-| Núm | Ý tưởng |
-|---|---|
-| Ma trận sprite | thêm frame (chớp mắt, ngoáy đuôi lúc đứng — hiện pose đứng chỉ 1 frame tĩnh), vẽ dáng mới |
-| Palette mascot | thêm ký tự màu mới (má hồng, viền) — palette là map tùy ý |
-| Bob/lean | tăng bob → nhún nhảy hơn (duck dựa hẳn vào cặp này) |
-| Cửa sổ đèn | tăng 0.10 → phố ấm hơn; màu qua `windowColor` |
-| Mây / sao / trăng | blob to-đặc hơn, mật độ sao, vị trí trăng |
-| Haptic | mediumImpact → light/selection cho cảm giác nhẹ |
+## 6. Kiểm tra khi chỉnh tiếp
 
-**Màu đang dùng** (từ demo — component chỉ nhận màu, không tự đoán):
-
-| | city | nightCity |
-|---|---|---|
-| nền app | `#0E0D0B` | `#0A0D16` |
-| skyline | `#B9B4AE` | `#93A1BE` |
-| khác | mascot mặc định `#E8875C` | cửa sổ `#F2C069`, sao/trăng `#C7D3E6` |
-
----
-
-## 6. Ràng buộc bất biến
-
-1. **Single file** — mỗi component gói trong 1 file entry; không thêm dep
-   ngoài Flutter SDK; **không asset** (cảnh phải 100% procedural).
-2. **Không cấp phát trong `paint()`** — giữ pattern `_PointSink` +
-   `drawRawPoints` (~1–2k điểm/frame ở 480px).
-3. **`walking: false` = không ticker chạy** — nhiều chỗ nhúng cảnh tĩnh dựa
-   vào bất biến này.
-4. **Mascot trồi theo progress tuyến tính** — chân chạm đất = đủ ngưỡng
-   (changelog 1.0.1).
-5. **State machine PullRevealRefresh là contract public** — chỉnh cảm giác
-   qua duration/curve/extent, không đổi luồng mode.
-6. **Hash deterministic** — không `Random()` runtime, `seed` phải tái lập
-   được bố cục.
-7. Sửa code xong: bump `version` trong `pubspec.yaml` + version/changelog
-   trong README component (luật `CLAUDE.md`); `assets/sources/*.json` là
-   generated — regenerate bằng tool, không sửa tay.
+- Xem từng mascot ở nghỉ, chuẩn bị, bước và hoàn tất; so sánh cả `city` và
+  `nightCity`, đặc biệt ở khung 110px.
+- Scrub qua ranh giới một vòng bước để phát hiện nhảy pose; kiểm tra pause,
+  resume và đổi tốc độ mà nền không nhảy vị trí.
+- Kiểm tra custom sprite cũ vẫn hoạt động và `walking: false` không phát tick.
+- Kiểm tra thu header không che hết động tác hoàn tất; không biến callback
+  refresh thành timer của core nếu chỉ cần choreography cho một demo.
+- Validate cấu trúc dữ liệu frame/palette, chạy test liên quan và ghi đúng kết
+  quả thực tế; kiểm tra FPS riêng trên thiết bị trước khi công bố hiệu năng.
+- Bump component/app version, cập nhật `SESSION.yaml`, regenerate index và
+  source bundle theo luật repo. Giữ creation snapshot và Test History.

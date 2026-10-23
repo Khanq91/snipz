@@ -114,11 +114,29 @@ class _PullRevealRefreshShowcase extends StatefulWidget {
       _PullRevealRefreshShowcaseState();
 }
 
-class _PullRevealRefreshShowcaseState
-    extends State<_PullRevealRefreshShowcase> {
+class _PullRevealRefreshShowcaseState extends State<_PullRevealRefreshShowcase>
+    with SingleTickerProviderStateMixin {
   int _refreshCount = 0;
   PixelWalkerScene _scene = PixelWalkerScene.city;
   int _mascot = 0;
+  bool _finishing = false;
+  late final AnimationController _finish;
+
+  @override
+  void initState() {
+    super.initState();
+    // Create while mounted, including previews that never refresh.
+    _finish = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 360),
+    );
+  }
+
+  @override
+  void dispose() {
+    _finish.dispose();
+    super.dispose();
+  }
 
   // null = Clawd mặc định; 4 con mới theo thứ tự Capy → Vịt → Cua → Axolotl.
   static final List<(String, PixelSprite?)> _mascots = <(String, PixelSprite?)>[
@@ -131,7 +149,18 @@ class _PullRevealRefreshShowcaseState
   ];
 
   Future<void> _fakeLoad() async {
+    setState(() => _finishing = false);
+    _finish.value = 0;
     await Future<void>.delayed(const Duration(seconds: 3));
+    if (!mounted) return;
+    // A host can await its real request here, then keep the header open for
+    // one short finishing gesture before completing onRefresh.
+    setState(() => _finishing = true);
+    try {
+      await _finish.forward(from: 0).orCancel;
+    } on TickerCanceled {
+      return;
+    }
     if (mounted) setState(() => _refreshCount++);
   }
 
@@ -149,15 +178,34 @@ class _PullRevealRefreshShowcaseState
         triggerExtent: 110,
         maxExtent: 190,
         headerBuilder: (BuildContext context, PullRevealStatus status) {
-          return PixelWalker(
-            progress: status.progress,
-            walking: status.isRefreshing,
-            backgroundColor: bg,
-            scene: _scene,
-            sprite: _mascots[_mascot].$2,
-            skylineColor: night
-                ? const Color(0xFF93A1BE)
-                : const Color(0xFFB9B4AE),
+          return AnimatedBuilder(
+            animation: _finish,
+            builder: (context, child) {
+              final completing = status.isRefreshing && _finishing;
+              final settled =
+                  status.mode == PullRevealMode.settling && _finishing;
+              final completion = settled
+                  ? 1.0
+                  : (completing ? _finish.value : 0.0);
+              final pulling =
+                  status.mode == PullRevealMode.dragging ||
+                  status.mode == PullRevealMode.armed;
+              return PixelWalker(
+                progress: status.progress,
+                walking: status.isRefreshing && completion < 1,
+                motion: completing || settled ? 1 - completion : 1,
+                readiness: pulling
+                    ? ((status.progress - .65) / .35).clamp(0.0, 1.0)
+                    : 0,
+                celebration: completion,
+                backgroundColor: bg,
+                scene: _scene,
+                sprite: _mascots[_mascot].$2,
+                skylineColor: night
+                    ? const Color(0xFF93A1BE)
+                    : const Color(0xFFB9B4AE),
+              );
+            },
           );
         },
         child: ListView(
@@ -251,12 +299,16 @@ class _CycleChip extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Text(
-              label,
-              style: const TextStyle(
-                color: Colors.white70,
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
             const SizedBox(width: 6),

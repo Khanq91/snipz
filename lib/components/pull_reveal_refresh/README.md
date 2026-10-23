@@ -37,7 +37,7 @@ created_deps: []
 platforms_initial: [android]
 
 # --- COMPONENT VERSION ---
-version: 1.0.1
+version: 1.0.2
 
 # --- DERIVED (computed from Test History by verify.dart, do not hand-edit) ---
 latest_known_good: null
@@ -114,6 +114,23 @@ PullRevealRefresh(
 `extent`, `triggerExtent`, `maxExtent`, `progress` (extent/trigger 0→1),
 `isRefreshing`.
 
+## Pixel mascot demo
+
+Demo ghép sáu mascot của `PixelWalker`: Clawd, Miu, Capy, Quạc, Cáu và
+Axo. Mỗi con có dáng bước riêng. Phần cuối hành trình kéo truyền
+`readiness` từ 0→1 để mascot chuẩn bị; khi tải thì bật `walking`.
+
+Sau tải giả 3 giây, demo giữ header mở thêm 360ms bằng cách chờ một
+`AnimationController` hoàn tất ngay trong `onRefresh`. Trong nhịp này,
+`celebration` chạy 0→1 và `motion` giảm 1→0, rồi callback mới trả về để
+header thu gọn. Controller được dispose và xử lý `TickerCanceled` nếu
+rời màn hình giữa chừng. App tích hợp có thể dùng cùng cách sau request
+thật; không cần thay state machine hoặc thêm mode cho `PullRevealRefresh`.
+
+Đây là choreography của demo, không phải khoảng trễ bắt buộc của component.
+Callback lỗi của app vẫn cần cách xử lý riêng; không coi hiệu ứng kết thúc
+demo là tín hiệu thành công cho mọi request.
+
 ## Caveats
 
 - **Thiết kế cho `ClampingScrollPhysics`** (Android mặc định) — nhánh chính
@@ -132,6 +149,9 @@ PullRevealRefresh(
 
 ## Changelog
 
+- **1.0.2** (2026-10-23) — demo dùng sáu dáng bước mới của PixelWalker,
+  tư thế chuẩn bị theo độ kéo và nhịp kết thúc 360ms ở header mở đủ;
+  giữ nguyên API, physics và mode của component.
 - **1.0.1** (2026-08-19) — fix: kéo ngược lên khi list ngắn hơn viewport
   không thu được header (clamping physics báo overscroll dương, không có
   ScrollUpdate); giờ thu dần khi chưa buông tay và disarm khi xuống dưới
