@@ -1,9 +1,9 @@
 {
   "_generated": true,
-  "_generated_at": "2026-10-23T00:06:07.615959Z",
+  "_generated_at": "2026-10-23T05:13:08.712925Z",
   "_generated_flutter": "3.44.5",
   "_generated_dart": "3.12.2",
-  "_generated_remote": null,
+  "_generated_remote": "https://github.com/Khanq91/snipz",
   "session": {
     "id": "2026-10-22-mochi-skins",
     "title": "Mochi Neko Pudding and Cloud skins",
@@ -3361,7 +3361,7 @@
       "platforms_initial": [
         "android"
       ],
-      "version": "1.3.0",
+      "version": "1.4.0",
       "latest_known_good": null,
       "last_verified": null,
       "status": null,
@@ -3405,7 +3405,7 @@
       "platforms_initial": [
         "android"
       ],
-      "version": "1.0.2",
+      "version": "1.0.3",
       "latest_known_good": null,
       "last_verified": null,
       "status": null,

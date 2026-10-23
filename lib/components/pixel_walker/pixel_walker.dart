@@ -17,6 +17,9 @@ import 'package:flutter/scheduler.dart';
 /// Movement personality; custom sprites default to [clawd].
 enum PixelGait { clawd, miu, capy, duck, crab, axolotl }
 
+/// Independent art and motion editions. V1 keeps the original pixel artwork.
+enum PixelSpriteVersion { v1, v2, v3 }
+
 /// Deterministic pose: [bob]/[sway] in sprite cells, [lean] in radians.
 /// Pixel frames change discretely; the body transform remains continuous.
 @immutable
@@ -44,16 +47,28 @@ class PixelSpritePose {
 ///
 /// Frame 0 là pose đứng yên; các frame còn lại là chu kỳ bước đi. [gait]
 /// quyết định nhịp bước và chuyển động thân liên tục giữa các frame pixel.
+/// Các factory mặc định V1; truyền [PixelSpriteVersion.v2] hoặc
+/// [PixelSpriteVersion.v3] để chọn art 48×36 và chu kỳ 16 frame bước.
 class PixelSprite {
   const PixelSprite({
     required this.frames,
     required this.palette,
     this.gait = PixelGait.clawd,
-  }) : assert(frames.length > 0);
+    this.version = PixelSpriteVersion.v1,
+    this.pixelRatio = 1,
+  }) : assert(frames.length > 0),
+       assert(pixelRatio > 0);
 
   /// Mascot mặc định: con bọ cam kiểu Clawd — thân vuông bo, 2 hốc mắt,
   /// 3 cặp chân chạy nhanh, 1 pose đứng và 6 frame bước có màu sáng/tối.
-  factory PixelSprite.clawd({Color color = const Color(0xFFE8875C)}) {
+  factory PixelSprite.clawd({
+    Color? color,
+    PixelSpriteVersion version = PixelSpriteVersion.v1,
+  }) {
+    if (version != PixelSpriteVersion.v1) {
+      return _redesignedSprite(PixelGait.clawd, version, body: color);
+    }
+    color ??= const Color(0xFFE8875C);
     return PixelSprite(
       frames: _clawdFrames,
       palette: <String, Color>{
@@ -69,9 +84,20 @@ class PixelSprite {
   /// khe dọc, sọc lưng + chóp đuôi màu [stripe]. Sáu frame bước nhẹ, đuôi
   /// đi sau nhịp chân; thêm màu tai, mũi và vùng lông sáng.
   factory PixelSprite.miu({
-    Color body = const Color(0xFFEBD3A0),
-    Color stripe = const Color(0xFFC9884A),
+    Color? body,
+    Color? stripe,
+    PixelSpriteVersion version = PixelSpriteVersion.v1,
   }) {
+    if (version != PixelSpriteVersion.v1) {
+      return _redesignedSprite(
+        PixelGait.miu,
+        version,
+        body: body,
+        detail: stripe,
+      );
+    }
+    body ??= const Color(0xFFEBD3A0);
+    stripe ??= const Color(0xFFC9884A);
     return PixelSprite(
       frames: _miuFrames,
       gait: PixelGait.miu,
@@ -89,10 +115,23 @@ class PixelSprite {
   /// vuông mũi sẫm, tai tròn nhỏ, mắt 1 ô, chân ngắn chìm dưới thân — vibe
   /// mặt đơ, lừ đừ. [dark] tô tai/mũi/chân.
   factory PixelSprite.capy({
-    Color body = const Color(0xFFC49A6A),
-    Color dark = const Color(0xFF7E5B38),
-    Color eye = const Color(0xFF241A12),
+    Color? body,
+    Color? dark,
+    Color? eye,
+    PixelSpriteVersion version = PixelSpriteVersion.v1,
   }) {
+    if (version != PixelSpriteVersion.v1) {
+      return _redesignedSprite(
+        PixelGait.capy,
+        version,
+        body: body,
+        detail: dark,
+        eye: eye,
+      );
+    }
+    body ??= const Color(0xFFC49A6A);
+    dark ??= const Color(0xFF7E5B38);
+    eye ??= const Color(0xFF241A12);
     return PixelSprite(
       frames: _capyFrames,
       gait: PixelGait.capy,
@@ -109,10 +148,23 @@ class PixelSprite {
   /// chân mảnh bàn bè, cánh và đuôi theo nhịp chân, thân nghiêng liên tục
   /// thành dáng lạch bạch. [beak] tô mỏ + chân.
   factory PixelSprite.duck({
-    Color body = const Color(0xFFF2DE96),
-    Color beak = const Color(0xFFE8963F),
-    Color eye = const Color(0xFF241A12),
+    Color? body,
+    Color? beak,
+    Color? eye,
+    PixelSpriteVersion version = PixelSpriteVersion.v1,
   }) {
+    if (version != PixelSpriteVersion.v1) {
+      return _redesignedSprite(
+        PixelGait.duck,
+        version,
+        body: body,
+        detail: beak,
+        eye: eye,
+      );
+    }
+    body ??= const Color(0xFFF2DE96);
+    beak ??= const Color(0xFFE8963F);
+    eye ??= const Color(0xFF241A12);
     return PixelSprite(
       frames: _duckFrames,
       gait: PixelGait.duck,
@@ -131,10 +183,23 @@ class PixelSprite {
   /// 3 cặp chân, 2 càng lớn thay phiên giơ lên ở frame bước (cáu nhưng vô
   /// hại); chân gần như không nhấc, đúng chất meme.
   factory PixelSprite.crab({
-    Color body = const Color(0xFFE0654B),
-    Color eyeWhite = const Color(0xFFF2EAD8),
-    Color eye = const Color(0xFF2A140E),
+    Color? body,
+    Color? eyeWhite,
+    Color? eye,
+    PixelSpriteVersion version = PixelSpriteVersion.v1,
   }) {
+    if (version != PixelSpriteVersion.v1) {
+      return _redesignedSprite(
+        PixelGait.crab,
+        version,
+        body: body,
+        eyeWhite: eyeWhite,
+        eye: eye,
+      );
+    }
+    body ??= const Color(0xFFE0654B);
+    eyeWhite ??= const Color(0xFFF2EAD8);
+    eye ??= const Color(0xFF2A140E);
     return PixelSprite(
       frames: _crabFrames,
       gait: PixelGait.crab,
@@ -152,10 +217,23 @@ class PixelSprite {
   /// [accent] xoè sau gáy, thân ngắn, đuôi dài lượn lên/xuống theo nhịp,
   /// mang rung 1 ô ở frame bước — mềm, hiền, hơi fantasy.
   factory PixelSprite.axolotl({
-    Color body = const Color(0xFFF2BFC9),
-    Color accent = const Color(0xFFD9758F),
-    Color eye = const Color(0xFF3A2430),
+    Color? body,
+    Color? accent,
+    Color? eye,
+    PixelSpriteVersion version = PixelSpriteVersion.v1,
   }) {
+    if (version != PixelSpriteVersion.v1) {
+      return _redesignedSprite(
+        PixelGait.axolotl,
+        version,
+        body: body,
+        detail: accent,
+        eye: eye,
+      );
+    }
+    body ??= const Color(0xFFF2BFC9);
+    accent ??= const Color(0xFFD9758F);
+    eye ??= const Color(0xFF3A2430);
     return PixelSprite(
       frames: _axoFrames,
       gait: PixelGait.axolotl,
@@ -172,6 +250,12 @@ class PixelSprite {
   final Map<String, Color> palette;
   final PixelGait gait;
 
+  final PixelSpriteVersion version;
+
+  /// Number of art pixels per original sprite cell. Higher resolution artwork
+  /// keeps its physical size instead of growing into the sky above the header.
+  final double pixelRatio;
+
   int get rowCount => frames.first.length;
   int get colCount => frames.first.first.length;
 
@@ -185,6 +269,15 @@ class PixelSprite {
     double readiness = 0,
     double celebration = 0,
   }) {
+    if (version != PixelSpriteVersion.v1) {
+      return _sampleRedesignPose(
+        time,
+        walking: walking,
+        motion: motion,
+        readiness: readiness,
+        celebration: celebration,
+      );
+    }
     final double amount = walking ? motion.clamp(0.0, 1.0) : 0;
     final double ready = readiness.clamp(0.0, 1.0);
     final double done = celebration.clamp(0.0, 1.0);
@@ -258,6 +351,1281 @@ class PixelSprite {
       scaleY: 1 - compressed - squash * amount + stretch,
     );
   }
+
+  PixelSpritePose _sampleRedesignPose(
+    double time, {
+    required bool walking,
+    required double motion,
+    required double readiness,
+    required double celebration,
+  }) {
+    final double amount = walking ? motion.clamp(0.0, 1.0) : 0;
+    final double ready = readiness.clamp(0.0, 1.0);
+    final double done = celebration.clamp(0.0, 1.0);
+    final bool pocket = version == PixelSpriteVersion.v3;
+    final double cycle = time * walkCyclesPerSecond;
+    final double phase = (cycle % 1) * math.pi * 2;
+    final double step = math.sin(phase);
+    final double lift = (1 - math.cos(phase * 2)) / 2;
+    final (double lean, double bob, double sway) = switch (gait) {
+      PixelGait.clawd => (0.018, 0.60, 0.18),
+      PixelGait.miu => (0.012, 0.65, 0.12),
+      PixelGait.capy => (0.009, 0.28, 0.13),
+      PixelGait.duck => (0.035, 0.70, 0.50),
+      PixelGait.crab => (0.012, 0.24, 0.85),
+      PixelGait.axolotl => (0.016, 0.40, 0.28),
+    };
+    final double cheer = done > 0 && done < 1 ? math.sin(done * math.pi) : 0;
+    final double jump = switch (gait) {
+      PixelGait.capy => 0.85,
+      PixelGait.crab => 1.2,
+      PixelGait.miu => 2.6,
+      _ => 1.9,
+    };
+    // Small transforms preserve pixel clusters. Feet stay anchored during
+    // anticipation; only the completion hop deliberately leaves the ground.
+    final double squash = lift * amount * (pocket ? 0.012 : 0.018);
+    final double compressed = ready * (gait == PixelGait.capy ? 0.025 : 0.045);
+    final double stretch = cheer * 0.035;
+    final int walkFrames = frames.length - 1;
+    return PixelSpritePose(
+      frameIndex: amount > 0 && walkFrames > 0
+          ? 1 + ((cycle % 1) * walkFrames).floor().clamp(0, walkFrames - 1)
+          : 0,
+      lean:
+          lean * step * amount +
+          0.015 * ready +
+          (pocket ? 0.025 : 0.012) * cheer * math.sin(done * math.pi * 2),
+      bob: -bob * lift * amount - jump * cheer * cheer,
+      sway: sway * step * amount,
+      scaleX: 1 + compressed + squash - stretch * 0.5,
+      scaleY: 1 - compressed - squash + stretch,
+    );
+  }
+
+  /// Two steps per cycle. Also useful for a seamless preview loop.
+  double get walkCyclesPerSecond {
+    if (version == PixelSpriteVersion.v1) {
+      return switch (gait) {
+        PixelGait.clawd => 2.15,
+        PixelGait.miu => 1.45,
+        PixelGait.capy => 0.85,
+        PixelGait.duck => 1.60,
+        PixelGait.crab => 1.90,
+        PixelGait.axolotl => 1.05,
+      };
+    }
+    final double base = switch (gait) {
+      PixelGait.clawd => 1.05,
+      PixelGait.miu => 0.95,
+      PixelGait.capy => 0.68,
+      PixelGait.duck => 1.10,
+      PixelGait.crab => 1.05,
+      PixelGait.axolotl => 0.82,
+    };
+    return base * (version == PixelSpriteVersion.v3 ? 1.08 : 1);
+  }
+}
+
+final Map<(PixelSpriteVersion, PixelGait), PixelSprite> _editionCache = {};
+
+PixelSprite _redesignedSprite(
+  PixelGait gait,
+  PixelSpriteVersion version, {
+  Color? body,
+  Color? detail,
+  Color? eye,
+  Color? eyeWhite,
+}) {
+  final PixelSprite base = _editionCache.putIfAbsent(
+    (version, gait),
+    () => version == PixelSpriteVersion.v2
+        ? _mochiSprite(gait)
+        : _pocketSprite(gait),
+  );
+  if (body == null && detail == null && eye == null && eyeWhite == null) {
+    return base;
+  }
+  final palette = <String, Color>{...base.palette};
+  if (body != null) {
+    palette['X'] = body;
+    palette['H'] = Color.lerp(body, Colors.white, 0.42)!;
+    palette['S'] = Color.lerp(body, const Color(0xFF79505C), 0.30)!;
+    palette['O'] = Color.lerp(body, const Color(0xFF382D40), 0.62)!;
+  }
+  if (detail != null) {
+    final keys = switch (gait) {
+      PixelGait.miu => version == PixelSpriteVersion.v2 ? ['A'] : ['S', 'D'],
+      PixelGait.capy => ['O', 'S'],
+      PixelGait.duck => version == PixelSpriteVersion.v2 ? ['A'] : ['D'],
+      _ => ['A'],
+    };
+    for (final key in keys) {
+      palette[key] = detail;
+    }
+    if (gait == PixelGait.duck && version == PixelSpriteVersion.v3) {
+      palette['C'] = Color.lerp(detail, Colors.white, 0.25)!;
+    }
+  }
+  if (eye != null) palette['E'] = eye;
+  if (eyeWhite != null) palette['W'] = eyeWhite;
+  return PixelSprite(
+    frames: base.frames,
+    palette: Map.unmodifiable(palette),
+    gait: gait,
+    version: version,
+    pixelRatio: base.pixelRatio,
+  );
+}
+
+/// Small integer rasterizer used once to author/cache each edition's frames.
+/// Rendering still uses the same portable character matrices as custom art.
+class _SpriteCanvas {
+  _SpriteCanvas(this.width, this.height)
+    : _pixels = List.generate(height, (_) => List.filled(width, '.'));
+
+  final int width;
+  final int height;
+  final List<List<String>> _pixels;
+
+  void dot(int x, int y, String color) {
+    if (x >= 0 && x < width && y >= 0 && y < height) _pixels[y][x] = color;
+  }
+
+  void rect(int x, int y, int width, int height, String color) {
+    for (int row = y; row < y + height; row++) {
+      for (int col = x; col < x + width; col++) {
+        dot(col, row, color);
+      }
+    }
+  }
+
+  void ellipse(double cx, double cy, double rx, double ry, String color) {
+    for (int y = (cy - ry).floor(); y <= (cy + ry).ceil(); y++) {
+      for (int x = (cx - rx).floor(); x <= (cx + rx).ceil(); x++) {
+        final double dx = (x - cx) / rx;
+        final double dy = (y - cy) / ry;
+        if (dx * dx + dy * dy <= 1) dot(x, y, color);
+      }
+    }
+  }
+
+  void line(int x0, int y0, int x1, int y1, String color, {int thickness = 1}) {
+    final int dx = (x1 - x0).abs();
+    final int dy = -(y1 - y0).abs();
+    final int sx = x0 < x1 ? 1 : -1;
+    final int sy = y0 < y1 ? 1 : -1;
+    int error = dx + dy;
+    while (true) {
+      rect(
+        x0 - thickness ~/ 2,
+        y0 - thickness ~/ 2,
+        thickness,
+        thickness,
+        color,
+      );
+      if (x0 == x1 && y0 == y1) break;
+      final int twice = 2 * error;
+      if (twice >= dy) {
+        error += dy;
+        x0 += sx;
+      }
+      if (twice <= dx) {
+        error += dx;
+        y0 += sy;
+      }
+    }
+  }
+
+  void polygon(List<math.Point<int>> points, String color) {
+    if (points.length < 3) return;
+    final int minX = points.map((p) => p.x).reduce(math.min);
+    final int maxX = points.map((p) => p.x).reduce(math.max);
+    final int minY = points.map((p) => p.y).reduce(math.min);
+    final int maxY = points.map((p) => p.y).reduce(math.max);
+    for (int y = minY; y <= maxY; y++) {
+      for (int x = minX; x <= maxX; x++) {
+        bool inside = false;
+        for (int i = 0, j = points.length - 1; i < points.length; j = i++) {
+          final a = points[i];
+          final b = points[j];
+          if ((a.y > y) != (b.y > y) &&
+              x < (b.x - a.x) * (y - a.y) / (b.y - a.y) + a.x) {
+            inside = !inside;
+          }
+        }
+        if (inside) dot(x, y, color);
+      }
+    }
+    for (int i = 0; i < points.length; i++) {
+      final a = points[i];
+      final b = points[(i + 1) % points.length];
+      line(a.x, a.y, b.x, b.y, color);
+    }
+  }
+
+  List<String> finish() => List.unmodifiable(_pixels.map((row) => row.join()));
+}
+
+// V2 — Mochi buddies. Every pose is drawn once at sprite creation; the warm
+// contour and stepped light clusters stay crisp as the continuous gait moves.
+PixelSprite _mochiSprite(PixelGait gait) => PixelSprite(
+  frames: List.unmodifiable(
+    List<List<String>>.generate(17, (index) {
+      final canvas = _SpriteCanvas(48, 36);
+      final phase = index == 0 ? 0.0 : (index - 1) * math.pi / 8;
+      _mochiDraw(canvas, gait, phase, index != 0);
+      return canvas.finish();
+    }, growable: false),
+  ),
+  palette: Map.unmodifiable(_mochiPalette(gait)),
+  gait: gait,
+  version: PixelSpriteVersion.v2,
+  pixelRatio: 3,
+);
+
+Map<String, Color> _mochiPalette(PixelGait gait) {
+  final colors = switch (gait) {
+    PixelGait.clawd => <int>[
+      0xFFAC675C,
+      0xFFF1AE89,
+      0xFFD88C77,
+      0xFFFFD6AD,
+      0xFF65463F,
+      0xFFFFF7DE,
+      0xFFE58C87,
+      0xFFF7C39C,
+    ],
+    PixelGait.miu => <int>[
+      0xFFAA806A,
+      0xFFF2D9B2,
+      0xFFD6AC80,
+      0xFFFFF1D3,
+      0xFF634A40,
+      0xFFFFF9E7,
+      0xFFDC9D91,
+      0xFFBE8A61,
+    ],
+    PixelGait.capy => <int>[
+      0xFF937361,
+      0xFFD1B18D,
+      0xFFB08D70,
+      0xFFF2DABC,
+      0xFF5E4B40,
+      0xFFFFF2D9,
+      0xFFC99786,
+      0xFFE4C5A0,
+    ],
+    PixelGait.duck => <int>[
+      0xFFC4A05E,
+      0xFFF3DF9D,
+      0xFFE5C77F,
+      0xFFFFF4CE,
+      0xFF6A5340,
+      0xFFFFFCED,
+      0xFFF0B49A,
+      0xFFE8AD6D,
+    ],
+    PixelGait.crab => <int>[
+      0xFFAE736F,
+      0xFFEEB1A2,
+      0xFFD68E86,
+      0xFFFFDCD0,
+      0xFF624944,
+      0xFFFFF5DE,
+      0xFFE18F8F,
+      0xFFF5C7B7,
+    ],
+    PixelGait.axolotl => <int>[
+      0xFFB88199,
+      0xFFF2CFDB,
+      0xFFDFAABE,
+      0xFFFFEDF0,
+      0xFF6B4D61,
+      0xFFFFF9F4,
+      0xFFE5A4B7,
+      0xFFF3BACB,
+    ],
+  };
+  return <String, Color>{
+    for (var i = 0; i < colors.length; i++) 'OXSHEWNA'[i]: Color(colors[i]),
+  };
+}
+
+void _mochiDraw(_SpriteCanvas c, PixelGait gait, double p, bool moving) {
+  switch (gait) {
+    case PixelGait.clawd:
+      _mochiClawd(c, p, moving);
+    case PixelGait.miu:
+      _mochiMiu(c, p, moving);
+    case PixelGait.capy:
+      _mochiCapy(c, p, moving);
+    case PixelGait.duck:
+      _mochiDuck(c, p, moving);
+    case PixelGait.crab:
+      _mochiCrab(c, p, moving);
+    case PixelGait.axolotl:
+      _mochiAxo(c, p, moving);
+  }
+}
+
+int _mochiSwing(double phase, bool moving, [double distance = 2]) =>
+    moving ? (math.sin(phase) * distance).round() : 0;
+
+int _mochiLift(double phase, bool moving, [double distance = 2]) =>
+    moving ? (math.max(0.0, math.cos(phase)) * distance).round() : 0;
+
+void _mochiPaw(
+  _SpriteCanvas c,
+  int x,
+  double phase,
+  bool moving, {
+  int width = 3,
+  String fill = 'X',
+}) {
+  final dx = _mochiSwing(phase, moving, 1.7);
+  final lift = _mochiLift(phase, moving);
+  c.ellipse(
+    (x + dx).toDouble(),
+    (32 - lift).toDouble(),
+    width.toDouble(),
+    3,
+    'O',
+  );
+  c.ellipse((x + dx).toDouble(), (32 - lift).toDouble(), width - 1.0, 2, fill);
+  c.rect(x + dx - 1, 33 - lift, 3, 1, 'H');
+}
+
+void _mochiEye(_SpriteCanvas c, int x, int y, {bool small = false}) {
+  c.rect(x, y, 2, small ? 2 : 3, 'E');
+  if (!small) c.dot(x, y, 'W');
+}
+
+void _mochiClawd(_SpriteCanvas c, double p, bool moving) {
+  // Three pairs of little marshmallow feet follow a travelling gait.
+  for (var i = 0; i < 3; i++) {
+    _mochiPaw(c, 10 + i * 6, p + i * 1.1, moving, width: 2, fill: 'S');
+    _mochiPaw(c, 27 + i * 5, p + math.pi + i * 1.1, moving, width: 2);
+  }
+  final arm = _mochiSwing(p - 0.7, moving, 1);
+  c.ellipse(7, (24 + arm).toDouble(), 4, 5, 'O');
+  c.ellipse(7, (23 + arm).toDouble(), 3, 4, 'X');
+  c.ellipse(40, (24 - arm).toDouble(), 4, 5, 'O');
+  c.ellipse(40, (23 - arm).toDouble(), 3, 4, 'X');
+  // Rounded square silhouette keeps Clawd's characteristic compact shape.
+  c.polygon(<math.Point<int>>[
+    const math.Point(13, 8),
+    const math.Point(33, 8),
+    const math.Point(38, 12),
+    const math.Point(40, 18),
+    const math.Point(40, 27),
+    const math.Point(36, 31),
+    const math.Point(12, 31),
+    const math.Point(8, 27),
+    const math.Point(8, 17),
+    const math.Point(10, 12),
+  ], 'O');
+  c.polygon(<math.Point<int>>[
+    const math.Point(14, 9),
+    const math.Point(32, 9),
+    const math.Point(37, 13),
+    const math.Point(39, 18),
+    const math.Point(39, 26),
+    const math.Point(35, 30),
+    const math.Point(13, 30),
+    const math.Point(9, 26),
+    const math.Point(9, 18),
+    const math.Point(11, 13),
+  ], 'X');
+  c.rect(15, 10, 16, 2, 'H');
+  c.rect(12, 12, 6, 2, 'H');
+  c.rect(11, 14, 3, 3, 'A');
+  c.rect(36, 18, 3, 9, 'S');
+  c.rect(14, 28, 21, 2, 'S');
+  c.ellipse(24, 25, 10, 4, 'A');
+  _mochiEye(c, 17, 18);
+  _mochiEye(c, 29, 18);
+  c.rect(12, 22, 4, 2, 'N');
+  c.rect(32, 22, 4, 2, 'N');
+  c.dot(22, 23, 'E');
+  c.rect(23, 24, 3, 1, 'E');
+  c.dot(26, 23, 'E');
+}
+
+void _mochiMiu(_SpriteCanvas c, double p, bool moving) {
+  final tail = _mochiSwing(p - 0.85, moving, 1.6);
+  // A generous curled tail: its transparent centre stays readable at 1x.
+  c.ellipse(10, (19 + tail).toDouble(), 8, 10, 'O');
+  c.ellipse(10, (18 + tail).toDouble(), 7, 8, 'A');
+  c.ellipse(10, (17 + tail).toDouble(), 4, 5, 'O');
+  c.ellipse(10, (16 + tail).toDouble(), 3, 4, '.');
+  c.ellipse(12, (19 + tail).toDouble(), 3, 4, 'X');
+  c.rect(5, 12 + tail, 5, 2, 'H');
+  c.rect(4, 15 + tail, 2, 4, 'X');
+  _mochiPaw(c, 16, p + math.pi, moving, fill: 'S');
+  _mochiPaw(c, 29, p, moving, fill: 'S');
+  c.ellipse(23, 25, 13, 8, 'O');
+  c.ellipse(23, 24, 12, 7, 'X');
+  c.ellipse(26, 27, 9, 4, 'H');
+  c.rect(13, 24, 4, 4, 'S');
+  final ear = _mochiSwing(p - 0.5, moving, 0.7);
+  c.polygon(<math.Point<int>>[
+    math.Point(22, 15),
+    math.Point(23, 3 + ear),
+    math.Point(27, 5 + ear),
+    math.Point(31, 13),
+  ], 'O');
+  c.polygon(<math.Point<int>>[
+    math.Point(24, 12),
+    math.Point(24, 6 + ear),
+    math.Point(28, 12),
+  ], 'N');
+  c.polygon(<math.Point<int>>[
+    math.Point(33, 12),
+    math.Point(38, 3 - ear),
+    math.Point(41, 5 - ear),
+    math.Point(41, 17),
+  ], 'O');
+  c.polygon(<math.Point<int>>[
+    math.Point(36, 12),
+    math.Point(39, 6 - ear),
+    math.Point(40, 14),
+  ], 'N');
+  c.ellipse(31, 20, 12, 10, 'O');
+  c.ellipse(31, 19, 11, 9, 'X');
+  c.ellipse(34, 24, 8, 4, 'H');
+  c.rect(24, 13, 5, 2, 'H');
+  c.rect(28, 11, 2, 4, 'S');
+  c.rect(32, 11, 2, 3, 'S');
+  c.rect(36, 12, 2, 3, 'S');
+  _mochiEye(c, 27, 19);
+  _mochiEye(c, 37, 19);
+  c.rect(24, 23, 3, 2, 'N');
+  c.rect(39, 23, 3, 2, 'N');
+  c.rect(32, 23, 2, 1, 'N');
+  c.dot(33, 24, 'O');
+  c.dot(32, 25, 'O');
+  c.dot(34, 25, 'O');
+  _mochiPaw(c, 21, p + 0.4, moving);
+  _mochiPaw(c, 35, p + math.pi + 0.4, moving);
+}
+
+void _mochiCapy(_SpriteCanvas c, double p, bool moving) {
+  _mochiPaw(c, 13, p + math.pi, moving, fill: 'S');
+  _mochiPaw(c, 32, p, moving, fill: 'S');
+  c.ellipse(22, 23, 16, 10, 'O');
+  c.ellipse(22, 22, 15, 9, 'X');
+  c.rect(13, 14, 17, 3, 'H');
+  c.rect(9, 17, 6, 3, 'A');
+  c.rect(10, 28, 17, 3, 'S');
+  c.rect(13, 27, 8, 2, 'A');
+  final ear = _mochiSwing(p - 0.65, moving, 0.6);
+  c.ellipse(27, (11 + ear).toDouble(), 4, 5, 'O');
+  c.ellipse(27, (11 + ear).toDouble(), 3, 4, 'X');
+  c.ellipse(27, (12 + ear).toDouble(), 1, 2, 'S');
+  c.ellipse(37, (12 - ear).toDouble(), 3, 4, 'O');
+  c.ellipse(37, (12 - ear).toDouble(), 2, 3, 'X');
+  // The long square muzzle, flat crown, and low eyes distinguish a capybara.
+  c.polygon(<math.Point<int>>[
+    const math.Point(26, 13),
+    const math.Point(36, 13),
+    const math.Point(41, 17),
+    const math.Point(44, 23),
+    const math.Point(44, 29),
+    const math.Point(41, 31),
+    const math.Point(29, 31),
+    const math.Point(24, 27),
+    const math.Point(23, 19),
+  ], 'O');
+  c.polygon(<math.Point<int>>[
+    const math.Point(27, 14),
+    const math.Point(36, 14),
+    const math.Point(40, 18),
+    const math.Point(43, 24),
+    const math.Point(43, 28),
+    const math.Point(40, 30),
+    const math.Point(30, 30),
+    const math.Point(25, 26),
+    const math.Point(24, 19),
+  ], 'X');
+  c.rect(28, 15, 8, 2, 'A');
+  c.ellipse(38, 26, 6, 4, 'H');
+  // Calm, lightly curved eyelids rather than generic round eyes.
+  c.rect(28, 21, 3, 1, 'E');
+  c.dot(31, 20, 'E');
+  c.rect(36, 21, 2, 1, 'E');
+  c.rect(27, 24, 4, 2, 'N');
+  c.rect(41, 24, 3, 2, 'E');
+  c.rect(38, 28, 3, 1, 'O');
+  c.dot(41, 27, 'O');
+  _mochiPaw(c, 17, p + 0.35, moving);
+  _mochiPaw(c, 34, p + math.pi + 0.35, moving);
+}
+
+void _mochiDuck(_SpriteCanvas c, double p, bool moving) {
+  // Wide little slippers alternate a heel plant with a two-pixel toe lift.
+  for (var i = 0; i < 2; i++) {
+    final phase = p + i * math.pi;
+    final dx = _mochiSwing(phase, moving, 2);
+    final lift = _mochiLift(phase, moving, 2);
+    final x = 20 + i * 12 + dx;
+    c.rect(x, 29 - lift, 2, 5, 'O');
+    c.ellipse((x + 2).toDouble(), (34 - lift).toDouble(), 4, 1, 'O');
+    c.rect(x, 33 - lift, 5, 1, 'A');
+  }
+  final tail = _mochiSwing(p - 0.9, moving, 1);
+  c.polygon(<math.Point<int>>[
+    math.Point(16, 23),
+    math.Point(6, 18 + tail),
+    math.Point(7, 25 + tail),
+    math.Point(13, 29),
+  ], 'O');
+  c.polygon(<math.Point<int>>[
+    math.Point(15, 24),
+    math.Point(8, 21 + tail),
+    math.Point(9, 25 + tail),
+    math.Point(14, 27),
+  ], 'X');
+  c.ellipse(23, 24, 14, 8, 'O');
+  c.ellipse(23, 23, 13, 7, 'X');
+  c.ellipse(27, 27, 8, 3, 'H');
+  c.rect(15, 29, 10, 2, 'S');
+  final wing = _mochiSwing(p - 0.4, moving, 1);
+  c.ellipse(20, (23 + wing).toDouble(), 8, 5, 'S');
+  c.ellipse(20, (22 + wing).toDouble(), 7, 4, 'H');
+  c.rect(14, 23 + wing, 3, 2, 'X');
+  c.dot(15, 26 + wing, 'S');
+  c.dot(18, 27 + wing, 'S');
+  c.ellipse(32, 15, 10, 10, 'O');
+  c.ellipse(32, 14, 9, 9, 'X');
+  c.ellipse(29, 10, 5, 3, 'H');
+  c.line(28, 5, 28, 3, 'O', thickness: 2);
+  c.line(28, 4, 31, 4, 'X', thickness: 2);
+  c.line(31, 4, 33, 6, 'X', thickness: 2);
+  c.ellipse(34, 20, 5, 3, 'H');
+  c.ellipse(40, 19, 5, 3, 'O');
+  c.ellipse(40, 18, 4, 2, 'A');
+  c.rect(39, 20, 6, 1, 'S');
+  _mochiEye(c, 35, 13);
+  c.rect(32, 18, 3, 2, 'N');
+}
+
+void _mochiCrab(_SpriteCanvas c, double p, bool moving) {
+  // Soft scalloped legs keep the shell broad and low during sideways steps.
+  for (var i = 0; i < 3; i++) {
+    final dx = _mochiSwing(p + i * 0.9, moving, 1.5);
+    final lift = _mochiLift(p + i * 0.9, moving, 1);
+    final y = 27 + i * 3;
+    c.line(15, y - 2, 8 + i + dx, y - lift, 'O', thickness: 3);
+    c.line(14, y - 2, 9 + i + dx, y - lift, 'X', thickness: 1);
+    c.line(33, y - 2, 40 - i - dx, y - lift, 'O', thickness: 3);
+    c.line(34, y - 2, 39 - i - dx, y - lift, 'X', thickness: 1);
+  }
+  final claw = _mochiSwing(p - 0.5, moving, 2);
+  for (var side = 0; side < 2; side++) {
+    final x = side == 0 ? 7 : 40;
+    final lift = side == 0 ? claw : -claw;
+    c.line(side == 0 ? 15 : 32, 23, x, 18 + lift, 'O', thickness: 4);
+    c.line(side == 0 ? 15 : 32, 23, x, 18 + lift, 'S', thickness: 2);
+    c.ellipse(x.toDouble(), (14 + lift).toDouble(), 5, 7, 'O');
+    c.ellipse(x.toDouble(), (14 + lift).toDouble(), 4, 6, 'X');
+    c.ellipse((x - 1).toDouble(), (12 + lift).toDouble(), 2, 3, 'H');
+    c.rect(x, 7 + lift, 2, 5, '.');
+    c.line(x - 1, 10 + lift, x + 1, 13 + lift, 'O');
+    c.dot(x + 2, 11 + lift, 'O');
+  }
+  c.ellipse(24, 24, 14, 8, 'O');
+  c.ellipse(24, 23, 13, 7, 'X');
+  c.rect(15, 27, 18, 3, 'S');
+  c.ellipse(24, 24, 10, 5, 'A');
+  c.rect(18, 18, 12, 2, 'H');
+  for (final x in <int>[18, 29]) {
+    c.rect(x, 12, 3, 8, 'O');
+    c.rect(x + 1, 12, 1, 7, 'X');
+    c.ellipse((x + 1).toDouble(), 11, 4, 5, 'O');
+    c.ellipse((x + 1).toDouble(), 10, 3, 4, 'W');
+    _mochiEye(c, x + (x < 24 ? 1 : 0), 10);
+  }
+  c.rect(14, 22, 4, 2, 'N');
+  c.rect(31, 22, 4, 2, 'N');
+  c.dot(21, 23, 'E');
+  c.rect(22, 24, 4, 1, 'E');
+  c.dot(26, 23, 'E');
+  c.dot(16, 27, 'H');
+  c.dot(30, 27, 'H');
+}
+
+void _mochiAxo(_SpriteCanvas c, double p, bool moving) {
+  final tail = _mochiSwing(p - 1.0, moving, 2);
+  // A small translucent-looking fin curls around the body from behind.
+  c.polygon(<math.Point<int>>[
+    const math.Point(25, 31),
+    const math.Point(36, 31),
+    math.Point(42, 26 + tail),
+    math.Point(44, 18 + tail),
+    math.Point(40, 20 + tail),
+    math.Point(36, 25 + tail),
+    const math.Point(27, 25),
+  ], 'O');
+  c.polygon(<math.Point<int>>[
+    const math.Point(27, 30),
+    const math.Point(35, 30),
+    math.Point(40, 26 + tail),
+    math.Point(42, 21 + tail),
+    math.Point(37, 26 + tail),
+    const math.Point(28, 27),
+  ], 'A');
+  c.line(30, 29, 37, 28 + tail, 'H', thickness: 2);
+  _mochiPaw(c, 20, p + math.pi, moving, width: 3, fill: 'S');
+  _mochiPaw(c, 29, p, moving, width: 3, fill: 'S');
+  c.ellipse(25, 27, 10, 7, 'O');
+  c.ellipse(25, 26, 9, 6, 'X');
+  c.ellipse(25, 28, 6, 4, 'H');
+  final gill = _mochiSwing(p - 0.65, moving, 1);
+  for (var side = 0; side < 2; side++) {
+    final sign = side == 0 ? -1 : 1;
+    final root = side == 0 ? 15 : 34;
+    for (var petal = 0; petal < 3; petal++) {
+      final tipX = root + sign * (petal == 1 ? 9 : 7);
+      final tipY = 7 + petal * 7 + (side == 0 ? gill : -gill);
+      c.line(root, 16, tipX, tipY, 'O', thickness: 5);
+      c.line(root, 16, tipX, tipY, 'A', thickness: 3);
+      c.dot(tipX, tipY - 1, 'H');
+      c.line(root + sign * 3, 15, tipX - sign, tipY, 'N');
+    }
+  }
+  // Wide smile and petal gills give Axo a different silhouette from Miu.
+  c.ellipse(24, 18, 14, 11, 'O');
+  c.ellipse(24, 17, 13, 10, 'X');
+  c.ellipse(24, 23, 10, 4, 'H');
+  c.rect(17, 9, 10, 2, 'H');
+  c.rect(14, 11, 5, 2, 'H');
+  c.rect(34, 16, 2, 7, 'S');
+  _mochiEye(c, 17, 17);
+  _mochiEye(c, 29, 17);
+  c.rect(13, 21, 4, 2, 'N');
+  c.rect(32, 21, 4, 2, 'N');
+  c.dot(22, 22, 'E');
+  c.rect(23, 23, 3, 1, 'E');
+  c.dot(26, 22, 'E');
+  _mochiPaw(c, 18, p + 0.4, moving, width: 3);
+  _mochiPaw(c, 31, p + math.pi + 0.4, moving, width: 3);
+}
+
+/// Jewel-toned pocket companions with hand-placed pixel clusters. Each cycle
+/// keeps a planted contact foot while the other foot takes a rounded arc;
+/// tails, scarf ends, gills, and claws arrive slightly after the body.
+PixelSprite _pocketSprite(PixelGait gait) {
+  final Map<String, Color> palette = switch (gait) {
+    PixelGait.clawd => const <String, Color>{
+      'O': Color(0xFF603B40),
+      'X': Color(0xFFF39872),
+      'S': Color(0xFFD66E60),
+      'H': Color(0xFFFFC69A),
+      'E': Color(0xFF3E303C),
+      'W': Color(0xFFFFF2DA),
+      'N': Color(0xFFE86E78),
+      'A': Color(0xFF43968E),
+      'B': Color(0xFF87D6B6),
+      'D': Color(0xFF327078),
+    },
+    PixelGait.miu => const <String, Color>{
+      'O': Color(0xFF634249),
+      'X': Color(0xFFF4B967),
+      'S': Color(0xFFD48446),
+      'H': Color(0xFFFFDF9E),
+      'E': Color(0xFF44333F),
+      'W': Color(0xFFFFF4DC),
+      'N': Color(0xFFDC837E),
+      'A': Color(0xFF609BAE),
+      'B': Color(0xFFADE1DF),
+      'D': Color(0xFFB86340),
+    },
+    PixelGait.capy => const <String, Color>{
+      'O': Color(0xFF624740),
+      'X': Color(0xFFCCA078),
+      'S': Color(0xFFAC795B),
+      'H': Color(0xFFE7BF8D),
+      'E': Color(0xFF4E3B39),
+      'W': Color(0xFFFFE3AE),
+      'N': Color(0xFFD68C76),
+      'A': Color(0xFFEB8B43),
+      'B': Color(0xFFFFBC63),
+      'D': Color(0xFF64885D),
+    },
+    PixelGait.duck => const <String, Color>{
+      'O': Color(0xFF775743),
+      'X': Color(0xFFF5D675),
+      'S': Color(0xFFDBAC54),
+      'H': Color(0xFFFFEAAA),
+      'E': Color(0xFF4F3E3D),
+      'W': Color(0xFFFFF6DA),
+      'N': Color(0xFFE99A76),
+      'A': Color(0xFF77A987),
+      'B': Color(0xFFB7D6A3),
+      'D': Color(0xFFDF8546),
+      'C': Color(0xFFFAB369),
+    },
+    PixelGait.crab => const <String, Color>{
+      'O': Color(0xFF70404C),
+      'X': Color(0xFFE9817E),
+      'S': Color(0xFFC85D69),
+      'H': Color(0xFFFFB6A0),
+      'E': Color(0xFF493344),
+      'W': Color(0xFFFFEDD3),
+      'N': Color(0xFFF0A18A),
+      'A': Color(0xFFF7CB75),
+      'B': Color(0xFFFFE8AB),
+      'D': Color(0xFFAE5162),
+    },
+    PixelGait.axolotl => const <String, Color>{
+      'O': Color(0xFF75506E),
+      'X': Color(0xFFF1C2D1),
+      'S': Color(0xFFD69CB8),
+      'H': Color(0xFFFFDFDC),
+      'E': Color(0xFF513952),
+      'W': Color(0xFFFFF2E7),
+      'N': Color(0xFFE28EAF),
+      'A': Color(0xFFBB84B5),
+      'B': Color(0xFFE3AFD4),
+      'D': Color(0xFF9B75AE),
+      'C': Color(0xFFD9D4EF),
+    },
+  };
+  final frames = List<List<String>>.generate(17, (int frame) {
+    final c = _SpriteCanvas(48, 36);
+    final phase = frame == 0 ? 0.0 : (frame - 1) / 16 * math.pi * 2;
+    final moving = frame != 0;
+    switch (gait) {
+      case PixelGait.clawd:
+        _pocketClawd(c, phase, moving);
+      case PixelGait.miu:
+        _pocketMiu(c, phase, moving);
+      case PixelGait.capy:
+        _pocketCapy(c, phase, moving);
+      case PixelGait.duck:
+        _pocketDuck(c, phase, moving);
+      case PixelGait.crab:
+        _pocketCrab(c, phase, moving);
+      case PixelGait.axolotl:
+        _pocketAxo(c, phase, moving);
+    }
+    return c.finish();
+  });
+  return PixelSprite(
+    frames: List.unmodifiable(frames),
+    palette: Map.unmodifiable(palette),
+    gait: gait,
+    version: PixelSpriteVersion.v3,
+    pixelRatio: 3,
+  );
+}
+
+int _pocketSway(double phase, bool moving, [double amplitude = 1]) =>
+    moving ? (math.sin(phase) * amplitude).round() : 0;
+
+/// A soft rectangular contour, deliberately stepped instead of antialiased.
+void _pocketBox(
+  _SpriteCanvas c,
+  int x,
+  int y,
+  int width,
+  int height,
+  String fill,
+) {
+  c.rect(x + 3, y, width - 6, height, 'O');
+  c.rect(x + 1, y + 1, width - 2, height - 2, 'O');
+  c.rect(x, y + 3, width, height - 6, 'O');
+  c.rect(x + 3, y + 1, width - 6, height - 2, fill);
+  c.rect(x + 2, y + 2, width - 4, height - 4, fill);
+  c.rect(x + 1, y + 3, width - 2, height - 6, fill);
+}
+
+void _pocketOval(
+  _SpriteCanvas c,
+  double x,
+  double y,
+  double rx,
+  double ry,
+  String fill,
+) {
+  c.ellipse(x, y, rx, ry, 'O');
+  c.ellipse(x, y - 0.2, rx - 1, ry - 1, fill);
+}
+
+void _pocketEye(_SpriteCanvas c, int x, int y, {bool small = false}) {
+  if (small) {
+    c.rect(x, y, 2, 3, 'E');
+    c.dot(x, y, 'W');
+  } else {
+    c.rect(x, y + 1, 3, 3, 'E');
+    c.rect(x + 1, y, 2, 5, 'E');
+    c.dot(x + 1, y, 'W');
+    c.dot(x + 2, y + 3, 'H');
+  }
+}
+
+/// A leg with a flat planted toe and a rounded, lifted swing foot.
+void _pocketFoot(
+  _SpriteCanvas c,
+  int x,
+  int y,
+  double phase,
+  bool moving, {
+  String fill = 'X',
+  int width = 5,
+  int stride = 2,
+}) {
+  final offset = _pocketSway(phase, moving, stride.toDouble());
+  final lift = moving ? (math.max(0.0, -math.cos(phase)) * 3).round() : 0;
+  c.line(x, y, x + offset, 33 - lift, 'O', thickness: width - 1);
+  c.line(x, y, x + offset, 33 - lift, fill, thickness: width - 3);
+  c.rect(x + offset - width ~/ 2, 33 - lift, width, 3, 'O');
+  c.rect(x + offset - width ~/ 2 + 1, 33 - lift, width - 2, 2, fill);
+}
+
+void _pocketClawd(_SpriteCanvas c, double p, bool moving) {
+  final flutter = _pocketSway(p - 0.65, moving, 2);
+  // Six articulated little legs retain Clawd's original bug silhouette.
+  _pocketFoot(c, 15, 27, p + 0.2, moving, fill: 'S', width: 4);
+  _pocketFoot(c, 33, 27, p + math.pi + 0.2, moving, fill: 'S', width: 4);
+  for (final side in [-1, 1]) {
+    final at = side < 0 ? 12 : 37;
+    final dy = _pocketSway(p + (side < 0 ? 0 : math.pi), moving);
+    c.line(at, 19, at + side * 4, 23 + dy, 'O', thickness: 4);
+    c.line(at, 19, at + side * 4, 23 + dy, 'S', thickness: 2);
+    c.line(at + side * 4, 23 + dy, at + side * 3, 27 + dy, 'O', thickness: 4);
+    c.line(at + side * 4, 23 + dy, at + side * 3, 27 + dy, 'X', thickness: 2);
+    c.dot(at + side * 4, 23 + dy, 'H');
+  }
+  _pocketFoot(c, 19, 28, p, moving);
+  _pocketFoot(c, 30, 28, p + math.pi, moving);
+  // Little scarf knot floats behind the body on the left.
+  c.polygon([
+    math.Point(14, 26),
+    math.Point(5, 26 + flutter),
+    math.Point(8, 29 + flutter),
+    math.Point(6, 31 + flutter),
+    math.Point(16, 29),
+  ], 'O');
+  c.polygon([
+    math.Point(14, 27),
+    math.Point(7, 27 + flutter),
+    math.Point(10, 29 + flutter),
+    math.Point(8, 30 + flutter),
+    math.Point(15, 28),
+  ], 'A');
+  _pocketBox(c, 12, 9, 26, 22, 'X');
+  c.rect(15, 10, 18, 2, 'H');
+  c.rect(13, 13, 2, 8, 'H');
+  c.rect(14, 27, 22, 2, 'S');
+  c.rect(34, 15, 3, 11, 'S');
+  // Three crisp head tufts give the smooth rectangle a playful contour.
+  c.rect(17, 7, 5, 3, 'O');
+  c.rect(18, 8, 3, 3, 'X');
+  c.rect(24, 6, 4, 4, 'O');
+  c.rect(25, 7, 2, 4, 'H');
+  c.rect(29, 8, 4, 2, 'O');
+  c.rect(30, 9, 2, 2, 'X');
+  c.rect(18, 14, 3, 1, 'S');
+  c.rect(29, 14, 3, 1, 'S');
+  _pocketEye(c, 18, 16);
+  _pocketEye(c, 29, 16);
+  c.rect(15, 22, 4, 2, 'N');
+  c.rect(32, 22, 3, 2, 'N');
+  c.dot(23, 22, 'E');
+  c.rect(24, 23, 3, 1, 'E');
+  c.dot(27, 22, 'E');
+  // Bandana wraps the belly with a folded, triangular front.
+  c.rect(13, 26, 23, 2, 'D');
+  c.rect(14, 26, 21, 1, 'B');
+  c.polygon([math.Point(20, 27), math.Point(30, 27), math.Point(25, 32)], 'O');
+  c.polygon([math.Point(21, 27), math.Point(29, 27), math.Point(25, 30)], 'A');
+  c.line(22, 28, 25, 30, 'B');
+  c.dot(25, 28, 'W');
+}
+
+void _pocketMiu(_SpriteCanvas c, double p, bool moving) {
+  final tail = _pocketSway(p - 0.7, moving, 2);
+  final scarf = _pocketSway(p - 0.9, moving);
+  // Broad, curled tail. The inner opening remains transparent.
+  c.line(16, 28, 9, 25, 'O', thickness: 7);
+  c.line(9, 25, 6, 19 + tail, 'O', thickness: 7);
+  c.line(6, 19 + tail, 7, 13 + tail, 'O', thickness: 7);
+  c.line(7, 13 + tail, 12, 12 + tail, 'O', thickness: 7);
+  c.line(12, 12 + tail, 14, 16 + tail, 'O', thickness: 6);
+  c.line(16, 28, 9, 25, 'X', thickness: 5);
+  c.line(9, 25, 6, 19 + tail, 'X', thickness: 5);
+  c.line(6, 19 + tail, 7, 13 + tail, 'X', thickness: 5);
+  c.line(7, 13 + tail, 12, 12 + tail, 'X', thickness: 5);
+  c.line(12, 12 + tail, 14, 16 + tail, 'S', thickness: 4);
+  c.line(6, 14 + tail, 7, 12 + tail, 'H', thickness: 2);
+  c.line(7, 22 + tail, 10, 21 + tail, 'D', thickness: 2);
+  _pocketFoot(c, 18, 27, p + math.pi, moving, fill: 'S', width: 4);
+  _pocketFoot(c, 32, 27, p, moving, fill: 'S', width: 4);
+  _pocketOval(c, 24, 25, 13, 7, 'X');
+  c.ellipse(21, 22, 7, 3, 'H');
+  c.rect(15, 21, 3, 4, 'S');
+  c.rect(21, 20, 3, 4, 'S');
+  _pocketFoot(c, 16, 28, p, moving, width: 6);
+  _pocketFoot(c, 31, 28, p + math.pi, moving, width: 6);
+  c.rect(
+    14 + _pocketSway(p, moving, 2),
+    34 - (moving ? (math.max(0.0, -math.cos(p)) * 3).round() : 0),
+    4,
+    1,
+    'W',
+  );
+  // Folded scarf behind the neck, with a small swallowtail.
+  c.polygon([
+    math.Point(26, 24),
+    math.Point(18, 26 + scarf),
+    math.Point(20, 31 + scarf),
+    math.Point(22, 29 + scarf),
+    math.Point(25, 31 + scarf),
+    math.Point(29, 25),
+  ], 'O');
+  c.polygon([
+    math.Point(26, 25),
+    math.Point(20, 27 + scarf),
+    math.Point(21, 29 + scarf),
+    math.Point(23, 28 + scarf),
+    math.Point(24, 29 + scarf),
+    math.Point(28, 25),
+  ], 'A');
+  // Uneven ear heights and a cheek ruff soften the cat's 3/4 view.
+  c.polygon([
+    math.Point(22, 14),
+    math.Point(23, 4),
+    math.Point(31, 10),
+    math.Point(38, 5),
+    math.Point(42, 17),
+  ], 'O');
+  c.polygon([
+    math.Point(24, 13),
+    math.Point(24, 7),
+    math.Point(30, 12),
+    math.Point(38, 8),
+    math.Point(40, 16),
+  ], 'X');
+  c.polygon([math.Point(25, 11), math.Point(25, 8), math.Point(28, 11)], 'N');
+  c.polygon([math.Point(35, 11), math.Point(38, 8), math.Point(39, 13)], 'N');
+  _pocketBox(c, 22, 11, 21, 17, 'X');
+  c.rect(24, 13, 4, 2, 'H');
+  c.rect(30, 11, 2, 4, 'S');
+  c.rect(34, 11, 2, 3, 'S');
+  c.rect(22, 19, 2, 4, 'S');
+  c.rect(40, 21, 2, 3, 'S');
+  c.rect(23, 24, 3, 2, 'H');
+  c.rect(38, 24, 3, 2, 'H');
+  c.ellipse(34, 23, 6, 3, 'W');
+  _pocketEye(c, 27, 16);
+  _pocketEye(c, 37, 16, small: true);
+  c.rect(24, 21, 3, 2, 'N');
+  c.rect(40, 20, 2, 2, 'N');
+  c.rect(33, 21, 2, 1, 'N');
+  c.dot(34, 22, 'E');
+  c.dot(32, 23, 'E');
+  c.dot(35, 23, 'E');
+  c.dot(25, 23, 'S');
+  c.dot(41, 23, 'S');
+  c.line(27, 27, 37, 27, 'O', thickness: 2);
+  c.line(28, 27, 36, 27, 'A');
+  c.rect(29, 27, 3, 1, 'B');
+  c.rect(31, 28, 3, 2, 'O');
+  c.dot(32, 28, 'B');
+}
+
+void _pocketCapy(_SpriteCanvas c, double p, bool moving) {
+  final leaf = _pocketSway(p - 0.9, moving);
+  _pocketFoot(c, 15, 28, p + math.pi, moving, fill: 'S', width: 5, stride: 1);
+  _pocketFoot(c, 33, 28, p, moving, fill: 'S', width: 5, stride: 1);
+  _pocketBox(c, 6, 15, 29, 17, 'X');
+  c.rect(10, 16, 16, 2, 'H');
+  c.rect(7, 19, 2, 7, 'H');
+  c.rect(8, 28, 25, 2, 'S');
+  c.rect(10, 25, 1, 2, 'H');
+  c.rect(14, 27, 2, 1, 'H');
+  c.rect(18, 25, 1, 2, 'S');
+  _pocketFoot(c, 12, 28, p, moving, width: 6, stride: 1);
+  _pocketFoot(c, 29, 28, p + math.pi, moving, width: 6, stride: 1);
+  // Small velvet ears above the long, almost rectangular muzzle.
+  _pocketOval(c, 25, 13, 3, 4, 'X');
+  c.rect(24, 12, 2, 3, 'S');
+  _pocketOval(c, 35, 12, 3, 4, 'X');
+  c.rect(35, 11, 1, 3, 'S');
+  _pocketBox(c, 23, 13, 21, 17, 'X');
+  c.rect(27, 14, 11, 2, 'H');
+  c.rect(24, 18, 2, 6, 'H');
+  c.rect(26, 27, 15, 2, 'S');
+  // Pale muzzle has the capybara's characteristic wide, flat front.
+  _pocketBox(c, 34, 20, 11, 9, 'H');
+  c.rect(35, 21, 8, 5, 'H');
+  c.rect(42, 21, 2, 3, 'S');
+  c.rect(41, 21, 2, 2, 'E');
+  c.dot(42, 21, 'H');
+  c.line(39, 26, 42, 26, 'O');
+  // Calm half-lidded eye: relaxed, not expressionless.
+  c.rect(28, 20, 4, 1, 'O');
+  c.rect(29, 21, 2, 2, 'E');
+  c.dot(29, 21, 'W');
+  c.rect(27, 24, 4, 2, 'N');
+  c.dot(36, 24, 'S');
+  c.dot(38, 23, 'S');
+  // Tiny tangerine, its highlight and leaf are only a few decisive clusters.
+  _pocketOval(c, 29, 9, 4, 4, 'A');
+  c.rect(27, 7, 3, 2, 'B');
+  c.dot(27, 9, 'W');
+  c.line(29, 5, 29 + leaf, 3, 'O');
+  c.line(29, 4, 33 + leaf, 3, 'D', thickness: 2);
+  c.dot(32 + leaf, 2, 'H');
+}
+
+void _pocketDuck(_SpriteCanvas c, double p, bool moving) {
+  final wing = _pocketSway(p - 0.6, moving);
+  final scarf = _pocketSway(p - 0.9, moving, 2);
+  _pocketFoot(c, 25, 29, p + math.pi, moving, fill: 'D', width: 6);
+  // Two jaunty tail feathers, visible beyond the rounded body.
+  c.polygon([
+    math.Point(17, 25),
+    math.Point(7, 20),
+    math.Point(8, 25),
+    math.Point(5, 24),
+    math.Point(10, 30),
+    math.Point(19, 29),
+  ], 'O');
+  c.polygon([
+    math.Point(16, 25),
+    math.Point(9, 22),
+    math.Point(11, 27),
+    math.Point(8, 26),
+    math.Point(12, 29),
+    math.Point(18, 28),
+  ], 'X');
+  c.line(10, 24, 14, 26, 'H');
+  _pocketOval(c, 23, 25, 13, 8, 'X');
+  c.ellipse(25, 27, 8, 4, 'H');
+  c.line(15, 30, 29, 31, 'S');
+  _pocketFoot(c, 21, 29, p, moving, fill: 'D', width: 7);
+  final dx = _pocketSway(p, moving, 2);
+  final dy = moving ? (math.max(0.0, -math.cos(p)) * 3).round() : 0;
+  c.rect(20 + dx, 34 - dy, 4, 1, 'C');
+  // Bill faces right while both eyes remain visible.
+  _pocketOval(c, 31, 14, 11, 10, 'X');
+  c.ellipse(29, 9, 6, 3, 'H');
+  c.rect(24, 11, 2, 4, 'H');
+  c.rect(28, 3, 3, 3, 'O');
+  c.rect(29, 4, 1, 3, 'X');
+  c.rect(31, 2, 3, 4, 'O');
+  c.rect(32, 3, 1, 4, 'H');
+  c.rect(34, 4, 3, 3, 'O');
+  c.rect(35, 5, 1, 2, 'X');
+  _pocketEye(c, 28, 12);
+  _pocketEye(c, 36, 12, small: true);
+  c.rect(25, 18, 3, 2, 'N');
+  c.rect(37, 17, 2, 2, 'N');
+  c.polygon([
+    math.Point(35, 17),
+    math.Point(42, 16),
+    math.Point(45, 18),
+    math.Point(44, 21),
+    math.Point(36, 21),
+    math.Point(34, 19),
+  ], 'O');
+  c.rect(36, 17, 7, 2, 'C');
+  c.rect(36, 19, 8, 1, 'D');
+  c.line(37, 20, 42, 20, 'C');
+  c.dot(40, 17, 'D');
+  // Jade scarf, folded horizontally with a trailing double point.
+  c.polygon([
+    math.Point(24, 22),
+    math.Point(14, 21 + scarf),
+    math.Point(15, 25 + scarf),
+    math.Point(13, 26 + scarf),
+    math.Point(21, 27),
+    math.Point(28, 24),
+  ], 'O');
+  c.polygon([
+    math.Point(24, 23),
+    math.Point(16, 23 + scarf),
+    math.Point(17, 25 + scarf),
+    math.Point(21, 25),
+    math.Point(27, 23),
+  ], 'A');
+  c.line(25, 22, 34, 23, 'O', thickness: 3);
+  c.line(25, 22, 34, 23, 'A');
+  c.line(26, 22, 29, 22, 'B');
+  // Small scalloped wing gestures behind the scarf.
+  c.polygon([
+    math.Point(15, 25 + wing),
+    math.Point(19, 23 + wing),
+    math.Point(26, 25 + wing),
+    math.Point(25, 28 + wing),
+    math.Point(21, 30 + wing),
+    math.Point(16, 28 + wing),
+  ], 'S');
+  c.polygon([
+    math.Point(16, 25 + wing),
+    math.Point(19, 24 + wing),
+    math.Point(24, 25 + wing),
+    math.Point(23, 28 + wing),
+    math.Point(19, 28 + wing),
+  ], 'H');
+  c.line(18, 26 + wing, 21, 27 + wing, 'X');
+}
+
+void _pocketCrab(_SpriteCanvas c, double p, bool moving) {
+  final left = _pocketSway(p - 0.6, moving, 2);
+  final right = _pocketSway(p + 1.5, moving, 2);
+  // Legs splay low and far from the shell, with opposite stepping banks.
+  for (final side in [-1, 1]) {
+    for (var leg = 0; leg < 3; leg++) {
+      final phase = p + (side < 0 ? 0 : math.pi) + leg * 0.8;
+      final step = _pocketSway(phase, moving, 2);
+      final lift = moving ? (math.max(0.0, -math.cos(phase)) * 2).round() : 0;
+      final rootX = side < 0 ? 16 : 32;
+      final bendX = side < 0 ? 10 - leg * 2 : 38 + leg * 2;
+      final footX = bendX + side + step;
+      c.line(rootX, 25 + leg, bendX, 28 + leg, 'O', thickness: 3);
+      c.line(bendX, 28 + leg, footX, 35 - lift, 'O', thickness: 3);
+      c.line(rootX, 25 + leg, bendX, 28 + leg, 'S');
+      c.line(bendX, 28 + leg, footX, 34 - lift, 'X');
+      c.dot(footX, 34 - lift, 'H');
+    }
+  }
+  // Upturned crescent claws, each with a readable empty pincer gap.
+  for (final side in [-1, 1]) {
+    final x = side < 0 ? 7 : 40;
+    final dy = side < 0 ? left : right;
+    c.line(side < 0 ? 15 : 33, 23, x, 21 + dy, 'O', thickness: 5);
+    c.line(side < 0 ? 15 : 33, 23, x, 21 + dy, 'S', thickness: 3);
+    _pocketOval(c, x.toDouble(), (16 + dy).toDouble(), 5, 7, 'X');
+    c.rect(x - 2, 10 + dy, 4, 5, '.');
+    c.rect(x - 1, 14 + dy, 2, 3, 'O');
+    c.dot(x - 2, 14 + dy, 'O');
+    c.dot(x + 2, 14 + dy, 'O');
+    c.line(x - 3, 13 + dy, x - 3, 17 + dy, 'H');
+    c.line(x + 3, 17 + dy, x + 2, 20 + dy, 'S');
+  }
+  _pocketBox(c, 12, 17, 25, 14, 'X');
+  c.rect(16, 18, 16, 2, 'H');
+  c.rect(13, 21, 2, 4, 'H');
+  c.rect(15, 28, 20, 2, 'S');
+  c.ellipse(25, 26, 8, 3, 'N');
+  // Eye stalks lean towards the viewer; asymmetry is cheerful, not angry.
+  c.line(20, 18, 19, 13, 'O', thickness: 4);
+  c.line(30, 18, 31, 12, 'O', thickness: 4);
+  c.line(20, 18, 19, 13, 'X', thickness: 2);
+  c.line(30, 18, 31, 12, 'X', thickness: 2);
+  _pocketOval(c, 19, 12, 4, 4, 'H');
+  _pocketOval(c, 31, 11, 4, 4, 'H');
+  _pocketEye(c, 19, 10, small: true);
+  _pocketEye(c, 30, 9, small: true);
+  c.rect(16, 22, 4, 2, 'N');
+  c.rect(31, 22, 3, 2, 'N');
+  c.dot(22, 24, 'E');
+  c.rect(23, 25, 4, 1, 'E');
+  c.dot(27, 24, 'E');
+  c.dot(24, 26, 'H');
+  // A tiny golden sea-star clasp, left of the mouth.
+  c.polygon([
+    math.Point(16, 22),
+    math.Point(17, 24),
+    math.Point(20, 24),
+    math.Point(18, 26),
+    math.Point(19, 29),
+    math.Point(16, 28),
+    math.Point(14, 29),
+    math.Point(14, 26),
+    math.Point(12, 24),
+    math.Point(15, 24),
+  ], 'O');
+  c.polygon([
+    math.Point(16, 24),
+    math.Point(17, 25),
+    math.Point(18, 25),
+    math.Point(17, 26),
+    math.Point(17, 27),
+    math.Point(16, 27),
+    math.Point(15, 28),
+    math.Point(15, 26),
+    math.Point(14, 25),
+    math.Point(16, 25),
+  ], 'A');
+  c.dot(16, 25, 'B');
+}
+
+void _pocketAxo(_SpriteCanvas c, double p, bool moving) {
+  final tail = _pocketSway(p - 0.7, moving, 2);
+  final gills = _pocketSway(p - 1.1, moving);
+  // Transparent-looking lilac tail fin around a more solid pink center.
+  c.polygon([
+    math.Point(20, 27),
+    math.Point(11, 24 + tail),
+    math.Point(4, 19 + tail),
+    math.Point(3, 25 + tail),
+    math.Point(6, 30 + tail),
+    math.Point(14, 32),
+    math.Point(23, 30),
+  ], 'O');
+  c.polygon([
+    math.Point(19, 27),
+    math.Point(11, 25 + tail),
+    math.Point(5, 21 + tail),
+    math.Point(4, 25 + tail),
+    math.Point(7, 29 + tail),
+    math.Point(14, 31),
+    math.Point(22, 29),
+  ], 'C');
+  c.line(7, 26 + tail, 13, 28, 'S', thickness: 3);
+  c.line(13, 28, 21, 29, 'X', thickness: 4);
+  c.dot(5, 24 + tail, 'W');
+  _pocketFoot(c, 20, 28, p + math.pi, moving, fill: 'S', width: 4, stride: 1);
+  _pocketFoot(c, 33, 28, p, moving, fill: 'S', width: 4, stride: 1);
+  _pocketOval(c, 26, 27, 11, 5, 'X');
+  c.ellipse(27, 28, 7, 2, 'H');
+  _pocketFoot(c, 20, 29, p, moving, width: 5, stride: 1);
+  _pocketFoot(c, 32, 29, p + math.pi, moving, width: 5, stride: 1);
+  // Three feathery gills on each side; left bank is larger in 3/4 view.
+  for (final side in [-1, 1]) {
+    final x = side < 0 ? 21 : 38;
+    final sway = side < 0 ? gills : -gills;
+    final points = side < 0
+        ? [(15, 8 + sway), (12, 15 + sway), (16, 23 + sway)]
+        : [(42, 9 + sway), (44, 15 + sway), (43, 23 + sway)];
+    for (var i = 0; i < points.length; i++) {
+      final (tx, ty) = points[i];
+      final by = 14 + i * 3;
+      c.line(x, by, tx, ty, 'O', thickness: 5);
+      c.line(x, by, tx, ty, 'A', thickness: 3);
+      c.line(tx, ty, tx + side, ty - 2, 'O', thickness: 3);
+      c.line(tx, ty, tx + side, ty - 2, 'B');
+      c.dot(tx - side, ty - 1, 'C');
+      c.line(tx - side, ty + 1, tx, ty + 2, 'B', thickness: 2);
+      c.dot(tx, ty, 'H');
+    }
+  }
+  _pocketBox(c, 21, 10, 20, 18, 'X');
+  c.rect(25, 11, 10, 2, 'H');
+  c.rect(22, 14, 2, 7, 'H');
+  c.rect(24, 25, 14, 2, 'S');
+  c.ellipse(32, 22, 7, 3, 'H');
+  _pocketEye(c, 26, 16);
+  _pocketEye(c, 35, 16, small: true);
+  c.rect(23, 22, 4, 2, 'N');
+  c.rect(37, 21, 3, 2, 'N');
+  c.dot(30, 22, 'E');
+  c.rect(31, 23, 3, 1, 'E');
+  c.dot(34, 22, 'E');
+  // Pearly crown freckles, a tiny star that reads only at full resolution.
+  c.dot(31, 13, 'W');
+  c.dot(30, 14, 'W');
+  c.dot(32, 14, 'W');
+  c.dot(31, 15, 'W');
+  c.dot(26, 14, 'N');
+  c.dot(36, 14, 'N');
+  c.dot(25, 23, 'W');
+  c.dot(38, 22, 'W');
 }
 
 // One rest pose followed by six hand-authored pixel walk poses per mascot.
@@ -834,7 +2202,8 @@ class PixelWalker extends StatefulWidget {
   /// Bố cục cảnh nền; mặc định [PixelWalkerScene.city] — đúng cảnh gốc.
   final PixelWalkerScene scene;
 
-  /// Mật độ chi tiết: 1.0 → ô dither 3px, ô mascot 6px. Tăng khi render vùng
+  /// Mật độ chi tiết: 1.0 → ô dither 3px, ô mascot 6px / sprite.pixelRatio
+  /// (V1: 6px; V2/V3: 2px). Tăng khi render vùng
   /// lớn (fullscreen ~1.5–2.0) để pixel không quá mịn, giảm khi nhét vào ô
   /// nhỏ. Đây là kích thước ô lưới, không phải scale transform.
   final double scale;
@@ -1146,10 +2515,10 @@ class _PixelWalkerPainter extends CustomPainter {
     final double eased = Curves.easeOutCubic.transform(reveal);
 
     final double cell = (3.0 * w.scale).clamp(1.0, 100.0);
-    final double spriteCell = cell * 2;
     final double t = state._phase;
 
     final PixelSprite sprite = w.sprite ?? state._defaultSprite;
+    final double spriteCell = cell * 2 / sprite.pixelRatio;
     final double spriteH = sprite.rowCount * spriteCell;
     final double spriteW = sprite.colCount * spriteCell;
 

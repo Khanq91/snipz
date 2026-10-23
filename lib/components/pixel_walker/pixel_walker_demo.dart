@@ -15,14 +15,20 @@ final ComponentDemo pixelWalkerDemo = ComponentDemo(
   ),
 );
 
-final _mascots = <(String, String, PixelSprite)>[
-  ('clawd', 'Clawd', PixelSprite.clawd()),
-  ('miu', 'Miu', PixelSprite.miu()),
-  ('capy', 'Capy', PixelSprite.capy()),
-  ('duck', 'Quạc', PixelSprite.duck()),
-  ('crab', 'Cáu', PixelSprite.crab()),
-  ('axolotl', 'Axo', PixelSprite.axolotl()),
-];
+const _mascotNames = ['Clawd', 'Miu', 'Capy', 'Quạc', 'Cáu', 'Axo'];
+
+// Reuse each art set when switching versions or scrubbing animation time.
+final _mascots = <PixelSpriteVersion, List<PixelSprite>>{
+  for (final version in PixelSpriteVersion.values)
+    version: [
+      PixelSprite.clawd(version: version),
+      PixelSprite.miu(version: version),
+      PixelSprite.capy(version: version),
+      PixelSprite.duck(version: version),
+      PixelSprite.crab(version: version),
+      PixelSprite.axolotl(version: version),
+    ],
+};
 
 /// Cảnh trong khung header 160px + điều khiển trực tiếp các param chính:
 /// nút đổi `scene` (thành phố / thành phố đêm) và `sprite` (6 mascot: Clawd,
@@ -43,6 +49,7 @@ class _PixelWalkerShowcaseState extends State<_PixelWalkerShowcase> {
   bool _scrubbing = false;
   double _sampleTime = .38;
   double _speed = 1;
+  PixelSpriteVersion _version = PixelSpriteVersion.v2;
   PixelWalkerScene _scene = PixelWalkerScene.city;
   int _mascot = 0;
 
@@ -68,7 +75,7 @@ class _PixelWalkerShowcaseState extends State<_PixelWalkerShowcase> {
               speed: _speed,
               scale: _scale,
               scene: _scene,
-              sprite: _mascots[_mascot].$3,
+              sprite: _mascots[_version]![_mascot],
               skylineColor: night
                   ? const Color(0xFF93A1BE)
                   : const Color(0xFFB9B4AE),
@@ -79,6 +86,11 @@ class _PixelWalkerShowcaseState extends State<_PixelWalkerShowcase> {
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: <Widget>[
+                _VersionPicker(
+                  value: _version,
+                  onChanged: (value) => setState(() => _version = value),
+                ),
+                const SizedBox(height: 16),
                 const Text(
                   'Khung cảnh',
                   style: TextStyle(color: Colors.white54),
@@ -112,9 +124,9 @@ class _PixelWalkerShowcaseState extends State<_PixelWalkerShowcase> {
                   spacing: 8,
                   runSpacing: 8,
                   children: <Widget>[
-                    for (int i = 0; i < _mascots.length; i++)
+                    for (int i = 0; i < _mascotNames.length; i++)
                       _PickChip(
-                        label: _mascots[i].$2,
+                        label: _mascotNames[i],
                         selected: _mascot == i,
                         onTap: () => setState(() => _mascot = i),
                       ),
@@ -192,6 +204,58 @@ class _PixelWalkerShowcaseState extends State<_PixelWalkerShowcase> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _VersionPicker extends StatelessWidget {
+  const _VersionPicker({required this.value, required this.onChanged});
+
+  final PixelSpriteVersion value;
+  final ValueChanged<PixelSpriteVersion> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return InputDecorator(
+      decoration: InputDecoration(
+        labelText: 'Phiên bản mascot',
+        labelStyle: const TextStyle(color: Colors.white54, fontSize: 13),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.white24),
+        ),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<PixelSpriteVersion>(
+          key: const ValueKey('pixel-version'),
+          value: value,
+          isExpanded: true,
+          isDense: true,
+          dropdownColor: const Color(0xFF252321),
+          borderRadius: BorderRadius.circular(12),
+          iconEnabledColor: Colors.white70,
+          style: const TextStyle(color: Colors.white, fontSize: 13),
+          items: [
+            for (final (version, label) in const [
+              (PixelSpriteVersion.v1, 'V1 · Original'),
+              (PixelSpriteVersion.v2, 'V2 · Mochi buddies'),
+              (PixelSpriteVersion.v3, 'V3 · Pocket pals'),
+            ])
+              DropdownMenuItem(
+                value: version,
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+          ],
+          onChanged: (version) {
+            if (version != null) onChanged(version);
+          },
+        ),
       ),
     );
   }

@@ -31,6 +31,20 @@ Future<void> _tapControl(WidgetTester tester, String label) async {
   await tester.pump();
 }
 
+Future<void> _selectVersion(WidgetTester tester, String label) async {
+  final picker = find.byKey(const ValueKey('pixel-version'));
+  await tester.scrollUntilVisible(
+    picker,
+    -120,
+    scrollable: find.byType(Scrollable).first,
+  );
+  await tester.tap(picker);
+  // A live walker keeps ticking, so wait only for the dropdown transition.
+  await tester.pump(const Duration(milliseconds: 350));
+  await tester.tap(find.text(label).last);
+  await tester.pump(const Duration(milliseconds: 350));
+}
+
 Future<TestGesture> _pullToReady(WidgetTester tester) async {
   final top = tester.getTopLeft(find.byType(ListView));
   final gesture = await tester.startGesture(top + const Offset(90, 120));
@@ -57,6 +71,44 @@ Future<void> _startRefresh(WidgetTester tester) async {
 }
 
 void main() {
+  testWidgets('version changes retain mascot, scene, speed and frozen phase', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_host(pixelWalkerDemo.builder));
+    expect(_walker(tester).sprite!.version, PixelSpriteVersion.v2);
+    await _tapControl(tester, 'Đêm — cao tầng, núi, mây');
+    await _tapControl(tester, 'Axo');
+    await _tapControl(tester, 'Xem từng nhịp');
+    final speed = find.byKey(const ValueKey('pixel-speed'));
+    tester.widget<Slider>(speed).onChanged!(1.3);
+    await tester.pump();
+    final scrub = find.byKey(const ValueKey('pixel-scrub'));
+    await tester.ensureVisible(scrub);
+    tester.widget<Slider>(scrub).onChanged!(2.75);
+    await tester.pump();
+    final state = tester.state(find.byType(PixelWalker));
+    final originalSprite = _walker(tester).sprite;
+
+    for (final (version, label) in [
+      (PixelSpriteVersion.v1, 'V1 · Original'),
+      (PixelSpriteVersion.v3, 'V3 · Pocket pals'),
+      (PixelSpriteVersion.v2, 'V2 · Mochi buddies'),
+    ]) {
+      await _selectVersion(tester, label);
+      final walker = _walker(tester);
+      expect(walker.sprite!.version, version);
+      expect(walker.sprite!.gait, PixelGait.axolotl);
+      expect(walker.scene, PixelWalkerScene.nightCity);
+      expect(walker.speed, 1.3);
+      expect(walker.frozenAt, 2.75);
+      expect(walker.walking, isTrue);
+      expect(tester.state(find.byType(PixelWalker)), same(state));
+      expect(tester.takeException(), isNull);
+    }
+    expect(_walker(tester).sprite, same(originalSprite));
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
   testWidgets(
     'six mascot picks and scene survive local frame scrub and resume',
     (tester) async {
@@ -108,6 +160,14 @@ void main() {
       for (final demo in [pixelWalkerDemo, pullRevealRefreshDemo]) {
         await tester.pumpWidget(_host(demo.builder, size: size));
         expect(tester.takeException(), isNull);
+        for (final label in [
+          'V1 · Original',
+          'V3 · Pocket pals',
+          'V2 · Mochi buddies',
+        ]) {
+          await _selectVersion(tester, label);
+          expect(tester.takeException(), isNull);
+        }
         // Force controls and list tiles beyond the first viewport to layout.
         await tester.drag(find.byType(ListView), const Offset(0, -450));
         await tester.pump(const Duration(milliseconds: 600));
@@ -115,6 +175,54 @@ void main() {
         await tester.pumpWidget(const SizedBox.shrink());
       }
     }
+  });
+
+  testWidgets('refresh keeps scene and species when changing art versions', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_host(pullRevealRefreshDemo.builder));
+    await tester.tap(find.text('Cảnh: thành phố'));
+    await tester.pump();
+    await tester.tap(find.text('Mascot: Clawd'));
+    await tester.pump();
+    await tester.tap(find.text('Mascot: Miu (mèo)'));
+    await tester.pump();
+    await _selectVersion(tester, 'V3 · Pocket pals');
+    // Selecting a lower control scrolls the list. A refresh gesture starts
+    // at the actual top, just as it does when used in the app.
+    tester
+        .state<ScrollableState>(find.byType(Scrollable).first)
+        .position
+        .jumpTo(0);
+    await tester.pump();
+    await _startRefresh(tester);
+    expect(_walker(tester).sprite!.version, PixelSpriteVersion.v3);
+    expect(_walker(tester).sprite!.gait, PixelGait.capy);
+    expect(_walker(tester).scene, PixelWalkerScene.nightCity);
+    final state = tester.state(find.byType(PixelWalker));
+
+    // Changing art while a request is active must not restart the header.
+    await _selectVersion(tester, 'V1 · Original');
+    expect(_walker(tester).sprite!.version, PixelSpriteVersion.v1);
+    expect(_walker(tester).sprite!.gait, PixelGait.capy);
+    expect(_walker(tester).scene, PixelWalkerScene.nightCity);
+    expect(_walker(tester).walking, isTrue);
+    expect(tester.state(find.byType(PixelWalker)), same(state));
+    await tester.pump(const Duration(seconds: 3));
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.pump(const Duration(milliseconds: 400));
+    tester
+        .state<ScrollableState>(find.byType(Scrollable).first)
+        .position
+        .jumpTo(0);
+    await tester.pump();
+    expect(
+      find.text('Kéo xuống để refresh — đã refresh 1 lần'),
+      findsOneWidget,
+    );
+    expect(find.byType(PixelWalker), findsNothing);
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
   });
 
   testWidgets(

@@ -37,7 +37,7 @@ created_deps: []
 platforms_initial: [android]
 
 # --- COMPONENT VERSION ---
-version: 1.3.0
+version: 1.4.0
 
 # --- DERIVED (computed from Test History by verify.dart, do not hand-edit) ---
 latest_known_good: null
@@ -58,7 +58,9 @@ không cần asset.
 `progress` mở cảnh; `walking` bật bước và parallax; `readiness` tạo tư thế
 chuẩn bị; `celebration` lấy mẫu một động tác hoàn tất. Dùng làm header refresh,
 loading hoặc empty state. Playground có picker sáu mascot, tốc độ và **Xem
-từng nhịp** để scrub thời gian mà vẫn giữ các lựa chọn hiện tại.
+từng nhịp** để scrub thời gian mà vẫn giữ các lựa chọn hiện tại. Dropdown
+**Phiên bản mascot** có V1 Original, V2 Mochi buddies và V3 Pocket pals;
+showcase mặc định V2, API mặc định vẫn V1.
 
 ## Port notes
 
@@ -81,7 +83,7 @@ SizedBox(
   height: 160,
   width: double.infinity,
   child: PixelWalker(
-    sprite: PixelSprite.miu(),
+    sprite: PixelSprite.miu(version: PixelSpriteVersion.v2),
     scene: PixelWalkerScene.nightCity,
     walking: true,
     backgroundColor: const Color(0xFF0A0D16),
@@ -100,7 +102,7 @@ SizedBox(
 | `celebration` | `double` | `0` | Tiến độ 0→1 của một động tác hoàn tất; hai đầu về tư thế trung tính. Parent tự điều khiển tiến độ. |
 | `frozenAt` | `double?` | `null` | Render một thời điểm tính bằng giây, nhân `speed × motion`, không ticker hay pha tăng tốc; dùng cho thumbnail/scrub. |
 | `scene` | `PixelWalkerScene` | `city` | `city` hoặc `nightCity` (cửa sổ sáng, núi, sao/trăng). |
-| `scale` | `double` | `1` | Cỡ ô nền `3px × scale`; ô mascot gấp đôi. |
+| `scale` | `double` | `1` | Ô nền `3px × scale`; ô mascot `6px × scale / sprite.pixelRatio`. |
 | `sprite` | `PixelSprite?` | Clawd | Sprite custom dạng frame ký tự + palette. |
 | `mascotColor` | `Color` | `#E8875C` | Màu chính Clawd khi `sprite` null; các sắc độ phụ được suy ra. |
 | `skylineColor` | `Color` | `#B9B4AE` | Màu skyline, mây và núi. |
@@ -118,9 +120,26 @@ mọi dòng cùng chiều dài; ký tự không có trong palette là trong su�
 là pose nghỉ, các frame còn lại tạo vòng bước. `gait` chọn nhịp và độ nghiêng,
 nhún, dịch ngang; không còn quy tắc frame lẻ tự cộng bob.
 
-Sáu mascot có sẵn đều gồm 7 frame riêng (1 nghỉ + 6 bước), palette 4–5 màu.
-Nhịp vòng bước ở tốc độ 1: Clawd 2.15Hz, Miu 1.45Hz, Capy 0.85Hz, Quạc
-1.60Hz, Cáu 1.90Hz và Axo 1.05Hz. Một vòng chứa hai bước.
+Mỗi factory nhận thêm `version: PixelSpriteVersion.v1/v2/v3`. V1 giữ nguyên
+art, palette và chuyển động cũ: 1 nghỉ + 6 bước, 4–5 màu; nhịp Clawd/Miu/
+Capy/Quạc/Cáu/Axo là 2.15/1.45/0.85/1.60/1.90/1.05 vòng/giây.
+
+| Phiên bản | Tạo hình | Dữ liệu |
+|---|---|---|
+| V1 Original | Bản gốc, giữ cả chuyển động. | Lưới cũ, `pixelRatio: 1`. |
+| V2 Mochi buddies | Thân tròn, màu kem/pastel, nét mặt hiền, viền ấm. | 48×36, 1 nghỉ + 16 bước, 8 màu, `pixelRatio: 3`. |
+| V3 Pocket pals | Chibi rõ nét, khăn nhỏ, trái quýt, sao biển và mang ngọc trai. | 48×36, 1 nghỉ + 16 bước, 10–11 màu, `pixelRatio: 3`. |
+
+V2 có nhịp 1.05/0.95/0.68/1.10/1.05/0.82 vòng/giây theo cùng thứ tự;
+V3 nhanh hơn 8%. `walkCyclesPerSecond` trả nhịp của sprite. Mỗi vòng chứa
+hai bước; đuôi, mang, càng và phụ kiện theo sau nhịp chân. Chuyển động thân
+liên tục có biên độ nhỏ để giữ hình pixel rõ, kết hợp pose chuẩn bị/hoàn tất.
+
+`pixelRatio` tách độ phân giải khỏi kích thước: V2/V3 chiếm khung tối đa
+96×72px ở `scale: 1`, vừa header 110px. Factory cache frame và palette bất
+biến; màu custom tạo palette riêng. Bỏ qua tham số màu dùng màu riêng của
+edition; truyền màu tường minh vẫn đổi body/detail/eye. Component vẫn chỉ
+một file, không cần sprite sheet hoặc dependency ngoài Flutter.
 
 | Factory | Gait | Cá tính |
 |---|---|---|
@@ -173,6 +192,12 @@ chờ hoặc thay đổi state machine; app tái sử dụng tự sở hữu cho
 - Xem thêm [animation brief](../../../docs/pixel_art_animation_brief.md) khi
   thêm art hoặc thay đổi motion.
 ## Changelog
+
+- **1.4.0** (2026-10-23) — thêm V2 Mochi buddies và V3 Pocket pals cho đủ
+  sáu mascot; sprite 48×36, 16 frame bước với chuyển động phần phụ lệch nhịp.
+  Thêm `PixelSpriteVersion`, `pixelRatio`, `walkCyclesPerSecond`; giữ V1 làm
+  mặc định API và bảo toàn hình/chuyển động. Showcase có dropdown phiên bản,
+  mặc định V2 và giữ mascot/scene/tốc độ/thời điểm scrub khi chuyển.
 
 - **1.3.0** (2026-10-23) — làm mới art của sáu mascot, thêm `PixelGait` và
   pose sampler liên tục cho nhịp đi riêng; thêm `motion`, `readiness`,

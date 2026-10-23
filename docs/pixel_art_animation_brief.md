@@ -1,8 +1,9 @@
 ﻿# Pixel-art animation brief — PixelWalker + PullRevealRefresh
 
 Handoff cho việc vẽ mascot hoặc chỉnh chuyển động của hệ pixel-art Snipz.
-Phiên bản 1.3.0 giữ sáu nhân vật và hai cảnh, bổ sung nhịp đi riêng, pose
-chuẩn bị/hoàn tất và preview xác định theo thời gian. Art và engine vẫn nằm
+Phiên bản 1.4.0 giữ sáu nhân vật và hai cảnh, thêm hai bộ tạo hình mới V2/V3
+và dropdown so sánh với V1 nguyên bản. Pose chuẩn bị/hoàn tất và preview
+xác định theo thời gian tiếp tục dùng chung API. Art và engine vẫn nằm
 trong một file, không cần ảnh sprite sheet hoặc dependency ngoài Flutter.
 
 ## 1. Các file cần đọc
@@ -82,7 +83,7 @@ factory có sẵn chọn gait phù hợp cho từng nhân vật.
 celebration: ...)` là điểm kiểm tra một pose xác định. Dùng cùng thời điểm và
 đầu vào để so sánh art trước/sau mà không phụ thuộc tốc độ máy.
 
-Mỗi mascot có sẵn có 7 frame riêng (1 nghỉ + 6 bước), 4–5 màu. Một chu kỳ có
+Mỗi mascot V1 có 7 frame riêng (1 nghỉ + 6 bước), 4–5 màu. Một chu kỳ có
 hai bước; nhịp Clawd/Miu/Capy/Quạc/Cáu/Axo lần lượt là
 2.15/1.45/0.85/1.60/1.90/1.05 vòng mỗi giây ở tốc độ 1. `celebration` lấy
 tiến độ một lần nhún/nhảy và kéo dài thân; hai đầu 0 và 1 đều trung tính.
@@ -116,7 +117,9 @@ của viewer. Thumbnail phải tĩnh.
 mật độ dither dùng `easeOutCubic`. Ở pose nghỉ, chân mascot chạm đường đất
 đúng `progress = 1`; giữ quan hệ này khi chỉnh reveal.
 
-Ô nền là `3 * scale`, ô mascot gấp đôi ô nền. Painter vẽ các điểm vuông với
+Ô nền là `3 * scale`, ô mascot là `6 * scale / sprite.pixelRatio`.
+V1 giữ `pixelRatio: 1`; V2/V3 dùng `3`, lưới 48×36 nên khung tối đa 96×72px
+ở scale 1. Painter vẽ các điểm vuông với
 buffer tái dùng; pose sampling và các view buffer vẫn có thể tạo object nhỏ.
 Không coi đây là cam kết không cấp phát hoặc FPS đã đo trên thiết bị.
 
@@ -146,3 +149,25 @@ trong playground; mây cần nối vòng liên tục ở viewport rộng.
   quả thực tế; kiểm tra FPS riêng trên thiết bị trước khi công bố hiệu năng.
 - Bump component/app version, cập nhật `SESSION.yaml`, regenerate index và
   source bundle theo luật repo. Giữ creation snapshot và Test History.
+
+## 7. Bộ tạo hình V2 và V3
+
+- **V2 Mochi buddies:** Clawd bánh bao cam, Miu đuôi cuộn màu quế, Capy thân
+  bánh mì và mõm kem, Quạc vàng bơ, Cáu càng tròn, Axo mang cánh hoa. Tám
+  màu, viền ấm nhẹ, chân nhỏ, nét mặt hiền.
+- **V3 Pocket pals:** Clawd khăn xanh ngọc, Miu khăn xanh lam và đuôi cong,
+  Capy đội quýt, Quạc khăn xanh lá, Cáu sao biển, Axo mang tím ngọc trai.
+  10–11 màu, viền đậm hơn, biểu cảm rõ, dáng chibi tinh nghịch.
+- Cả hai có 1 frame nghỉ + 16 frame bước. Rasterizer nguyên tạo ma trận ký
+  tự một lần và cache dữ liệu bất biến; paint không sinh lại art. Phần phụ
+  lấy pha trễ; thân nhún/nghiêng/nén nhẹ liên tục. Không nội suy màu giữa
+  frame. V2 nhịp Clawd/Miu/Capy/Quạc/Cáu/Axo: 1.05/0.95/0.68/1.10/1.05/0.82
+  vòng mỗi giây; V3 nhanh hơn 8%.
+- `PixelSpriteVersion` chọn cả art và motion. Các factory mặc định V1 để
+  giữ tương thích; hai showcase mặc định V2. Dropdown giữ mascot, scene,
+  tốc độ, trạng thái scrub và đồng hồ hiện tại; refresh vẫn dùng Future cũ.
+- Màu bỏ trống dùng palette của edition. Màu truyền tường minh tạo palette
+  mới, kể cả khi nó trùng màu mặc định V1. Không sửa palette cache tại chỗ.
+- Kiểm tra bằng `test/pixel_mascot_editions_test.dart` và các test walker/demo.
+  Đặt `PIXEL_EDITION_REVIEW` thành thư mục đầu ra khi chạy test để tạo atlas
+  so sánh ba phiên bản, các nhịp bước và header ngày/đêm 110px từ Flutter.

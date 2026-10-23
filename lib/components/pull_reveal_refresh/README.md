@@ -37,7 +37,7 @@ created_deps: []
 platforms_initial: [android]
 
 # --- COMPONENT VERSION ---
-version: 1.0.2
+version: 1.0.3
 
 # --- DERIVED (computed from Test History by verify.dart, do not hand-edit) ---
 latest_known_good: null
@@ -117,7 +117,10 @@ PullRevealRefresh(
 ## Pixel mascot demo
 
 Demo ghép sáu mascot của `PixelWalker`: Clawd, Miu, Capy, Quạc, Cáu và
-Axo. Mỗi con có dáng bước riêng. Phần cuối hành trình kéo truyền
+Axo. Dropdown **Phiên bản mascot** cho chọn V1 Original, V2 Mochi buddies
+hoặc V3 Pocket pals (mặc định V2), giữ nhân vật và scene đang chọn, kể cả
+đang refresh. V1 giữ hình và chuyển động cũ; V2/V3 dùng sprite 48×36 với
+16 nhịp bước, vẫn vừa header 110px. Mỗi con có dáng bước riêng. Phần cuối hành trình kéo truyền
 `readiness` từ 0→1 để mascot chuẩn bị; khi tải thì bật `walking`.
 
 Sau tải giả 3 giây, demo giữ header mở thêm 360ms bằng cách chờ một
@@ -148,6 +151,10 @@ demo là tín hiệu thành công cho mọi request.
   thêm.
 
 ## Changelog
+
+- **1.0.3** (2026-10-23) — demo thêm dropdown V1/V2/V3 cho đủ sáu mascot,
+  mặc định V2 Mochi buddies; giữ scene, mascot và refresh đang chạy khi đổi
+  phiên bản. Core gesture, physics và state machine giữ nguyên.
 
 - **1.0.2** (2026-10-23) — demo dùng sáu dáng bước mới của PixelWalker,
   tư thế chuẩn bị theo độ kéo và nhịp kết thúc 360ms ở header mở đủ;

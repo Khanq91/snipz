@@ -118,6 +118,7 @@ class _PullRevealRefreshShowcaseState extends State<_PullRevealRefreshShowcase>
     with SingleTickerProviderStateMixin {
   int _refreshCount = 0;
   PixelWalkerScene _scene = PixelWalkerScene.city;
+  PixelSpriteVersion _version = PixelSpriteVersion.v2;
   int _mascot = 0;
   bool _finishing = false;
   late final AnimationController _finish;
@@ -138,15 +139,25 @@ class _PullRevealRefreshShowcaseState extends State<_PullRevealRefreshShowcase>
     super.dispose();
   }
 
-  // null = Clawd mặc định; 4 con mới theo thứ tự Capy → Vịt → Cua → Axolotl.
-  static final List<(String, PixelSprite?)> _mascots = <(String, PixelSprite?)>[
-    ('Clawd', null),
-    ('Miu (mèo)', PixelSprite.miu()),
-    ('Capy (capybara)', PixelSprite.capy()),
-    ('Quạc (vịt)', PixelSprite.duck()),
-    ('Cáu (cua)', PixelSprite.crab()),
-    ('Axo (axolotl)', PixelSprite.axolotl()),
+  static const _mascotNames = [
+    'Clawd',
+    'Miu (mèo)',
+    'Capy (capybara)',
+    'Quạc (vịt)',
+    'Cáu (cua)',
+    'Axo (axolotl)',
   ];
+  static final _mascots = <PixelSpriteVersion, List<PixelSprite>>{
+    for (final version in PixelSpriteVersion.values)
+      version: [
+        PixelSprite.clawd(version: version),
+        PixelSprite.miu(version: version),
+        PixelSprite.capy(version: version),
+        PixelSprite.duck(version: version),
+        PixelSprite.crab(version: version),
+        PixelSprite.axolotl(version: version),
+      ],
+  };
 
   Future<void> _fakeLoad() async {
     setState(() => _finishing = false);
@@ -200,7 +211,7 @@ class _PullRevealRefreshShowcaseState extends State<_PullRevealRefreshShowcase>
                 celebration: completion,
                 backgroundColor: bg,
                 scene: _scene,
-                sprite: _mascots[_mascot].$2,
+                sprite: _mascots[_version]![_mascot],
                 skylineColor: night
                     ? const Color(0xFF93A1BE)
                     : const Color(0xFFB9B4AE),
@@ -221,6 +232,11 @@ class _PullRevealRefreshShowcaseState extends State<_PullRevealRefreshShowcase>
               style: const TextStyle(color: Colors.white38, fontSize: 13),
             ),
             const SizedBox(height: 12),
+            _VersionPicker(
+              value: _version,
+              onChanged: (value) => setState(() => _version = value),
+            ),
+            const SizedBox(height: 16),
             // Đổi cảnh/mascot của header ngay trong ngữ cảnh dùng thật —
             // chạm để xoay vòng giá trị.
             Wrap(
@@ -236,9 +252,10 @@ class _PullRevealRefreshShowcaseState extends State<_PullRevealRefreshShowcase>
                   ),
                 ),
                 _CycleChip(
-                  label: 'Mascot: ${_mascots[_mascot].$1}',
-                  onTap: () =>
-                      setState(() => _mascot = (_mascot + 1) % _mascots.length),
+                  label: 'Mascot: ${_mascotNames[_mascot]}',
+                  onTap: () => setState(
+                    () => _mascot = (_mascot + 1) % _mascotNames.length,
+                  ),
                 ),
               ],
             ),
@@ -272,6 +289,58 @@ class _PullRevealRefreshShowcaseState extends State<_PullRevealRefreshShowcase>
                 ),
               ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _VersionPicker extends StatelessWidget {
+  const _VersionPicker({required this.value, required this.onChanged});
+
+  final PixelSpriteVersion value;
+  final ValueChanged<PixelSpriteVersion> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return InputDecorator(
+      decoration: InputDecoration(
+        labelText: 'Phiên bản mascot',
+        labelStyle: const TextStyle(color: Colors.white54, fontSize: 13),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.white24),
+        ),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<PixelSpriteVersion>(
+          key: const ValueKey('pixel-version'),
+          value: value,
+          isExpanded: true,
+          isDense: true,
+          dropdownColor: const Color(0xFF252321),
+          borderRadius: BorderRadius.circular(12),
+          iconEnabledColor: Colors.white70,
+          style: const TextStyle(color: Colors.white, fontSize: 13),
+          items: [
+            for (final (version, label) in const [
+              (PixelSpriteVersion.v1, 'V1 · Original'),
+              (PixelSpriteVersion.v2, 'V2 · Mochi buddies'),
+              (PixelSpriteVersion.v3, 'V3 · Pocket pals'),
+            ])
+              DropdownMenuItem(
+                value: version,
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+          ],
+          onChanged: (version) {
+            if (version != null) onChanged(version);
+          },
         ),
       ),
     );
