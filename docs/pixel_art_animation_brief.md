@@ -166,6 +166,11 @@ trong playground; mây cần nối vòng liên tục ở viewport rộng.
 - `PixelSpriteVersion` chọn cả art và motion. Các factory mặc định V1 để
   giữ tương thích; hai showcase mặc định V2. Dropdown giữ mascot, scene,
   tốc độ, trạng thái scrub và đồng hồ hiện tại; refresh vẫn dùng Future cũ.
+- Hướng bước V3 (sửa ở 1.4.1): khi tiếp đất, chân quét trái theo chiều nền;
+  khi nhấc, chân đưa phải. `_pocketStep` dùng chung cho bàn chân, mũi chân
+  Miu/Quạc và chân cua. Giữ pha nhấc và phần phụ; không đảo thứ tự toàn bộ
+  frame vì sẽ đảo cả độ trễ của đuôi/khăn/mang. Test theo pixel của chân ở
+  pha tiếp đất và pha đưa tới để ngăn cảm giác đi lùi quay lại.
 - Màu bỏ trống dùng palette của edition. Màu truyền tường minh tạo palette
   mới, kể cả khi nó trùng màu mặc định V1. Không sửa palette cache tại chỗ.
 - Kiểm tra bằng `test/pixel_mascot_editions_test.dart` và các test walker/demo.

@@ -37,7 +37,7 @@ created_deps: []
 platforms_initial: [android]
 
 # --- COMPONENT VERSION ---
-version: 1.4.0
+version: 1.4.1
 
 # --- DERIVED (computed from Test History by verify.dart, do not hand-edit) ---
 latest_known_good: null
@@ -192,6 +192,10 @@ chờ hoặc thay đổi state machine; app tái sử dụng tự sở hữu cho
 - Xem thêm [animation brief](../../../docs/pixel_art_animation_brief.md) khi
   thêm art hoặc thay đổi motion.
 ## Changelog
+
+- **1.4.1** (2026-10-23) — sửa hướng bước V3: chân chạm đất quét sang trái
+  cùng chiều nền; chân nhấc đưa sang phải. Đồng bộ mũi chân Miu/Quạc và
+  chân cua qua cùng sampler, giữ pha nhấc chân, thân và phụ kiện.
 
 - **1.4.0** (2026-10-23) — thêm V2 Mochi buddies và V3 Pocket pals cho đủ
   sáu mascot; sprite 48×36, 16 frame bước với chuyển động phần phụ lệch nhịp.

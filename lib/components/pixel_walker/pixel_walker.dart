@@ -1165,6 +1165,21 @@ void _pocketEye(_SpriteCanvas c, int x, int y, {bool small = false}) {
   }
 }
 
+/// Contact feet travel left with the scenery; lifted feet recover right.
+/// Keep the same lift timing for legs and their separately painted toe details.
+(int, int) _pocketStep(
+  double phase,
+  bool moving, {
+  int stride = 2,
+  int clearance = 3,
+}) {
+  if (!moving) return (0, 0);
+  return (
+    -_pocketSway(phase, moving, stride.toDouble()),
+    (math.max(0.0, -math.cos(phase)) * clearance).round(),
+  );
+}
+
 /// A leg with a flat planted toe and a rounded, lifted swing foot.
 void _pocketFoot(
   _SpriteCanvas c,
@@ -1176,8 +1191,7 @@ void _pocketFoot(
   int width = 5,
   int stride = 2,
 }) {
-  final offset = _pocketSway(phase, moving, stride.toDouble());
-  final lift = moving ? (math.max(0.0, -math.cos(phase)) * 3).round() : 0;
+  final (offset, lift) = _pocketStep(phase, moving, stride: stride);
   c.line(x, y, x + offset, 33 - lift, 'O', thickness: width - 1);
   c.line(x, y, x + offset, 33 - lift, fill, thickness: width - 3);
   c.rect(x + offset - width ~/ 2, 33 - lift, width, 3, 'O');
@@ -1269,13 +1283,8 @@ void _pocketMiu(_SpriteCanvas c, double p, bool moving) {
   c.rect(21, 20, 3, 4, 'S');
   _pocketFoot(c, 16, 28, p, moving, width: 6);
   _pocketFoot(c, 31, 28, p + math.pi, moving, width: 6);
-  c.rect(
-    14 + _pocketSway(p, moving, 2),
-    34 - (moving ? (math.max(0.0, -math.cos(p)) * 3).round() : 0),
-    4,
-    1,
-    'W',
-  );
+  final (toeOffset, toeLift) = _pocketStep(p, moving);
+  c.rect(14 + toeOffset, 34 - toeLift, 4, 1, 'W');
   // Folded scarf behind the neck, with a small swallowtail.
   c.polygon([
     math.Point(26, 24),
@@ -1407,8 +1416,7 @@ void _pocketDuck(_SpriteCanvas c, double p, bool moving) {
   c.ellipse(25, 27, 8, 4, 'H');
   c.line(15, 30, 29, 31, 'S');
   _pocketFoot(c, 21, 29, p, moving, fill: 'D', width: 7);
-  final dx = _pocketSway(p, moving, 2);
-  final dy = moving ? (math.max(0.0, -math.cos(p)) * 3).round() : 0;
+  final (dx, dy) = _pocketStep(p, moving);
   c.rect(20 + dx, 34 - dy, 4, 1, 'C');
   // Bill faces right while both eyes remain visible.
   _pocketOval(c, 31, 14, 11, 10, 'X');
@@ -1481,8 +1489,7 @@ void _pocketCrab(_SpriteCanvas c, double p, bool moving) {
   for (final side in [-1, 1]) {
     for (var leg = 0; leg < 3; leg++) {
       final phase = p + (side < 0 ? 0 : math.pi) + leg * 0.8;
-      final step = _pocketSway(phase, moving, 2);
-      final lift = moving ? (math.max(0.0, -math.cos(phase)) * 2).round() : 0;
+      final (step, lift) = _pocketStep(phase, moving, clearance: 2);
       final rootX = side < 0 ? 16 : 32;
       final bendX = side < 0 ? 10 - leg * 2 : 38 + leg * 2;
       final footX = bendX + side + step;

@@ -49,6 +49,65 @@ Future<Uint8List> _raster(CustomPainter painter, Size size) async {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  test('V3 contact feet travel left and airborne toes recover right', () {
+    final sprites = _sprites(PixelSpriteVersion.v3);
+    List<int> contactPixels(PixelSprite sprite, int frame) => [
+      for (int x = 0; x < sprite.colCount; x++)
+        if (sprite.frames[frame][35][x] != '.') x,
+    ];
+
+    // These samples straddle the loop boundary within the planted half of
+    // the step. Check painted pixels rather than the private gait formula.
+    for (final sprite in sprites.where((s) => s.gait != PixelGait.crab)) {
+      final start = contactPixels(sprite, 14);
+      final end = contactPixels(sprite, 4);
+      final travel = switch (sprite.gait) {
+        PixelGait.capy || PixelGait.axolotl => 2,
+        _ => 4,
+      };
+      expect(start, isNotEmpty);
+      expect(
+        end,
+        orderedEquals(start.map((x) => x - travel)),
+        reason:
+            '${sprite.gait.name}: planted feet must follow the scenery left',
+      );
+    }
+
+    // The crab has splayed legs. Follow the last-drawn outside toe of its
+    // left bank during its own contact interval, clear of overlapping legs.
+    final crab = sprites[4];
+    int crabToe(int frame) => [
+      for (int x = 0; x < 24; x++)
+        if (crab.frames[frame][34][x] == 'H') x,
+    ].first;
+    expect(crabToe(16), crabToe(9) - 4);
+
+    // Miu's white sock and the duck's orange toe are painted separately.
+    // They must recover forward in the air and remain attached to a sole.
+    for (final (sprite, color) in [(sprites[1], 'W'), (sprites[3], 'C')]) {
+      List<(int, int)> toePixels(int frame) => [
+        for (int y = 31; y < 35; y++)
+          for (int x = 0; x < sprite.colCount; x++)
+            if (sprite.frames[frame][y][x] == color) (x, y),
+      ];
+      final lifted = toePixels(7);
+      final forward = toePixels(11);
+      expect(lifted, hasLength(4));
+      expect(forward, orderedEquals(lifted.map((p) => (p.$1 + 2, p.$2))));
+      for (final frame in [7, 11]) {
+        for (final (x, y) in toePixels(frame)) {
+          expect(y, lessThan(34));
+          expect(
+            sprite.frames[frame][y + 1][x],
+            'O',
+            reason: '${sprite.gait.name}: toe detail must stay on its foot',
+          );
+        }
+      }
+    }
+  });
+
   test(
     'editions retain legacy art and cache distinct high resolution cycles',
     () {
