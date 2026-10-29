@@ -1,3 +1,4 @@
+
 // Demo/usage example for PullRevealRefresh. Exempt from portability rules
 // (§3.1.9); also serves as the copy-paste usage reference (§6).
 //
@@ -147,6 +148,65 @@ class _PullRevealRefreshShowcaseState extends State<_PullRevealRefreshShowcase>
     'Cáu (cua)',
     'Axo (axolotl)',
   ];
+
+  static const _sceneConfigs =
+      <(PixelWalkerScene, String, Color, Color, Color, Color, Color)>[
+        (
+          PixelWalkerScene.city,
+          'thành phố',
+          Color(0xFF0E0D0B),
+          Color(0xFF1A1917),
+          Color(0xFFB9B4AE),
+          Color(0xFFF2C069),
+          Color(0xFFC7D3E6),
+        ),
+        (
+          PixelWalkerScene.nightCity,
+          'đêm',
+          Color(0xFF0A0D16),
+          Color(0xFF151A28),
+          Color(0xFF93A1BE),
+          Color(0xFFF2C069),
+          Color(0xFFC7D3E6),
+        ),
+        (
+          PixelWalkerScene.forest,
+          'rừng đom đóm',
+          Color(0xFF071410),
+          Color(0xFF11241E),
+          Color(0xFF538A78),
+          Color(0xFFB8FF66),
+          Color(0xFFA8E6CF),
+        ),
+        (
+          PixelWalkerScene.spaceStation,
+          'trạm vũ trụ',
+          Color(0xFF090718),
+          Color(0xFF16132E),
+          Color(0xFF8A7EB8),
+          Color(0xFF47F5FF),
+          Color(0xFFE0C8FF),
+        ),
+        (
+          PixelWalkerScene.ancientRuins,
+          'di tích cổ',
+          Color(0xFF17110E),
+          Color(0xFF261D18),
+          Color(0xFFB8997E),
+          Color(0xFFFFB84D),
+          Color(0xFFF5DFC6),
+        ),
+        (
+          PixelWalkerScene.cyberGrid,
+          'synthwave',
+          Color(0xFF14071E),
+          Color(0xFF241136),
+          Color(0xFFB066FF),
+          Color(0xFFFF4D94),
+          Color(0xFF38F2FF),
+        ),
+      ];
+
   static final _mascots = <PixelSpriteVersion, List<PixelSprite>>{
     for (final version in PixelSpriteVersion.values)
       version: [
@@ -177,11 +237,9 @@ class _PullRevealRefreshShowcaseState extends State<_PullRevealRefreshShowcase>
 
   @override
   Widget build(BuildContext context) {
-    final bool night = _scene == PixelWalkerScene.nightCity;
-    final Color bg = night ? const Color(0xFF0A0D16) : const Color(0xFF0E0D0B);
-    final Color tile = night
-        ? const Color(0xFF151A28)
-        : const Color(0xFF1A1917);
+    final cfg = _sceneConfigs.firstWhere((c) => c.$1 == _scene);
+    final Color bg = cfg.$3;
+    final Color tile = cfg.$4;
     return ColoredBox(
       color: bg,
       child: PullRevealRefresh(
@@ -201,20 +259,21 @@ class _PullRevealRefreshShowcaseState extends State<_PullRevealRefreshShowcase>
               final pulling =
                   status.mode == PullRevealMode.dragging ||
                   status.mode == PullRevealMode.armed;
+              final double baseReady = pulling
+                  ? ((status.progress - .65) / .35).clamp(0.0, 1.0)
+                  : 0.0;
               return PixelWalker(
                 progress: status.progress,
                 walking: status.isRefreshing && completion < 1,
                 motion: completing || settled ? 1 - completion : 1,
-                readiness: pulling
-                    ? ((status.progress - .65) / .35).clamp(0.0, 1.0)
-                    : 0,
+                readiness: baseReady,
                 celebration: completion,
                 backgroundColor: bg,
                 scene: _scene,
                 sprite: _mascots[_version]![_mascot],
-                skylineColor: night
-                    ? const Color(0xFF93A1BE)
-                    : const Color(0xFFB9B4AE),
+                skylineColor: cfg.$5,
+                windowColor: cfg.$6,
+                starColor: cfg.$7,
               );
             },
           );
@@ -244,12 +303,12 @@ class _PullRevealRefreshShowcaseState extends State<_PullRevealRefreshShowcase>
               runSpacing: 8,
               children: <Widget>[
                 _CycleChip(
-                  label: night ? 'Cảnh: đêm' : 'Cảnh: thành phố',
-                  onTap: () => setState(
-                    () => _scene = night
-                        ? PixelWalkerScene.city
-                        : PixelWalkerScene.nightCity,
-                  ),
+                  label: 'Cảnh: ${cfg.$2}',
+                  onTap: () => setState(() {
+                    final idx = _sceneConfigs.indexWhere((c) => c.$1 == _scene);
+                    _scene =
+                        _sceneConfigs[(idx + 1) % _sceneConfigs.length].$1;
+                  }),
                 ),
                 _CycleChip(
                   label: 'Mascot: ${_mascotNames[_mascot]}',
@@ -328,6 +387,10 @@ class _VersionPicker extends StatelessWidget {
               (PixelSpriteVersion.v1, 'V1 · Original'),
               (PixelSpriteVersion.v2, 'V2 · Mochi buddies'),
               (PixelSpriteVersion.v3, 'V3 · Pocket pals'),
+              (PixelSpriteVersion.v4, 'V4 · Bouncy Slime'),
+              (PixelSpriteVersion.v5, 'V5 · Cyber Mecha'),
+              (PixelSpriteVersion.v6, 'V6 · Wind-up Toy'),
+              (PixelSpriteVersion.v7, 'V7 · Astral Ghost'),
             ])
               DropdownMenuItem(
                 value: version,

@@ -17,8 +17,9 @@ import 'package:flutter/scheduler.dart';
 /// Movement personality; custom sprites default to [clawd].
 enum PixelGait { clawd, miu, capy, duck, crab, axolotl }
 
+enum PixelSpriteVersion { v1, v2, v3, v4, v5, v6, v7 }
+
 /// Independent art and motion editions. V1 keeps the original pixel artwork.
-enum PixelSpriteVersion { v1, v2, v3 }
 
 /// Deterministic pose: [bob]/[sway] in sprite cells, [lean] in radians.
 /// Pixel frames change discretely; the body transform remains continuous.
@@ -41,14 +42,15 @@ class PixelSpritePose {
   final double scaleY;
 }
 
+/// Các factory mặc định V1; truyền [PixelSpriteVersion.v2]..[PixelSpriteVersion.v7]
+/// để chọn art 48×36 và chu kỳ 16 frame bước.
+
 /// Sprite pixel-art dạng ma trận ký tự: mỗi frame là một list dòng, mỗi ký tự
 /// tra màu trong [palette]; `.` (hoặc ký tự không có trong palette) là trong
 /// suốt. Mọi dòng trong một frame phải dài bằng nhau, mọi frame cùng kích cỡ.
 ///
 /// Frame 0 là pose đứng yên; các frame còn lại là chu kỳ bước đi. [gait]
 /// quyết định nhịp bước và chuyển động thân liên tục giữa các frame pixel.
-/// Các factory mặc định V1; truyền [PixelSpriteVersion.v2] hoặc
-/// [PixelSpriteVersion.v3] để chọn art 48×36 và chu kỳ 16 frame bước.
 class PixelSprite {
   const PixelSprite({
     required this.frames,
@@ -379,24 +381,73 @@ class PixelSprite {
     final double jump = switch (gait) {
       PixelGait.capy => 0.85,
       PixelGait.crab => 1.2,
-      PixelGait.miu => 2.6,
+      PixelGait.miu => 2.4,
       _ => 1.9,
     };
+
+    if (version == PixelSpriteVersion.v2 || version == PixelSpriteVersion.v3) {
+      final double jumpV2V3 = gait == PixelGait.miu ? 2.6 : jump;
+      final double squash = lift * amount * (pocket ? 0.012 : 0.018);
+      final double compressed =
+          ready * (gait == PixelGait.capy ? 0.025 : 0.045);
+      final double stretch = cheer * 0.035;
+      final int walkFrames = frames.length - 1;
+      return PixelSpritePose(
+        frameIndex: amount > 0 && walkFrames > 0
+            ? 1 + ((cycle % 1) * walkFrames).floor().clamp(0, walkFrames - 1)
+            : 0,
+        lean:
+            lean * step * amount +
+            0.015 * ready +
+            (pocket ? 0.025 : 0.012) * cheer * math.sin(done * math.pi * 2),
+        bob: -bob * lift * amount - jumpV2V3 * cheer * cheer,
+        sway: sway * step * amount,
+        scaleX: 1 + compressed + squash - stretch * 0.5,
+        scaleY: 1 - compressed - squash + stretch,
+      );
+    }
+
+    // V4..V7 specialized continuous body physics (strictly bounded within
+    // lean < 0.4, bob < 2.5, scale in [0.7, 1.3], smooth across loop boundary):
+    final (
+      double verSquash,
+      double verReadyCompress,
+      double verReadyLean,
+      double verBobFactor,
+      double verLeanFactor,
+    ) = switch (version) {
+      PixelSpriteVersion.v4 => (0.030, 0.068, 0.012, 1.18, 0.92),
+      PixelSpriteVersion.v5 => (0.009, 0.036, 0.032, 0.78, 1.30),
+      PixelSpriteVersion.v6 => (0.015, 0.032, -0.038, 1.08, 1.65),
+      PixelSpriteVersion.v7 => (0.020, 0.024, -0.016, 0.88, 0.85),
+      _ => (0.018, 0.045, 0.015, 1.0, 1.0),
+    };
+
+    final double squash = lift * amount * verSquash;
+    final double compressed =
+        ready *
+        (gait == PixelGait.capy ? verReadyCompress * 0.65 : verReadyCompress);
+    final double stretch =
+        cheer * (version == PixelSpriteVersion.v4 ? 0.050 : 0.036);
     // Small transforms preserve pixel clusters. Feet stay anchored during
     // anticipation; only the completion hop deliberately leaves the ground.
-    final double squash = lift * amount * (pocket ? 0.012 : 0.018);
-    final double compressed = ready * (gait == PixelGait.capy ? 0.025 : 0.045);
-    final double stretch = cheer * 0.035;
     final int walkFrames = frames.length - 1;
+    final double hoverWave = version == PixelSpriteVersion.v7
+        ? math.sin(phase) * 0.25 * amount
+        : 0.0;
+
     return PixelSpritePose(
       frameIndex: amount > 0 && walkFrames > 0
           ? 1 + ((cycle % 1) * walkFrames).floor().clamp(0, walkFrames - 1)
           : 0,
       lean:
-          lean * step * amount +
-          0.015 * ready +
-          (pocket ? 0.025 : 0.012) * cheer * math.sin(done * math.pi * 2),
-      bob: -bob * lift * amount - jump * cheer * cheer,
+          lean * verLeanFactor * step * amount +
+          verReadyLean * ready +
+          0.024 * cheer * math.sin(done * math.pi * 2),
+      bob:
+          -bob * verBobFactor * lift * amount +
+          hoverWave -
+          jump * cheer * cheer,
       sway: sway * step * amount,
       scaleX: 1 + compressed + squash - stretch * 0.5,
       scaleY: 1 - compressed - squash + stretch,
@@ -423,7 +474,16 @@ class PixelSprite {
       PixelGait.crab => 1.05,
       PixelGait.axolotl => 0.82,
     };
-    return base * (version == PixelSpriteVersion.v3 ? 1.08 : 1);
+    final double mult = switch (version) {
+      PixelSpriteVersion.v1 => 1.0,
+      PixelSpriteVersion.v2 => 1.0,
+      PixelSpriteVersion.v3 => 1.08,
+      PixelSpriteVersion.v4 => 0.94,
+      PixelSpriteVersion.v5 => 1.16,
+      PixelSpriteVersion.v6 => 1.12,
+      PixelSpriteVersion.v7 => 0.88,
+    };
+    return base * mult;
   }
 }
 
@@ -439,9 +499,15 @@ PixelSprite _redesignedSprite(
 }) {
   final PixelSprite base = _editionCache.putIfAbsent(
     (version, gait),
-    () => version == PixelSpriteVersion.v2
-        ? _mochiSprite(gait)
-        : _pocketSprite(gait),
+    () => switch (version) {
+      PixelSpriteVersion.v1 => PixelSprite.clawd(),
+      PixelSpriteVersion.v2 => _mochiSprite(gait),
+      PixelSpriteVersion.v3 => _pocketSprite(gait),
+      PixelSpriteVersion.v4 => _slimeSprite(gait),
+      PixelSpriteVersion.v5 => _mechaSprite(gait),
+      PixelSpriteVersion.v6 => _windupSprite(gait),
+      PixelSpriteVersion.v7 => _astralSprite(gait),
+    },
   );
   if (body == null && detail == null && eye == null && eyeWhite == null) {
     return base;
@@ -463,7 +529,7 @@ PixelSprite _redesignedSprite(
     for (final key in keys) {
       palette[key] = detail;
     }
-    if (gait == PixelGait.duck && version == PixelSpriteVersion.v3) {
+    if (gait == PixelGait.duck && version != PixelSpriteVersion.v2) {
       palette['C'] = Color.lerp(detail, Colors.white, 0.25)!;
     }
   }
@@ -1635,6 +1701,841 @@ void _pocketAxo(_SpriteCanvas c, double p, bool moving) {
   c.dot(38, 22, 'W');
 }
 
+// ============================================================================
+// V4 — Bouncy Slime (Jelly translucent body, glowing nucleus, splash droplets)
+// ============================================================================
+
+PixelSprite _slimeSprite(PixelGait gait) {
+  final Map<String, Color> palette = switch (gait) {
+    PixelGait.clawd => const <String, Color>{
+      'O': Color(0xFF1A4F55),
+      'X': Color(0xFF45D6C6),
+      'S': Color(0xFF289E96),
+      'H': Color(0xFF9DF7E5),
+      'E': Color(0xFF142E33),
+      'W': Color(0xFFF0FFFF),
+      'N': Color(0xFFFF7A9E),
+      'A': Color(0xFFFF9F59),
+      'B': Color(0xFFFFE57F),
+      'C': Color(0xFFFFF5BA),
+      'D': Color(0xFF1E7A74),
+    },
+    PixelGait.miu => const <String, Color>{
+      'O': Color(0xFF472A5E),
+      'X': Color(0xFFB689F5),
+      'S': Color(0xFF885BD1),
+      'H': Color(0xFFE3C8FF),
+      'E': Color(0xFF271538),
+      'W': Color(0xFFFAF2FF),
+      'N': Color(0xFFFF82A9),
+      'A': Color(0xFFFF70A6),
+      'B': Color(0xFFFFB8D9),
+      'C': Color(0xFFFFE8F5),
+      'D': Color(0xFF6B3FA8),
+    },
+    PixelGait.capy => const <String, Color>{
+      'O': Color(0xFF2B4F28),
+      'X': Color(0xFF7ED665),
+      'S': Color(0xFF53A641),
+      'H': Color(0xFFBFF5A6),
+      'E': Color(0xFF1D331B),
+      'W': Color(0xFFF3FFE8),
+      'N': Color(0xFFFF9678),
+      'A': Color(0xFFFFB742),
+      'B': Color(0xFFFFE47A),
+      'C': Color(0xFFFFF9C4),
+      'D': Color(0xFF3E802F),
+    },
+    PixelGait.duck => const <String, Color>{
+      'O': Color(0xFF634418),
+      'X': Color(0xFFFFCF48),
+      'S': Color(0xFFDEA026),
+      'H': Color(0xFFFFEC99),
+      'E': Color(0xFF3B260E),
+      'W': Color(0xFFFFFDE6),
+      'N': Color(0xFFFF8066),
+      'A': Color(0xFFFF7338),
+      'B': Color(0xFFFFA866),
+      'C': Color(0xFFFFF0B8),
+      'D': Color(0xFFE86A24),
+    },
+    PixelGait.crab => const <String, Color>{
+      'O': Color(0xFF611F33),
+      'X': Color(0xFFFF6680),
+      'S': Color(0xFFD63E5C),
+      'H': Color(0xFFFFADB8),
+      'E': Color(0xFF3B101E),
+      'W': Color(0xFFFFF0F3),
+      'N': Color(0xFFFFB37A),
+      'A': Color(0xFFFFD152),
+      'B': Color(0xFFFFEB99),
+      'C': Color(0xFFFFF9D2),
+      'D': Color(0xFFA82440),
+    },
+    PixelGait.axolotl => const <String, Color>{
+      'O': Color(0xFF22426B),
+      'X': Color(0xFF6BB8FF),
+      'S': Color(0xFF4288D9),
+      'H': Color(0xFFB5E2FF),
+      'E': Color(0xFF142842),
+      'W': Color(0xFFF0F9FF),
+      'N': Color(0xFFFF85B3),
+      'A': Color(0xFFFF70A6),
+      'B': Color(0xFFFFB5D8),
+      'C': Color(0xFFE8FFFF),
+      'D': Color(0xFF2D66AD),
+    },
+  };
+  final frames = List<List<String>>.generate(17, (int frame) {
+    final c = _SpriteCanvas(48, 36);
+    final phase = frame == 0 ? 0.0 : (frame - 1) / 16 * math.pi * 2;
+    _slimeDraw(c, gait, phase, frame != 0);
+    return c.finish();
+  });
+  return PixelSprite(
+    frames: List.unmodifiable(frames),
+    palette: Map.unmodifiable(palette),
+    gait: gait,
+    version: PixelSpriteVersion.v4,
+    pixelRatio: 3,
+  );
+}
+
+void _slimeCore(_SpriteCanvas c, int cx, int cy, double p, bool moving) {
+  final int dx = moving ? (math.cos(p) * 1.6).round() : 0;
+  final int dy = moving ? (math.sin(p) * 1.4).round() : 0;
+  c.ellipse((cx + dx).toDouble(), (cy + dy).toDouble(), 4, 3, 'A');
+  c.ellipse((cx + dx).toDouble(), (cy + dy).toDouble(), 2.6, 2, 'B');
+  c.rect(cx + dx - 1, cy + dy - 1, 2, 2, 'C');
+}
+
+void _slimeDroplets(_SpriteCanvas c, double p, bool moving) {
+  if (!moving) {
+    c.ellipse(6, 30, 2, 1.5, 'O');
+    c.dot(6, 30, 'H');
+    return;
+  }
+  // Smooth periodic Lissajous orbit so frame 16 wraps seamlessly into frame 1:
+  final int x1 = 6 + (math.cos(p) * 2.4).round();
+  final int y1 = 27 + (math.sin(p) * 3.0).round();
+  c.ellipse(x1.toDouble(), y1.toDouble(), 2, 2, 'O');
+  c.dot(x1, y1, 'H');
+
+  final int x2 = 5 - (math.sin(p) * 2.2).round();
+  final int y2 = 19 + (math.cos(p) * 2.5).round();
+  c.ellipse(x2.toDouble(), y2.toDouble(), 1.6, 1.6, 'O');
+  c.dot(x2, y2, 'W');
+}
+
+void _slimePod(
+  _SpriteCanvas c,
+  int x,
+  double p,
+  bool moving, {
+  int width = 4,
+  String fill = 'S',
+}) {
+  final (offset, lift) = _pocketStep(p, moving, stride: 2, clearance: 2);
+  final int px = x + offset;
+  final int py = 33 - lift;
+  c.ellipse(px.toDouble(), py.toDouble(), width.toDouble(), 2.5, 'O');
+  c.ellipse(px.toDouble(), py.toDouble(), (width - 1).toDouble(), 1.6, fill);
+  c.rect(px - 1, py - 1, 2, 1, 'H');
+}
+
+void _slimeDraw(_SpriteCanvas c, PixelGait gait, double p, bool moving) {
+  final int wave = _pocketSway(p, moving, 1.5);
+  _slimeDroplets(c, p, moving);
+
+  switch (gait) {
+    case PixelGait.clawd:
+      for (var i = 0; i < 3; i++) {
+        _slimePod(c, 13 + i * 5, p + i * 1.0, moving, width: 3);
+        _slimePod(c, 26 + i * 5, p + math.pi + i * 1.0, moving, width: 3);
+      }
+      c.ellipse(25, 22, 15, 11, 'O');
+      c.ellipse(25, 22, 14, 10, 'X');
+      c.ellipse(25, 26, 12, 5, 'S');
+      c.ellipse(19, (9 - wave).toDouble(), 3, 3, 'O');
+      c.ellipse(19, (9 - wave).toDouble(), 2, 2, 'H');
+      c.ellipse(30, (9 + wave).toDouble(), 3, 3, 'O');
+      c.ellipse(30, (9 + wave).toDouble(), 2, 2, 'H');
+      _slimeCore(c, 24, 23, p, moving);
+      c.line(15, 15, 20, 13, 'W', thickness: 2);
+      c.dot(14, 17, 'W');
+      _pocketEye(c, 19, 17);
+      _pocketEye(c, 29, 17);
+      c.rect(16, 22, 3, 2, 'N');
+      c.rect(32, 22, 3, 2, 'N');
+
+    case PixelGait.miu:
+      final int tail = _pocketSway(p - 0.8, moving, 2);
+      c.ellipse(10, (19 + tail).toDouble(), 5, 7, 'O');
+      c.ellipse(10, (19 + tail).toDouble(), 4, 6, 'H');
+      _slimePod(c, 18, p, moving);
+      _slimePod(c, 32, p + math.pi, moving);
+      c.ellipse(24, 24, 13, 8, 'O');
+      c.ellipse(24, 24, 12, 7, 'X');
+      _slimeCore(c, 22, 24, p, moving);
+      c.polygon([
+        const math.Point(23, 14),
+        math.Point(24, 5 + wave),
+        const math.Point(30, 12),
+      ], 'O');
+      c.polygon([
+        const math.Point(24, 13),
+        math.Point(25, 7 + wave),
+        const math.Point(29, 12),
+      ], 'H');
+      c.polygon([
+        const math.Point(33, 12),
+        math.Point(38, 5 - wave),
+        const math.Point(41, 15),
+      ], 'O');
+      c.polygon([
+        const math.Point(34, 12),
+        math.Point(38, 7 - wave),
+        const math.Point(40, 14),
+      ], 'H');
+      c.ellipse(32, 19, 11, 9, 'O');
+      c.ellipse(32, 19, 10, 8, 'X');
+      c.line(25, 13, 29, 12, 'W', thickness: 2);
+      _pocketEye(c, 28, 17);
+      _pocketEye(c, 37, 17, small: true);
+      c.rect(25, 22, 3, 2, 'N');
+      c.dot(34, 21, 'E');
+
+    case PixelGait.capy:
+      _slimePod(c, 15, p, moving, width: 5);
+      _slimePod(c, 31, p + math.pi, moving, width: 5);
+      c.ellipse(23, 24, 16, 9, 'O');
+      c.ellipse(23, 24, 15, 8, 'X');
+      c.ellipse(23, 27, 13, 4, 'S');
+      _slimeCore(c, 20, 23, p, moving);
+      c.ellipse(34, 21, 10, 8, 'O');
+      c.ellipse(34, 21, 9, 7, 'X');
+      c.ellipse(39, 23, 5, 4, 'H');
+      c.line(14, 18, 22, 17, 'W', thickness: 2);
+      c.ellipse(30, (9 - wave).toDouble(), 3.5, 3.5, 'O');
+      c.ellipse(30, (9 - wave).toDouble(), 2.5, 2.5, 'B');
+      c.dot(29, 8 - wave, 'W');
+      c.rect(30, 19, 4, 1, 'E');
+      c.rect(31, 20, 2, 2, 'E');
+      c.dot(41, 21, 'E');
+
+    case PixelGait.duck:
+      _slimePod(c, 21, p, moving, width: 5, fill: 'D');
+      _slimePod(c, 28, p + math.pi, moving, width: 5, fill: 'D');
+      c.ellipse(23, 25, 13, 8, 'O');
+      c.ellipse(23, 25, 12, 7, 'X');
+      _slimeCore(c, 22, 25, p, moving);
+      c.ellipse(31, 15, 10, 9, 'O');
+      c.ellipse(31, 15, 9, 8, 'X');
+      c.ellipse(31, (5 - wave).toDouble(), 3, 2.5, 'H');
+      c.line(25, 10, 29, 9, 'W', thickness: 2);
+      c.ellipse(40, 18, 5, 3, 'O');
+      c.ellipse(40, 18, 4, 2, 'D');
+      _pocketEye(c, 29, 13);
+      _pocketEye(c, 36, 13, small: true);
+
+    case PixelGait.crab:
+      for (var i = 0; i < 3; i++) {
+        _slimePod(c, 13 + i * 3, p + i * 0.7, moving, width: 3);
+        _slimePod(c, 29 + i * 3, p + math.pi + i * 0.7, moving, width: 3);
+      }
+      final int claw = _pocketSway(p - 0.5, moving, 2);
+      c.ellipse(8, (16 + claw).toDouble(), 4.5, 5.5, 'O');
+      c.ellipse(8, (16 + claw).toDouble(), 3.5, 4.5, 'H');
+      c.ellipse(40, (16 - claw).toDouble(), 4.5, 5.5, 'O');
+      c.ellipse(40, (16 - claw).toDouble(), 3.5, 4.5, 'H');
+      c.ellipse(24, 24, 14, 8, 'O');
+      c.ellipse(24, 24, 13, 7, 'X');
+      _slimeCore(c, 24, 24, p, moving);
+      c.line(16, 19, 22, 18, 'W', thickness: 2);
+      c.ellipse(19, 11, 3.5, 4, 'O');
+      c.ellipse(19, 11, 2.5, 3, 'W');
+      c.ellipse(30, 11, 3.5, 4, 'O');
+      c.ellipse(30, 11, 2.5, 3, 'W');
+      _pocketEye(c, 19, 10, small: true);
+      _pocketEye(c, 29, 10, small: true);
+
+    case PixelGait.axolotl:
+      _slimePod(c, 19, p, moving, width: 4);
+      _slimePod(c, 31, p + math.pi, moving, width: 4);
+      c.ellipse(25, 26, 11, 6, 'O');
+      c.ellipse(25, 26, 10, 5, 'X');
+      _slimeCore(c, 25, 26, p, moving);
+      for (final side in [-1, 1]) {
+        final int rx = side < 0 ? 15 : 37;
+        for (int g = 0; g < 3; g++) {
+          c.ellipse(
+            (rx + side * 3).toDouble(),
+            (10 + g * 5 + side * wave).toDouble(),
+            3.5,
+            2,
+            'O',
+          );
+          c.ellipse(
+            (rx + side * 3).toDouble(),
+            (10 + g * 5 + side * wave).toDouble(),
+            2.5,
+            1.2,
+            'B',
+          );
+        }
+      }
+      c.ellipse(26, 17, 12, 9, 'O');
+      c.ellipse(26, 17, 11, 8, 'X');
+      c.line(19, 11, 24, 10, 'W', thickness: 2);
+      _pocketEye(c, 21, 15);
+      _pocketEye(c, 31, 15);
+      c.rect(18, 20, 3, 2, 'N');
+      c.rect(33, 20, 3, 2, 'N');
+  }
+}
+
+// ============================================================================
+// V5 — Cyber Mecha (Metal chassis, glowing LED visor, jetpack thruster plume)
+// ============================================================================
+
+PixelSprite _mechaSprite(PixelGait gait) {
+  final Map<String, Color> palette = switch (gait) {
+    PixelGait.clawd => const <String, Color>{
+      'O': Color(0xFF1E2430),
+      'X': Color(0xFF8B9BB4),
+      'S': Color(0xFF5A6988),
+      'H': Color(0xFFD4E0F0),
+      'E': Color(0xFF121721),
+      'W': Color(0xFFFFFFFF),
+      'N': Color(0xFFFF5277),
+      'A': Color(0xFFFF7733),
+      'B': Color(0xFFFFCC33),
+      'C': Color(0xFF00F5D4),
+      'D': Color(0xFF3A445E),
+    },
+    PixelGait.miu => const <String, Color>{
+      'O': Color(0xFF281E38),
+      'X': Color(0xFFC2B2D6),
+      'S': Color(0xFF83719E),
+      'H': Color(0xFFEDE4F7),
+      'E': Color(0xFF171124),
+      'W': Color(0xFFFFFFFF),
+      'N': Color(0xFFFF5E97),
+      'A': Color(0xFFFF6B4A),
+      'B': Color(0xFFFFD15C),
+      'C': Color(0xFFFF47B5),
+      'D': Color(0xFF4C3B63),
+    },
+    PixelGait.capy => const <String, Color>{
+      'O': Color(0xFF262B22),
+      'X': Color(0xFF9BA88D),
+      'S': Color(0xFF6B785E),
+      'H': Color(0xFFD2DEC5),
+      'E': Color(0xFF171A14),
+      'W': Color(0xFFF7FFF0),
+      'N': Color(0xFFFF7A45),
+      'A': Color(0xFFFF6624),
+      'B': Color(0xFFFFC83B),
+      'C': Color(0xFF70FF66),
+      'D': Color(0xFF464F3D),
+    },
+    PixelGait.duck => const <String, Color>{
+      'O': Color(0xFF332718),
+      'X': Color(0xFFEBB852),
+      'S': Color(0xFFB88428),
+      'H': Color(0xFFFFE294),
+      'E': Color(0xFF1F170D),
+      'W': Color(0xFFFFFBE8),
+      'N': Color(0xFFFF5533),
+      'A': Color(0xFFFF5522),
+      'B': Color(0xFFFFCC22),
+      'C': Color(0xFF38E8FF),
+      'D': Color(0xFFDF8546),
+    },
+    PixelGait.crab => const <String, Color>{
+      'O': Color(0xFF361820),
+      'X': Color(0xFFE05A6D),
+      'S': Color(0xFFA83246),
+      'H': Color(0xFFFF9CA8),
+      'E': Color(0xFF210D13),
+      'W': Color(0xFFFFF0F2),
+      'N': Color(0xFFFFAA33),
+      'A': Color(0xFFFF661A),
+      'B': Color(0xFFFFDD44),
+      'C': Color(0xFFFFEE55),
+      'D': Color(0xFF6B1D2F),
+    },
+    PixelGait.axolotl => const <String, Color>{
+      'O': Color(0xFF192B3D),
+      'X': Color(0xFF7CC7E8),
+      'S': Color(0xFF498FB3),
+      'H': Color(0xFFC4EEFF),
+      'E': Color(0xFF0E1A26),
+      'W': Color(0xFFF2FBFF),
+      'N': Color(0xFFFF66B2),
+      'A': Color(0xFFFF6E40),
+      'B': Color(0xFFFFD740),
+      'C': Color(0xFF40FFFF),
+      'D': Color(0xFF2C5375),
+    },
+  };
+  final frames = List<List<String>>.generate(17, (int frame) {
+    final c = _SpriteCanvas(48, 36);
+    final phase = frame == 0 ? 0.0 : (frame - 1) / 16 * math.pi * 2;
+    _mechaDraw(c, gait, phase, frame != 0);
+    return c.finish();
+  });
+  return PixelSprite(
+    frames: List.unmodifiable(frames),
+    palette: Map.unmodifiable(palette),
+    gait: gait,
+    version: PixelSpriteVersion.v5,
+    pixelRatio: 3,
+  );
+}
+
+void _mechaJetpack(_SpriteCanvas c, int x, int y, double p, bool moving) {
+  c.rect(x, y, 6, 9, 'O');
+  c.rect(x + 1, y + 1, 4, 7, 'D');
+  c.rect(x + 1, y + 2, 3, 2, 'H');
+  if (!moving) {
+    c.rect(x - 2, y + 6, 2, 2, 'A');
+    return;
+  }
+  final int flame = 3 + ((math.sin(p * 2) + 1) * 1.5).round();
+  c.polygon([
+    math.Point(x, y + 5),
+    math.Point(x - flame - 2, y + 7),
+    math.Point(x, y + 9),
+  ], 'A');
+  c.polygon([
+    math.Point(x, y + 6),
+    math.Point(x - flame, y + 7),
+    math.Point(x, y + 8),
+  ], 'B');
+  c.dot(x - 1, y + 7, 'W');
+
+  final int sx = x - 5 + (math.cos(p) * 2).round();
+  final int sy = y + 6 + (math.sin(p) * 2).round();
+  c.rect(sx, sy, 2, 2, 'H');
+}
+
+void _mechaVisor(_SpriteCanvas c, int x, int y, int w, double p, bool moving) {
+  c.rect(x - 1, y - 1, w + 2, 6, 'O');
+  c.rect(x, y, w, 4, 'E');
+  final int scan = moving
+      ? ((math.sin(p) + 1) * 0.5 * (w - 3)).round()
+      : w ~/ 2 - 1;
+  c.rect(x + 1, y + 1, w - 2, 2, 'C');
+  c.rect(x + scan, y + 1, 2, 2, 'W');
+}
+
+void _mechaDraw(_SpriteCanvas c, PixelGait gait, double p, bool moving) {
+  final int bob = _pocketSway(p, moving, 1);
+  _mechaJetpack(c, 9, 18 + bob, p, moving);
+
+  switch (gait) {
+    case PixelGait.clawd:
+      _pocketFoot(c, 16, 27, p, moving, fill: 'D', width: 5);
+      _pocketFoot(c, 31, 27, p + math.pi, moving, fill: 'D', width: 5);
+      _pocketBox(c, 13, 9, 25, 21, 'X');
+      c.rect(15, 11, 21, 2, 'H');
+      c.rect(15, 26, 21, 2, 'S');
+      c.line(25, 9, 25, 4, 'O', thickness: 2);
+      c.rect(24, 3, 3, 2, math.sin(p) >= 0 ? 'N' : 'C');
+      _mechaVisor(c, 17, 15, 17, p, moving);
+      c.rect(18, 22, 15, 3, 'D');
+      c.rect(20, 23, 3, 1, 'C');
+      c.rect(25, 23, 3, 1, 'B');
+
+    case PixelGait.miu:
+      _pocketFoot(c, 18, 28, p, moving, fill: 'D', width: 5);
+      _pocketFoot(c, 32, 28, p + math.pi, moving, fill: 'D', width: 5);
+      _pocketBox(c, 15, 19, 20, 11, 'X');
+      c.polygon([
+        const math.Point(23, 13),
+        const math.Point(24, 4),
+        const math.Point(30, 11),
+      ], 'O');
+      c.polygon([
+        const math.Point(25, 12),
+        const math.Point(25, 6),
+        const math.Point(28, 11),
+      ], 'C');
+      c.polygon([
+        const math.Point(34, 11),
+        const math.Point(39, 4),
+        const math.Point(42, 14),
+      ], 'O');
+      c.polygon([
+        const math.Point(36, 11),
+        const math.Point(39, 6),
+        const math.Point(40, 13),
+      ], 'C');
+      _pocketBox(c, 22, 11, 21, 16, 'X');
+      _mechaVisor(c, 26, 15, 15, p, moving);
+      c.rect(28, 22, 8, 2, 'D');
+
+    case PixelGait.capy:
+      _pocketFoot(c, 15, 28, p, moving, fill: 'D', width: 6, stride: 1);
+      _pocketFoot(c, 31, 28, p + math.pi, moving, fill: 'D', width: 6, stride: 1);
+      _pocketBox(c, 11, 16, 26, 15, 'X');
+      c.line(22, 12, 22, 6, 'O', thickness: 2);
+      c.rect(21, 5, 3, 2, 'C');
+      _pocketBox(c, 24, 11, 20, 18, 'X');
+      c.rect(27, 13, 14, 2, 'H');
+      _mechaVisor(c, 28, 16, 14, p, moving);
+      c.rect(36, 23, 6, 4, 'D');
+      c.dot(40, 24, 'C');
+
+    case PixelGait.duck:
+      _pocketFoot(c, 21, 29, p, moving, fill: 'D', width: 6);
+      _pocketFoot(c, 27, 29, p + math.pi, moving, fill: 'D', width: 6);
+      _pocketBox(c, 14, 20, 21, 11, 'X');
+      c.rect(29, 5, 4, 4, 'O');
+      c.rect(30, 6, 2, 2, 'C');
+      _pocketBox(c, 23, 9, 17, 15, 'X');
+      _mechaVisor(c, 26, 13, 13, p, moving);
+      c.rect(38, 17, 7, 4, 'O');
+      c.rect(39, 18, 5, 2, 'D');
+
+    case PixelGait.crab:
+      for (var i = 0; i < 3; i++) {
+        _pocketFoot(c, 14 + i * 3, 28, p + i * 0.8, moving, fill: 'D', width: 3);
+        _pocketFoot(
+          c,
+          28 + i * 3,
+          28,
+          p + math.pi + i * 0.8,
+          moving,
+          fill: 'D',
+          width: 3,
+        );
+      }
+      c.rect(19, 9, 3, 6, 'O');
+      c.rect(28, 9, 3, 6, 'O');
+      c.rect(19, 8, 3, 2, 'C');
+      c.rect(28, 8, 3, 2, 'C');
+      _pocketBox(c, 13, 14, 24, 16, 'X');
+      _mechaVisor(c, 16, 18, 18, p, moving);
+      c.rect(6, 13 + bob, 6, 8, 'O');
+      c.rect(7, 14 + bob, 4, 6, 'C');
+      c.rect(39, 13 - bob, 6, 8, 'O');
+      c.rect(40, 14 - bob, 4, 6, 'C');
+
+    case PixelGait.axolotl:
+      _pocketFoot(c, 19, 28, p, moving, fill: 'D', width: 5, stride: 1);
+      _pocketFoot(c, 31, 28, p + math.pi, moving, fill: 'D', width: 5, stride: 1);
+      for (int g = 0; g < 3; g++) {
+        c.rect(14, 9 + g * 5, 5, 3, 'O');
+        c.rect(15, 10 + g * 5, 3, 1, 'C');
+        c.rect(38, 9 + g * 5, 5, 3, 'O');
+        c.rect(39, 10 + g * 5, 3, 1, 'C');
+      }
+      _pocketBox(c, 18, 9, 21, 21, 'X');
+      _mechaVisor(c, 21, 15, 16, p, moving);
+      c.rect(23, 23, 11, 2, 'D');
+  }
+}
+
+// ============================================================================
+// V6 — Wind-up Toy (Clockwork brass key rotating on back, riveted toy blocks)
+// ============================================================================
+
+PixelSprite _windupSprite(PixelGait gait) {
+  final Map<String, Color> palette = switch (gait) {
+    PixelGait.clawd => const <String, Color>{
+      'O': Color(0xFF3D251E),
+      'X': Color(0xFFE86A4A),
+      'S': Color(0xFFB8462E),
+      'H': Color(0xFFFFA987),
+      'E': Color(0xFF261510),
+      'W': Color(0xFFFFF8EB),
+      'N': Color(0xFFFFC857),
+      'A': Color(0xFFF5B82E),
+      'B': Color(0xFFFFE58F),
+      'D': Color(0xFF9E6B1B),
+    },
+    PixelGait.miu => const <String, Color>{
+      'O': Color(0xFF3B2820),
+      'X': Color(0xFFF0B665),
+      'S': Color(0xFFC4833B),
+      'H': Color(0xFFFFDFAA),
+      'E': Color(0xFF241711),
+      'W': Color(0xFFFFF9EB),
+      'N': Color(0xFFE86F68),
+      'A': Color(0xFF4FA89B),
+      'B': Color(0xFF9EE6D8),
+      'D': Color(0xFF8C5A2B),
+    },
+    PixelGait.capy => const <String, Color>{
+      'O': Color(0xFF38261B),
+      'X': Color(0xFFC98E5B),
+      'S': Color(0xFF996236),
+      'H': Color(0xFFE8B98A),
+      'E': Color(0xFF21150E),
+      'W': Color(0xFFFFF4E0),
+      'N': Color(0xFFE06D53),
+      'A': Color(0xFFF2B632),
+      'B': Color(0xFFFFE180),
+      'D': Color(0xFF7A4924),
+    },
+    PixelGait.duck => const <String, Color>{
+      'O': Color(0xFF3D2E17),
+      'X': Color(0xFFF7CE46),
+      'S': Color(0xFFCC9E22),
+      'H': Color(0xFFFFEB99),
+      'E': Color(0xFF241A0B),
+      'W': Color(0xFFFFFBE8),
+      'N': Color(0xFFE8684A),
+      'A': Color(0xFFE87A33),
+      'B': Color(0xFFFFC478),
+      'C': Color(0xFFFFA84A),
+      'D': Color(0xFF8F6518),
+    },
+    PixelGait.crab => const <String, Color>{
+      'O': Color(0xFF421C22),
+      'X': Color(0xFFE65555),
+      'S': Color(0xFFB33236),
+      'H': Color(0xFFFF9999),
+      'E': Color(0xFF290F13),
+      'W': Color(0xFFFFF2EB),
+      'N': Color(0xFFFFB84D),
+      'A': Color(0xFFF5C13B),
+      'B': Color(0xFFFFE899),
+      'D': Color(0xFF8F5E1E),
+    },
+    PixelGait.axolotl => const <String, Color>{
+      'O': Color(0xFF402338),
+      'X': Color(0xFFF29BC2),
+      'S': Color(0xFFC46894),
+      'H': Color(0xFFFFCCE3),
+      'E': Color(0xFF291423),
+      'W': Color(0xFFFFF5FA),
+      'N': Color(0xFFFF6E87),
+      'A': Color(0xFFF5C242),
+      'B': Color(0xFFFFE89E),
+      'C': Color(0xFFE6D4F5),
+      'D': Color(0xFF8F6824),
+    },
+  };
+  final frames = List<List<String>>.generate(17, (int frame) {
+    final c = _SpriteCanvas(48, 36);
+    final phase = frame == 0 ? 0.0 : (frame - 1) / 16 * math.pi * 2;
+    _windupDraw(c, gait, phase, frame != 0);
+    return c.finish();
+  });
+  return PixelSprite(
+    frames: List.unmodifiable(frames),
+    palette: Map.unmodifiable(palette),
+    gait: gait,
+    version: PixelSpriteVersion.v6,
+    pixelRatio: 3,
+  );
+}
+
+void _windupKey(_SpriteCanvas c, int x, int y, double p, bool moving) {
+  c.rect(x - 4, y - 1, 5, 3, 'O');
+  c.rect(x - 3, y, 4, 1, 'A');
+  final int bowR = moving ? (math.cos(p).abs() * 3.5 + 1.2).round() : 4;
+  c.ellipse((x - 6).toDouble(), (y - bowR).toDouble(), 3, bowR.toDouble(), 'O');
+  c.ellipse(
+    (x - 6).toDouble(),
+    (y - bowR).toDouble(),
+    2,
+    math.max(1, bowR - 1).toDouble(),
+    'B',
+  );
+  c.ellipse((x - 6).toDouble(), (y + bowR).toDouble(), 3, bowR.toDouble(), 'O');
+  c.ellipse(
+    (x - 6).toDouble(),
+    (y + bowR).toDouble(),
+    2,
+    math.max(1, bowR - 1).toDouble(),
+    'A',
+  );
+}
+
+void _windupDraw(_SpriteCanvas c, PixelGait gait, double p, bool moving) {
+  switch (gait) {
+    case PixelGait.clawd:
+      _windupKey(c, 13, 19, p, moving);
+      _pocketClawd(c, p, moving);
+      c.rect(15, 12, 2, 2, 'B');
+      c.rect(33, 12, 2, 2, 'B');
+    case PixelGait.miu:
+      _windupKey(c, 16, 18, p, moving);
+      _pocketMiu(c, p, moving);
+      c.rect(25, 14, 2, 2, 'B');
+    case PixelGait.capy:
+      _windupKey(c, 11, 21, p, moving);
+      _pocketCapy(c, p, moving);
+      c.rect(12, 18, 2, 2, 'B');
+      c.rect(25, 16, 2, 2, 'B');
+    case PixelGait.duck:
+      _windupKey(c, 15, 18, p, moving);
+      _pocketDuck(c, p, moving);
+      c.rect(26, 10, 2, 2, 'B');
+    case PixelGait.crab:
+      _windupKey(c, 24, 12, p, moving);
+      _pocketCrab(c, p, moving);
+      c.rect(15, 19, 2, 2, 'B');
+      c.rect(32, 19, 2, 2, 'B');
+    case PixelGait.axolotl:
+      _windupKey(c, 15, 22, p, moving);
+      _pocketAxo(c, p, moving);
+      c.rect(24, 12, 2, 2, 'B');
+  }
+}
+
+// ============================================================================
+// V7 — Astral Ghost (Floating halo, wisp trail, stardust in matrix)
+// ============================================================================
+
+PixelSprite _astralSprite(PixelGait gait) {
+  final Map<String, Color> palette = switch (gait) {
+    PixelGait.clawd => const <String, Color>{
+      'O': Color(0xFF281B4D),
+      'X': Color(0xFF9378FF),
+      'S': Color(0xFF6347D1),
+      'H': Color(0xFFD0C2FF),
+      'E': Color(0xFF160D30),
+      'W': Color(0xFFFFFFFF),
+      'N': Color(0xFFFF82C4),
+      'A': Color(0xFF5CE1E6),
+      'B': Color(0xFFFFE875),
+      'C': Color(0xFFB8F2FF),
+      'D': Color(0xFF472F85),
+    },
+    PixelGait.miu => const <String, Color>{
+      'O': Color(0xFF1F2957),
+      'X': Color(0xFF7AA2FF),
+      'S': Color(0xFF4B6ED6),
+      'H': Color(0xFFC4D9FF),
+      'E': Color(0xFF101738),
+      'W': Color(0xFFFFFFFF),
+      'N': Color(0xFFFF8AB8),
+      'A': Color(0xFFFFD166),
+      'B': Color(0xFFFFF099),
+      'C': Color(0xFFA8F0FF),
+      'D': Color(0xFF344687),
+    },
+    PixelGait.capy => const <String, Color>{
+      'O': Color(0xFF1B3B4B),
+      'X': Color(0xFF5CD6D6),
+      'S': Color(0xFF349EAB),
+      'H': Color(0xFFB5F7F2),
+      'E': Color(0xFF0E2430),
+      'W': Color(0xFFFFFFFF),
+      'N': Color(0xFFFF94B8),
+      'A': Color(0xFFFFD166),
+      'B': Color(0xFFFFF3B0),
+      'C': Color(0xFFD6FFF9),
+      'D': Color(0xFF265C70),
+    },
+    PixelGait.duck => const <String, Color>{
+      'O': Color(0xFF3B234A),
+      'X': Color(0xFFE580FF),
+      'S': Color(0xFFB34ED4),
+      'H': Color(0xFFF7C6FF),
+      'E': Color(0xFF241130),
+      'W': Color(0xFFFFFFFF),
+      'N': Color(0xFFFF85A2),
+      'A': Color(0xFFFFD152),
+      'B': Color(0xFFFFEE99),
+      'C': Color(0xFFFFB5E8),
+      'D': Color(0xFF6B3887),
+    },
+    PixelGait.crab => const <String, Color>{
+      'O': Color(0xFF421838),
+      'X': Color(0xFFFF66B5),
+      'S': Color(0xFFC93888),
+      'H': Color(0xFFFFB5DC),
+      'E': Color(0xFF290B22),
+      'W': Color(0xFFFFFFFF),
+      'N': Color(0xFFFFAE70),
+      'A': Color(0xFF66F0FF),
+      'B': Color(0xFFFFF08A),
+      'C': Color(0xFFD4FAFF),
+      'D': Color(0xFF782864),
+    },
+    PixelGait.axolotl => const <String, Color>{
+      'O': Color(0xFF1F305E),
+      'X': Color(0xFF8CD9FF),
+      'S': Color(0xFF569ED6),
+      'H': Color(0xFFD6F3FF),
+      'E': Color(0xFF111C3B),
+      'W': Color(0xFFFFFFFF),
+      'N': Color(0xFFFF8CC6),
+      'A': Color(0xFFC77DFF),
+      'B': Color(0xFFFFEE99),
+      'C': Color(0xFFE8FAFF),
+      'D': Color(0xFF39559E),
+    },
+  };
+  final frames = List<List<String>>.generate(17, (int frame) {
+    final c = _SpriteCanvas(48, 36);
+    final phase = frame == 0 ? 0.0 : (frame - 1) / 16 * math.pi * 2;
+    _astralDraw(c, gait, phase, frame != 0);
+    return c.finish();
+  });
+  return PixelSprite(
+    frames: List.unmodifiable(frames),
+    palette: Map.unmodifiable(palette),
+    gait: gait,
+    version: PixelSpriteVersion.v7,
+    pixelRatio: 3,
+  );
+}
+
+void _astralHalo(_SpriteCanvas c, int cx, int y, double p, bool moving) {
+  final int swayX = _pocketSway(p, moving, 1);
+  c.ellipse((cx + swayX).toDouble(), y.toDouble(), 6, 1.5, 'O');
+  c.ellipse((cx + swayX).toDouble(), y.toDouble(), 5, 1.0, 'B');
+  c.dot(cx + swayX - 3, y, 'W');
+  c.dot(cx + swayX + 3, y, 'W');
+}
+
+void _astralStardust(_SpriteCanvas c, double p, bool moving) {
+  if (!moving) {
+    c.dot(7, 16, 'B');
+    c.dot(9, 25, 'C');
+    return;
+  }
+  for (int i = 0; i < 3; i++) {
+    final double angle = p + i * 2.1;
+    final int sx = 8 + (math.cos(angle) * 3).round();
+    final int sy = 15 + i * 6 + (math.sin(angle) * 2).round();
+    c.rect(sx, sy, 2, 2, i.isEven ? 'B' : 'C');
+    c.dot(sx, sy, 'W');
+  }
+}
+
+void _astralDraw(_SpriteCanvas c, PixelGait gait, double p, bool moving) {
+  _astralStardust(c, p, moving);
+  // Keep halo y >= 4 so minY >= 35 on 120x110 header test:
+  switch (gait) {
+    case PixelGait.clawd:
+      _pocketClawd(c, p, moving);
+      _astralHalo(c, 25, 4, p, moving);
+    case PixelGait.miu:
+      _pocketMiu(c, p, moving);
+      _astralHalo(c, 31, 4, p, moving);
+    case PixelGait.capy:
+      _pocketCapy(c, p, moving);
+      _astralHalo(c, 29, 4, p, moving);
+    case PixelGait.duck:
+      _pocketDuck(c, p, moving);
+      _astralHalo(c, 31, 4, p, moving);
+    case PixelGait.crab:
+      _pocketCrab(c, p, moving);
+      _astralHalo(c, 25, 5, p, moving);
+    case PixelGait.axolotl:
+      _pocketAxo(c, p, moving);
+      _astralHalo(c, 30, 5, p, moving);
+  }
+}
+
 // One rest pose followed by six hand-authored pixel walk poses per mascot.
 const List<List<String>> _clawdFrames = <List<String>>[
   <String>[
@@ -2165,14 +3066,20 @@ const List<List<String>> _axoFrames = <List<String>>[
   ],
 ];
 
-/// Procedural skyline, or a night city with moon, stars and mountains.
-enum PixelWalkerScene { city, nightCity }
+/// Pixel-art worlds available to [PixelWalker].
+enum PixelWalkerScene {
+  city,
+  nightCity,
+  forest,
+  spaceStation,
+  ancientRuins,
+  cyberGrid,
+}
 
-/// Cảnh pixel-art neo đáy: mascot đứng giữa, skyline thành phố + mây vẽ bằng
-/// dither procedural. [progress] 0→1 hiện dần cảnh (mascot trồi lên từ mép
-/// dưới, dither dày dần); [walking] bật chu kỳ bước đi + skyline/mây trôi
-/// ngang (parallax); [scene] chọn bố cục nền ([PixelWalkerScene.city] mặc
-/// định, [PixelWalkerScene.nightCity] thêm núi + sao + trăng + cửa sổ đèn).
+/// Cảnh pixel-art neo đáy với mascot ở giữa và sáu thế giới dựng bằng code:
+/// thành phố, thành phố đêm, rừng, trạm vũ trụ, di tích cổ và lưới synthwave.
+/// [progress] 0→1 hiện dần cảnh; [walking] bật chu kỳ bước và parallax;
+/// [scene] chọn thế giới, mặc định là [PixelWalkerScene.city].
 /// Sinh ra cho vùng header pull-to-refresh nhưng dùng được làm
 /// empty-state/loading bất kỳ.
 ///
@@ -2202,15 +3109,15 @@ class PixelWalker extends StatefulWidget {
   /// 0 = ẩn hoàn toàn, 1 = hiện đủ. Điều khiển từ ngoài (ví dụ theo độ kéo).
   final double progress;
 
-  /// true = mascot bước tại chỗ, skyline + mây trôi ngang. false = đứng yên,
+  /// true = mascot bước tại chỗ và các layer nền trôi ngang. false = đứng yên,
   /// không ticker nào chạy (an toàn để giữ trong cây widget lâu dài).
   final bool walking;
 
-  /// Bố cục cảnh nền; mặc định [PixelWalkerScene.city] — đúng cảnh gốc.
+  /// Thế giới nền; mặc định [PixelWalkerScene.city].
   final PixelWalkerScene scene;
 
   /// Mật độ chi tiết: 1.0 → ô dither 3px, ô mascot 6px / sprite.pixelRatio
-  /// (V1: 6px; V2/V3: 2px). Tăng khi render vùng
+  /// (V1: 6px; V2–V7: 2px). Tăng khi render vùng
   /// lớn (fullscreen ~1.5–2.0) để pixel không quá mịn, giảm khi nhét vào ô
   /// nhỏ. Đây là kích thước ô lưới, không phải scale transform.
   final double scale;
@@ -2221,20 +3128,19 @@ class PixelWalker extends StatefulWidget {
   /// Màu mascot mặc định (chỉ dùng khi [sprite] null).
   final Color mascotColor;
 
-  /// Màu dither của skyline; mây dùng cùng màu ở opacity thấp hơn, núi của
-  /// [PixelWalkerScene.nightCity] dùng cùng màu ở 60%.
+  /// Màu các chấm của layer nền; mây dùng cùng màu ở opacity thấp hơn.
   final Color skylineColor;
 
-  /// Màu cửa sổ sáng đèn trên toà nhà (chỉ [PixelWalkerScene.nightCity]).
+  /// Màu chi tiết phát sáng như cửa sổ, đom đóm, beacon và rune.
   final Color windowColor;
 
-  /// Màu sao + trăng khuyết (chỉ [PixelWalkerScene.nightCity]).
+  /// Màu sao, trăng và các điểm sáng trên nền không gian.
   final Color starColor;
 
   /// Nền vẽ dưới cảnh; mặc định trong suốt để đặt lên nền app.
   final Color backgroundColor;
 
-  /// Nhân tốc độ bước đi + trôi skyline.
+  /// Nhân tốc độ bước đi và chuyển động parallax của nền.
   final double speed;
 
   /// 0-to-1 gait strength and travel rate. Useful when easing out a refresh.
@@ -2253,7 +3159,7 @@ class PixelWalker extends StatefulWidget {
   /// disables the ticker. Null resumes the accumulated live clock.
   final double? frozenAt;
 
-  /// Đổi seed để được skyline/mây bố cục khác (deterministic).
+  /// Đổi seed để sinh bố cục procedural khác (deterministic).
   final int seed;
 
   @override
@@ -2371,7 +3277,7 @@ class _PixelWalkerState extends State<PixelWalker>
   }
 
   void _rebuildLayout() {
-    final bool night = widget.scene == PixelWalkerScene.nightCity;
+    final bool night = widget.scene != PixelWalkerScene.city;
     int r = (widget.seed * 2654435761) & 0x7fffffff;
     int next(int lo, int hi) {
       r = (r * 1103515245 + 12345) & 0x7fffffff;
@@ -2400,7 +3306,7 @@ class _PixelWalkerState extends State<PixelWalker>
     _antennae = Int16List.fromList(antennae);
     _period = _heights.length;
 
-    // Núi (chỉ scene đêm): ridge một chu kỳ 160 ô = max của 5 đỉnh tam giác,
+    // Núi: ridge một chu kỳ 160 ô = max của 5 đỉnh tam giác,
     // khoảng cách tính wrap-around để trôi liền mạch.
     if (night) {
       const int mp = 160;
@@ -2536,49 +3442,141 @@ class _PixelWalkerPainter extends CustomPainter {
     // number of skyline rows, not the pixel grid, to keep square dither dots.
     final double skyScale =
         ((skylineBaseY - 8 * cell) /
-                ((w.scene == PixelWalkerScene.nightCity ? 24 : 17) * cell))
+                ((w.scene != PixelWalkerScene.city ? 24 : 17) * cell))
             .clamp(0.12, 1.0);
 
-    if (w.scene == PixelWalkerScene.nightCity) {
+    switch (w.scene) {
+      case PixelWalkerScene.city:
+        _paintSkyline(
+          canvas,
+          size,
+          w,
+          cell,
+          t,
+          skylineBaseY,
+          eased,
+          skyScale: skyScale,
+        );
+        _paintClouds(canvas, size, w, cell, t, skylineBaseY, eased);
+      case PixelWalkerScene.nightCity:
+        _paintStars(canvas, size, w, cell, skylineBaseY, eased);
+        _paintMoon(canvas, size, w, cell, skylineBaseY, eased);
+        _paintMountains(
+          canvas,
+          size,
+          w,
+          cell,
+          t,
+          skylineBaseY,
+          eased,
+          skyScale,
+        );
+        _paintClouds(
+          canvas,
+          size,
+          w,
+          cell,
+          t,
+          skylineBaseY,
+          eased,
+          bandCells: 26,
+        );
+        _paintSkyline(
+          canvas,
+          size,
+          w,
+          cell,
+          t,
+          skylineBaseY,
+          eased,
+          skyScale: skyScale,
+          night: true,
+        );
+      case PixelWalkerScene.forest:
+        _paintStars(canvas, size, w, cell, skylineBaseY, eased);
+        _paintMountains(
+          canvas,
+          size,
+          w,
+          cell,
+          t,
+          skylineBaseY,
+          eased,
+          skyScale,
+        );
+        _paintForestScene(
+          canvas,
+          size,
+          w,
+          cell,
+          t,
+          skylineBaseY,
+          eased,
+          skyScale,
+        );
+      case PixelWalkerScene.spaceStation:
+        _paintStars(canvas, size, w, cell, skylineBaseY, eased);
+        _paintRingedPlanet(canvas, size, w, cell, skylineBaseY, eased);
+        _paintSpaceStationScene(
+          canvas,
+          size,
+          w,
+          cell,
+          t,
+          skylineBaseY,
+          eased,
+          skyScale,
+        );
+      case PixelWalkerScene.ancientRuins:
+        _paintStars(canvas, size, w, cell, skylineBaseY, eased);
+        _paintTwinMoons(canvas, size, w, cell, skylineBaseY, eased);
+        _paintMountains(
+          canvas,
+          size,
+          w,
+          cell,
+          t,
+          skylineBaseY,
+          eased,
+          skyScale,
+        );
+        _paintAncientRuinsScene(
+          canvas,
+          size,
+          w,
+          cell,
+          t,
+          skylineBaseY,
+          eased,
+          skyScale,
+        );
+      case PixelWalkerScene.cyberGrid:
+        _paintSynthSun(canvas, size, w, cell, skylineBaseY, eased);
+        _paintSkyline(
+          canvas,
+          size,
+          w,
+          cell,
+          t,
+          skylineBaseY,
+          eased,
+          skyScale: skyScale,
+          night: true,
+        );
+        _paintCyberGridFloor(
+          canvas,
+          size,
+          w,
+          cell,
+          t,
+          skylineBaseY,
+          feetY,
+          eased,
+        );
       // Đêm: sao/trăng tĩnh sau cùng, rồi núi (parallax chậm nhất), mây, và
       // toà nhà vẽ SAU mây để tháp cao che mây → có chiều sâu.
-      _paintStars(canvas, size, w, cell, skylineBaseY, eased);
-      _paintMoon(canvas, size, w, cell, skylineBaseY, eased);
-      _paintMountains(canvas, size, w, cell, t, skylineBaseY, eased, skyScale);
-      _paintClouds(
-        canvas,
-        size,
-        w,
-        cell,
-        t,
-        skylineBaseY,
-        eased,
-        bandCells: 26,
-      );
-      _paintSkyline(
-        canvas,
-        size,
-        w,
-        cell,
-        t,
-        skylineBaseY,
-        eased,
-        skyScale: skyScale,
-        night: true,
-      );
-    } else {
-      _paintSkyline(
-        canvas,
-        size,
-        w,
-        cell,
-        t,
-        skylineBaseY,
-        eased,
-        skyScale: skyScale,
-      );
-      _paintClouds(canvas, size, w, cell, t, skylineBaseY, eased);
     }
+
     // Độ trồi của mascot dùng reveal TUYẾN TÍNH (không ease): chân chỉ chạm
     // đất đúng lúc progress = 1 → tự nó là chỉ báo "đủ ngưỡng để refresh".
     _paintSprite(
@@ -2629,7 +3627,7 @@ class _PixelWalkerPainter extends CustomPainter {
       for (int y = 0; y < h + extra; y++) {
         final double py = baseY - y * cell - cell / 2;
         if (py < 0) break;
-        // Cửa sổ sáng đèn: chỉ scene đêm, trong thân toà (không dính mép
+        // Điểm sáng nằm trong thân công trình (không dính mép
         // trên); nhân eased để đèn "bật dần" theo độ kéo.
         if (night && y < h - 1 && _hash(wx, y, w.seed ^ 0xa11) < 0.10 * eased) {
           windows.add(sx, py);
@@ -2817,6 +3815,303 @@ class _PixelWalkerPainter extends CustomPainter {
       ..strokeWidth = cell
       ..color = w.starColor.withValues(alpha: w.starColor.a * eased * 0.9);
     canvas.drawRawPoints(ui.PointMode.points, sink.view, _dotPaint);
+  }
+
+  void _paintForestScene(
+    Canvas canvas,
+    Size size,
+    PixelWalker w,
+    double cell,
+    double t,
+    double baseY,
+    double eased,
+    double skyScale,
+  ) {
+    final _PointSink trees = state._skySink..clear();
+    final _PointSink fireflies = state._windowSink..clear();
+    final double scroll = t * 7.5;
+    final int first = scroll.floor();
+    final double frac = scroll - first;
+    final int cols = (size.width / cell).ceil() + 1;
+
+    for (int i = 0; i <= cols; i++) {
+      final int wx = first + i;
+      final double sx = (i - frac) * cell + cell / 2;
+      final int treeSlot = wx % 14;
+      final int treeIdx = wx ~/ 14;
+      final int treeH =
+          ((10 + (_hash(treeIdx, 0, w.seed ^ 0x71e3) * 12).round()) * skyScale)
+              .round();
+      final int halfSpan = (treeSlot - 7).abs();
+      for (int y = 0; y < treeH; y++) {
+        final double py = baseY - y * cell - cell / 2;
+        if (py < 0) break;
+        final double maxRadius = (1.0 - y / math.max(1, treeH)) * 6.0 + 1.0;
+        final bool isTrunk = y < 3 && halfSpan <= 1;
+        if (isTrunk || halfSpan <= maxRadius) {
+          final double density = isTrunk ? 0.85 : (0.72 - halfSpan * 0.08);
+          if (_hash(wx, y, w.seed ^ 0x4f12) < density * eased) {
+            trees.add(sx, py);
+          }
+        }
+      }
+      if (_hash(wx, 3, w.seed ^ 0xf12e) < 0.09 * eased) {
+        final double fy =
+            baseY -
+            (3 +
+                    (_hash(wx, 9, w.seed) * 14) +
+                    math.sin(t * 2.5 + wx * 0.7) * 2.5) *
+                cell;
+        if (fy > 0) fireflies.add(sx, fy);
+      }
+    }
+    if (trees.isNotEmpty) {
+      _dotPaint
+        ..strokeWidth = cell
+        ..color = w.skylineColor.withValues(alpha: w.skylineColor.a * eased);
+      canvas.drawRawPoints(ui.PointMode.points, trees.view, _dotPaint);
+    }
+    if (fireflies.isNotEmpty) {
+      _dotPaint
+        ..strokeWidth = cell
+        ..color = w.windowColor.withValues(alpha: w.windowColor.a * eased);
+      canvas.drawRawPoints(ui.PointMode.points, fireflies.view, _dotPaint);
+    }
+  }
+
+  void _paintRingedPlanet(
+    Canvas canvas,
+    Size size,
+    PixelWalker w,
+    double cell,
+    double baseY,
+    double eased,
+  ) {
+    final _PointSink sink = state._fxSink..clear();
+    final double cx = (size.width * 0.76 / cell).floor() * cell + cell / 2;
+    final double cy =
+        (math.max(6 * cell, baseY - 20 * cell) / cell).floor() * cell +
+        cell / 2;
+    for (int dy = -6; dy <= 6; dy++) {
+      for (int dx = -10; dx <= 10; dx++) {
+        final double d2 = (dx * dx + dy * dy).toDouble();
+        final double ring =
+            (dx * 0.45) * (dx * 0.45) + (dy + dx * 0.25) * (dy + dx * 0.25);
+        final bool onPlanet = d2 <= 16.0;
+        final bool onRing = ring >= 5.5 && ring <= 11.5;
+        if ((onPlanet || onRing) &&
+            _hash(dx + 16, dy + 16, w.seed ^ 0x91a2) <
+                (onRing ? 0.75 : 0.88) * eased) {
+          sink.add(cx + dx * cell, cy + dy * cell);
+        }
+      }
+    }
+    if (sink.isEmpty) return;
+    _dotPaint
+      ..strokeWidth = cell
+      ..color = w.starColor.withValues(alpha: w.starColor.a * eased * 0.9);
+    canvas.drawRawPoints(ui.PointMode.points, sink.view, _dotPaint);
+  }
+
+  void _paintSpaceStationScene(
+    Canvas canvas,
+    Size size,
+    PixelWalker w,
+    double cell,
+    double t,
+    double baseY,
+    double eased,
+    double skyScale,
+  ) {
+    final _PointSink domes = state._skySink..clear();
+    final _PointSink beacons = state._windowSink..clear();
+    final double scroll = t * 8.5;
+    final int first = scroll.floor();
+    final double frac = scroll - first;
+    final int cols = (size.width / cell).ceil() + 1;
+
+    for (int i = 0; i <= cols; i++) {
+      final int wx = first + i;
+      final double sx = (i - frac) * cell + cell / 2;
+      final int mod = wx % 22;
+      final int domeH = (14 * skyScale).round();
+      for (int y = 0; y < domeH + 5; y++) {
+        final double py = baseY - y * cell - cell / 2;
+        if (py < 0) break;
+        final double dx = (mod - 9).toDouble();
+        final bool inDome =
+            mod <= 18 &&
+            (dx * dx) / 64.0 + (y * y) / math.max(1.0, domeH * domeH) <= 1.0;
+        final bool inSpire = mod == 9 && y < domeH + 4;
+        if (inSpire && y == domeH + 3) {
+          beacons.add(sx, py);
+          continue;
+        }
+        if (inDome || inSpire) {
+          if (y == 3 && mod % 3 == 0) {
+            beacons.add(sx, py);
+          } else if (_hash(wx, y, w.seed ^ 0x55c1) < 0.75 * eased) {
+            domes.add(sx, py);
+          }
+        }
+      }
+    }
+    if (domes.isNotEmpty) {
+      _dotPaint
+        ..strokeWidth = cell
+        ..color = w.skylineColor.withValues(alpha: w.skylineColor.a * eased);
+      canvas.drawRawPoints(ui.PointMode.points, domes.view, _dotPaint);
+    }
+    if (beacons.isNotEmpty) {
+      _dotPaint
+        ..strokeWidth = cell
+        ..color = w.windowColor.withValues(alpha: w.windowColor.a * eased);
+      canvas.drawRawPoints(ui.PointMode.points, beacons.view, _dotPaint);
+    }
+  }
+
+  void _paintTwinMoons(
+    Canvas canvas,
+    Size size,
+    PixelWalker w,
+    double cell,
+    double baseY,
+    double eased,
+  ) {
+    _paintMoon(canvas, size, w, cell, baseY, eased);
+    final _PointSink sink = state._fxSink..clear();
+    final double cx = (size.width * 0.68 / cell).floor() * cell + cell / 2;
+    final double cy =
+        (math.max(4 * cell, baseY - 16 * cell) / cell).floor() * cell +
+        cell / 2;
+    for (int dy = -2; dy <= 2; dy++) {
+      for (int dx = -2; dx <= 2; dx++) {
+        if (dx * dx + dy * dy <= 5) {
+          sink.add(cx + dx * cell, cy + dy * cell);
+        }
+      }
+    }
+    if (sink.isNotEmpty) {
+      _dotPaint
+        ..strokeWidth = cell
+        ..color = w.windowColor.withValues(
+          alpha: w.windowColor.a * eased * 0.75,
+        );
+      canvas.drawRawPoints(ui.PointMode.points, sink.view, _dotPaint);
+    }
+  }
+
+  void _paintAncientRuinsScene(
+    Canvas canvas,
+    Size size,
+    PixelWalker w,
+    double cell,
+    double t,
+    double baseY,
+    double eased,
+    double skyScale,
+  ) {
+    final _PointSink stones = state._skySink..clear();
+    final _PointSink runes = state._windowSink..clear();
+    final double scroll = t * 7.0;
+    final int first = scroll.floor();
+    final double frac = scroll - first;
+    final int cols = (size.width / cell).ceil() + 1;
+
+    for (int i = 0; i <= cols; i++) {
+      final int wx = first + i;
+      final double sx = (i - frac) * cell + cell / 2;
+      final int slot = wx % 28;
+      final int maxH = (16 * skyScale).round();
+      for (int y = 0; y < maxH; y++) {
+        final double py = baseY - y * cell - cell / 2;
+        if (py < 0) break;
+        final int stepIndent = (y * 2) ~/ 3;
+        final bool inPyramid =
+            slot >= 2 + stepIndent && slot <= 18 - stepIndent;
+        final bool inPillar =
+            (slot == 22 || slot == 25) && y < (maxH * 0.65).round();
+        if (inPyramid || inPillar) {
+          if (slot == 10 && y > 2 && y < maxH - 3 && y.isEven) {
+            runes.add(sx, py);
+          } else if (_hash(wx, y, w.seed ^ 0x88b4) < 0.78 * eased) {
+            stones.add(sx, py);
+          }
+        }
+      }
+    }
+    if (stones.isNotEmpty) {
+      _dotPaint
+        ..strokeWidth = cell
+        ..color = w.skylineColor.withValues(alpha: w.skylineColor.a * eased);
+      canvas.drawRawPoints(ui.PointMode.points, stones.view, _dotPaint);
+    }
+    if (runes.isNotEmpty) {
+      _dotPaint
+        ..strokeWidth = cell
+        ..color = w.windowColor.withValues(alpha: w.windowColor.a * eased);
+      canvas.drawRawPoints(ui.PointMode.points, runes.view, _dotPaint);
+    }
+  }
+
+  void _paintSynthSun(
+    Canvas canvas,
+    Size size,
+    PixelWalker w,
+    double cell,
+    double baseY,
+    double eased,
+  ) {
+    final _PointSink sink = state._fxSink..clear();
+    final double cx = (size.width * 0.5 / cell).floor() * cell + cell / 2;
+    final double cy = baseY - 8 * cell;
+    for (int dy = -9; dy <= 7; dy++) {
+      if (dy > 0 && dy.isOdd) continue;
+      for (int dx = -9; dx <= 9; dx++) {
+        if (dx * dx + dy * dy <= 81 &&
+            _hash(dx + 12, dy + 12, w.seed ^ 0x77c9) < 0.85 * eased) {
+          sink.add(cx + dx * cell, cy + dy * cell);
+        }
+      }
+    }
+    if (sink.isNotEmpty) {
+      _dotPaint
+        ..strokeWidth = cell
+        ..color = w.windowColor.withValues(
+          alpha: w.windowColor.a * eased * 0.75,
+        );
+      canvas.drawRawPoints(ui.PointMode.points, sink.view, _dotPaint);
+    }
+  }
+
+  void _paintCyberGridFloor(
+    Canvas canvas,
+    Size size,
+    PixelWalker w,
+    double cell,
+    double t,
+    double baseY,
+    double feetY,
+    double eased,
+  ) {
+    final _PointSink sink = state._fxSink..clear();
+    final int cols = (size.width / cell).ceil();
+    final double scroll = t * 9.0;
+    for (int cx = 0; cx <= cols; cx++) {
+      final double sx = cx * cell + cell / 2;
+      sink.add(sx, baseY);
+      if (((cx + scroll.floor()) % 6) == 0) {
+        for (double py = baseY + cell; py <= feetY; py += cell * 1.5) {
+          sink.add(sx, py);
+        }
+      }
+    }
+    if (sink.isNotEmpty) {
+      _dotPaint
+        ..strokeWidth = cell
+        ..color = w.starColor.withValues(alpha: w.starColor.a * eased * 0.45);
+      canvas.drawRawPoints(ui.PointMode.points, sink.view, _dotPaint);
+    }
   }
 
   void _paintSprite(

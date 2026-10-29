@@ -359,6 +359,10 @@ void main() {
             PixelSpriteVersion.v1 => 'V1 / ORIGINAL',
             PixelSpriteVersion.v2 => 'V2 / MOCHI BUDDIES',
             PixelSpriteVersion.v3 => 'V3 / POCKET PALS',
+            PixelSpriteVersion.v4 => 'V4 / BOUNCY SLIME',
+            PixelSpriteVersion.v5 => 'V5 / CYBER MECHA',
+            PixelSpriteVersion.v6 => 'V6 / WIND-UP TOY',
+            PixelSpriteVersion.v7 => 'V7 / ASTRAL GHOST',
           },
           24,
           y,
@@ -391,7 +395,7 @@ void main() {
           );
         }
       }
-      await save(portraits, 1440, 824, 'mascot-editions');
+      await save(portraits, 1440, 93 + PixelSpriteVersion.values.length * 240, 'mascot-editions');
 
       final strips = ui.PictureRecorder();
       final stripCanvas = Canvas(strips)

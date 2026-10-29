@@ -3,7 +3,7 @@
 id: pixel_walker
 title: Pixel Walker
 kind: paint
-tags: [pixel, sprite, dither, skyline, mascot, refresh, header, animated, night, cat, capybara, duck, crab, axolotl]
+tags: [pixel, sprite, dither, skyline, mascot, refresh, header, animated, night, forest, space, fantasy, synthwave, slime, mecha, ghost, cat, capybara, duck, crab, axolotl]
 
 # --- TAXONOMY (§2) ---
 paint_source: painter
@@ -49,25 +49,24 @@ preview: null
 
 # Pixel Walker
 
-Cảnh pixel-art neo đáy với sáu mascot: Clawd, mèo Miu, capybara Capy, vịt
-Quạc, cua Cáu và axolotl Axo. Mỗi con có silhouette, màu và nhịp đi riêng;
-sprite đổi frame rõ nét pixel trong khi thân nghiêng/nhún/dịch ngang liên tục.
-Hai cảnh `city` và `nightCity` dựng skyline, mây, núi, sao/trăng bằng code,
-không cần asset.
+Cảnh pixel-art neo đáy với sáu mascot, bảy phiên bản art và sáu thế giới nền.
+Clawd, mèo Miu, capybara Capy, vịt Quạc, cua Cáu và axolotl Axo đều có gait
+riêng; sprite đổi frame pixel trong khi thân nghiêng, nhún và dịch chuyển liên
+tục. Toàn bộ cảnh nền được dựng bằng code, không cần asset.
 
 `progress` mở cảnh; `walking` bật bước và parallax; `readiness` tạo tư thế
 chuẩn bị; `celebration` lấy mẫu một động tác hoàn tất. Dùng làm header refresh,
-loading hoặc empty state. Playground có picker sáu mascot, tốc độ và **Xem
-từng nhịp** để scrub thời gian mà vẫn giữ các lựa chọn hiện tại. Dropdown
-**Phiên bản mascot** có V1 Original, V2 Mochi buddies và V3 Pocket pals;
-showcase mặc định V2, API mặc định vẫn V1.
+loading hoặc empty state. Playground có picker cho mascot, phiên bản, scene,
+tốc độ và **Xem từng nhịp** để scrub thời gian mà vẫn giữ các lựa chọn hiện
+tại. API mặc định vẫn dùng V1 Original; showcase mặc định dùng V2 Mochi buddies.
 
 ## Port notes
 
 - Nguồn gốc: dựng lại cảnh pull-to-refresh của app **Claude Code mobile** từ
   video, không dùng source hoặc asset của app gốc (`origin: reimplemented`).
-- Giữ bố cục mascot ở giữa, dither procedural và skyline trôi ngang.
-- Các mascot ngoài Clawd và scene `nightCity` là phần tự thiết kế thêm.
+- Giữ bố cục mascot ở giữa và lớp pixel procedural chuyển động parallax.
+- `city` và `nightCity` dựng lại từ video tham khảo; các scene và mascot còn
+  lại là thiết kế thêm cho component này.
 - Bản 1.3.0 thêm nhịp đi theo nhân vật, art nhiều sắc độ, pose phản ứng và
   sampling theo thời gian; vẫn là một file Flutter, không dependency ngoài SDK.
 
@@ -83,10 +82,10 @@ SizedBox(
   height: 160,
   width: double.infinity,
   child: PixelWalker(
-    sprite: PixelSprite.miu(version: PixelSpriteVersion.v2),
-    scene: PixelWalkerScene.nightCity,
+    sprite: PixelSprite.axolotl(version: PixelSpriteVersion.v7),
+    scene: PixelWalkerScene.forest,
     walking: true,
-    backgroundColor: const Color(0xFF0A0D16),
+    backgroundColor: const Color(0xFF071410),
   ),
 )
 ```
@@ -101,16 +100,27 @@ SizedBox(
 | `readiness` | `double` | `0` | 0→1 tư thế chuẩn bị, giữ chân tại đường đất. |
 | `celebration` | `double` | `0` | Tiến độ 0→1 của một động tác hoàn tất; hai đầu về tư thế trung tính. Parent tự điều khiển tiến độ. |
 | `frozenAt` | `double?` | `null` | Render một thời điểm tính bằng giây, nhân `speed × motion`, không ticker hay pha tăng tốc; dùng cho thumbnail/scrub. |
-| `scene` | `PixelWalkerScene` | `city` | `city` hoặc `nightCity` (cửa sổ sáng, núi, sao/trăng). |
+| `scene` | `PixelWalkerScene` | `city` | Chọn một trong sáu thế giới procedural; xem bảng scene bên dưới. |
 | `scale` | `double` | `1` | Ô nền `3px × scale`; ô mascot `6px × scale / sprite.pixelRatio`. |
 | `sprite` | `PixelSprite?` | Clawd | Sprite custom dạng frame ký tự + palette. |
 | `mascotColor` | `Color` | `#E8875C` | Màu chính Clawd khi `sprite` null; các sắc độ phụ được suy ra. |
-| `skylineColor` | `Color` | `#B9B4AE` | Màu skyline, mây và núi. |
-| `windowColor` | `Color` | `#F2C069` | Cửa sổ cảnh đêm. |
-| `starColor` | `Color` | `#C7D3E6` | Sao/trăng cảnh đêm. |
+| `skylineColor` | `Color` | `#B9B4AE` | Màu các chấm của layer nền, mây và địa hình. |
+| `windowColor` | `Color` | `#F2C069` | Màu cửa sổ và các chi tiết phát sáng như đom đóm, beacon, rune. |
+| `starColor` | `Color` | `#C7D3E6` | Màu sao, trăng và các điểm sáng trên nền không gian. |
 | `backgroundColor` | `Color` | transparent | Nền dưới cảnh. |
 | `speed` | `double` | `1` | Tốc độ bước và parallax; đổi tốc độ live giữ pha hiện tại. |
 | `seed` | `int` | `7` | Bố cục procedural xác định theo seed. |
+
+### Scene
+
+| Scene | Các lớp nền |
+|---|---|
+| `city` | Skyline dither và mây trôi parallax. |
+| `nightCity` | Nhà cao tầng có cửa sổ sáng, mây, núi, sao và trăng khuyết. |
+| `forest` | Cây dither, núi xa, sao và đom đóm. |
+| `spaceStation` | Mái vòm và beacon chuyển động, hành tinh có vành, sao. |
+| `ancientRuins` | Kim tự tháp bậc, cột, rune sáng, núi và hai mặt trăng. |
+| `cyberGrid` | Mặt trời synthwave, skyline cao tầng và sàn lưới trôi. |
 
 ### Sprite và gait
 
@@ -120,22 +130,27 @@ mọi dòng cùng chiều dài; ký tự không có trong palette là trong su�
 là pose nghỉ, các frame còn lại tạo vòng bước. `gait` chọn nhịp và độ nghiêng,
 nhún, dịch ngang; không còn quy tắc frame lẻ tự cộng bob.
 
-Mỗi factory nhận thêm `version: PixelSpriteVersion.v1/v2/v3`. V1 giữ nguyên
-art, palette và chuyển động cũ: 1 nghỉ + 6 bước, 4–5 màu; nhịp Clawd/Miu/
-Capy/Quạc/Cáu/Axo là 2.15/1.45/0.85/1.60/1.90/1.05 vòng/giây.
+Mỗi factory nhận `version: PixelSpriteVersion`. V1 giữ nguyên art, palette và
+chuyển động cũ: 1 nghỉ + 6 bước, 4–5 màu; nhịp Clawd/Miu/Capy/Quạc/Cáu/Axo
+là 2.15/1.45/0.85/1.60/1.90/1.05 vòng/giây.
 
 | Phiên bản | Tạo hình | Dữ liệu |
 |---|---|---|
 | V1 Original | Bản gốc, giữ cả chuyển động. | Lưới cũ, `pixelRatio: 1`. |
 | V2 Mochi buddies | Thân tròn, màu kem/pastel, nét mặt hiền, viền ấm. | 48×36, 1 nghỉ + 16 bước, 8 màu, `pixelRatio: 3`. |
 | V3 Pocket pals | Chibi rõ nét, khăn nhỏ, trái quýt, sao biển và mang ngọc trai. | 48×36, 1 nghỉ + 16 bước, 10–11 màu, `pixelRatio: 3`. |
+| V4 Bouncy Slime | Thân thạch trong, lõi sáng và giọt bắn nảy theo gait. | 48×36, 1 nghỉ + 16 bước, `pixelRatio: 3`. |
+| V5 Cyber Mecha | Giáp máy, visor LED và luồng phản lực ở jetpack. | 48×36, 1 nghỉ + 16 bước, `pixelRatio: 3`. |
+| V6 Wind-up Toy | Tạo hình đồ chơi cơ khí với chìa khóa cót chuyển động. | 48×36, 1 nghỉ + 16 bước, `pixelRatio: 3`. |
+| V7 Astral Ghost | Mascot ma lơ lửng với halo, vệt khói và bụi sao. | 48×36, 1 nghỉ + 16 bước, `pixelRatio: 3`. |
 
-V2 có nhịp 1.05/0.95/0.68/1.10/1.05/0.82 vòng/giây theo cùng thứ tự;
-V3 nhanh hơn 8%. `walkCyclesPerSecond` trả nhịp của sprite. Mỗi vòng chứa
-hai bước; đuôi, mang, càng và phụ kiện theo sau nhịp chân. Chuyển động thân
-liên tục có biên độ nhỏ để giữ hình pixel rõ, kết hợp pose chuẩn bị/hoàn tất.
+V2 có nhịp cơ sở 1.05/0.95/0.68/1.10/1.05/0.82 vòng/giây theo thứ tự trên;
+V3 nhanh hơn 8%, V4 chậm hơn 6%, V5 nhanh hơn 16%, V6 nhanh hơn 12%, V7 chậm
+hơn 12%. `walkCyclesPerSecond` trả nhịp cuối cùng của sprite. Mỗi vòng có hai
+bước; đuôi, mang, càng và phụ kiện theo sau chân. Bốn edition mới có thông số
+pose liên tục riêng để đổi độ nảy, độ nghiêng và cảm giác lơ lửng.
 
-`pixelRatio` tách độ phân giải khỏi kích thước: V2/V3 chiếm khung tối đa
+`pixelRatio` tách độ phân giải khỏi kích thước: V2–V7 chiếm khung tối đa
 96×72px ở `scale: 1`, vừa header 110px. Factory cache frame và palette bất
 biến; màu custom tạo palette riêng. Bỏ qua tham số màu dùng màu riêng của
 edition; truyền màu tường minh vẫn đổi body/detail/eye. Component vẫn chỉ
@@ -192,6 +207,10 @@ chờ hoặc thay đổi state machine; app tái sử dụng tự sở hữu cho
 - Xem thêm [animation brief](../../../docs/pixel_art_animation_brief.md) khi
   thêm art hoặc thay đổi motion.
 ## Changelog
+
+- **Unreleased** — thêm V4 Bouncy Slime, V5 Cyber Mecha, V6 Wind-up Toy và
+  V7 Astral Ghost; thêm các scene forest, spaceStation, ancientRuins và
+  cyberGrid, cùng picker scene/edition trong hai demo.
 
 - **1.4.1** (2026-10-23) — sửa hướng bước V3: chân chạm đất quét sang trái
   cùng chiều nền; chân nhấc đưa sang phải. Đồng bộ mũi chân Miu/Quạc và

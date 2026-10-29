@@ -116,12 +116,16 @@ PullRevealRefresh(
 
 ## Pixel mascot demo
 
-Demo ghép sáu mascot của `PixelWalker`: Clawd, Miu, Capy, Quạc, Cáu và
-Axo. Dropdown **Phiên bản mascot** cho chọn V1 Original, V2 Mochi buddies
-hoặc V3 Pocket pals (mặc định V2), giữ nhân vật và scene đang chọn, kể cả
-đang refresh. V1 giữ hình và chuyển động cũ; V2/V3 dùng sprite 48×36 với
-16 nhịp bước, vẫn vừa header 110px. Mỗi con có dáng bước riêng. Phần cuối hành trình kéo truyền
-`readiness` từ 0→1 để mascot chuẩn bị; khi tải thì bật `walking`.
+Demo ghép `PullRevealRefresh` với sáu mascot của `PixelWalker`: Clawd, Miu,
+Capy, Quạc, Cáu và Axo. Dropdown **Phiên bản mascot** có V1 Original, V2
+Mochi buddies, V3 Pocket pals, V4 Bouncy Slime, V5 Cyber Mecha, V6 Wind-up Toy
+và V7 Astral Ghost; mặc định dùng V2. Chip scene luân phiên qua `city`,
+`nightCity`, `forest`, `spaceStation`, `ancientRuins` và `cyberGrid`. Có thể
+đổi mascot, edition và scene khi refresh đang chạy.
+
+Mỗi mascot có gait riêng. V2–V7 dùng sprite 48×36 với 16 frame bước và
+`pixelRatio: 3`, phù hợp header 110px. Trong 35% cuối hành trình kéo, demo
+truyền `readiness` từ 0→1 để mascot chuẩn bị; lúc tải thì bật `walking`.
 
 Sau tải giả 3 giây, demo giữ header mở thêm 360ms bằng cách chờ một
 `AnimationController` hoàn tất ngay trong `onRefresh`. Trong nhịp này,
@@ -151,6 +155,10 @@ demo là tín hiệu thành công cho mọi request.
   thêm.
 
 ## Changelog
+
+- **Unreleased** — demo thêm picker đủ bảy edition mascot và sáu scene của
+  `PixelWalker`; truyền màu nền cùng màu chi tiết theo scene. Core gesture,
+  physics, public API và state machine của `PullRevealRefresh` không đổi.
 
 - **1.0.3** (2026-10-23) — demo thêm dropdown V1/V2/V3 cho đủ sáu mascot,
   mặc định V2 Mochi buddies; giữ scene, mascot và refresh đang chạy khi đổi

@@ -1,3 +1,4 @@
+
 // Demo/usage example for PixelWalker. Exempt from portability rules (§3.1.9);
 // also serves as the copy-paste usage reference (§6).
 
@@ -17,6 +18,57 @@ final ComponentDemo pixelWalkerDemo = ComponentDemo(
 
 const _mascotNames = ['Clawd', 'Miu', 'Capy', 'Quạc', 'Cáu', 'Axo'];
 
+const _sceneSpecs = <(PixelWalkerScene, String, Color, Color, Color, Color)>[
+  (
+    PixelWalkerScene.city,
+    'Thành phố',
+    Color(0xFF0E0D0B),
+    Color(0xFFB9B4AE),
+    Color(0xFFF2C069),
+    Color(0xFFC7D3E6),
+  ),
+  (
+    PixelWalkerScene.nightCity,
+    'Đêm — cao tầng, núi, mây',
+    Color(0xFF0A0D16),
+    Color(0xFF93A1BE),
+    Color(0xFFF2C069),
+    Color(0xFFC7D3E6),
+  ),
+  (
+    PixelWalkerScene.forest,
+    'Rừng đom đóm',
+    Color(0xFF071410),
+    Color(0xFF538A78),
+    Color(0xFFB8FF66),
+    Color(0xFFA8E6CF),
+  ),
+  (
+    PixelWalkerScene.spaceStation,
+    'Trạm vũ trụ',
+    Color(0xFF090718),
+    Color(0xFF8A7EB8),
+    Color(0xFF47F5FF),
+    Color(0xFFE0C8FF),
+  ),
+  (
+    PixelWalkerScene.ancientRuins,
+    'Di tích cổ',
+    Color(0xFF17110E),
+    Color(0xFFB8997E),
+    Color(0xFFFFB84D),
+    Color(0xFFF5DFC6),
+  ),
+  (
+    PixelWalkerScene.cyberGrid,
+    'Lưới Synthwave',
+    Color(0xFF14071E),
+    Color(0xFFB066FF),
+    Color(0xFFFF4D94),
+    Color(0xFF38F2FF),
+  ),
+];
+
 // Reuse each art set when switching versions or scrubbing animation time.
 final _mascots = <PixelSpriteVersion, List<PixelSprite>>{
   for (final version in PixelSpriteVersion.values)
@@ -30,10 +82,9 @@ final _mascots = <PixelSpriteVersion, List<PixelSprite>>{
     ],
 };
 
-/// Cảnh trong khung header 160px + điều khiển trực tiếp các param chính:
-/// nút đổi `scene` (thành phố / thành phố đêm) và `sprite` (6 mascot: Clawd,
-/// Miu, Capy, Quạc, Cáu, Axo), kéo slider `progress` để thấy hiệu ứng hiện
-/// dần, bật `walking` để mascot bước và các layer trôi parallax.
+/// Showcase PixelWalker trong khung header 160px, với picker sáu thế giới và
+/// sáu mascot, bảy phiên bản art, cùng điều khiển trực tiếp progress và gait.
+/// Có thể bật walking, readiness hoặc scrub thời gian để xem chuyển động.
 class _PixelWalkerShowcase extends StatefulWidget {
   const _PixelWalkerShowcase();
 
@@ -55,9 +106,9 @@ class _PixelWalkerShowcaseState extends State<_PixelWalkerShowcase> {
 
   @override
   Widget build(BuildContext context) {
-    final bool night = _scene == PixelWalkerScene.nightCity;
+    final spec = _sceneSpecs.firstWhere((s) => s.$1 == _scene);
+    final Color bg = spec.$3;
     // Mỗi scene một tông nền/skyline — component chỉ nhận màu, không tự đoán.
-    final Color bg = night ? const Color(0xFF0A0D16) : const Color(0xFF0E0D0B);
     // Material thay vì ColoredBox: SwitchListTile vẽ ink lên Material gần
     // nhất — ColoredBox chen giữa sẽ che nó (assertion ở debug mode).
     return Material(
@@ -76,9 +127,9 @@ class _PixelWalkerShowcaseState extends State<_PixelWalkerShowcase> {
               scale: _scale,
               scene: _scene,
               sprite: _mascots[_version]![_mascot],
-              skylineColor: night
-                  ? const Color(0xFF93A1BE)
-                  : const Color(0xFFB9B4AE),
+              skylineColor: spec.$4,
+              windowColor: spec.$5,
+              starColor: spec.$6,
             ),
           ),
           const Divider(height: 1, color: Colors.white12),
@@ -100,18 +151,12 @@ class _PixelWalkerShowcaseState extends State<_PixelWalkerShowcase> {
                   spacing: 8,
                   runSpacing: 8,
                   children: <Widget>[
-                    _PickChip(
-                      label: 'Thành phố',
-                      selected: !night,
-                      onTap: () =>
-                          setState(() => _scene = PixelWalkerScene.city),
-                    ),
-                    _PickChip(
-                      label: 'Đêm — cao tầng, núi, mây',
-                      selected: night,
-                      onTap: () =>
-                          setState(() => _scene = PixelWalkerScene.nightCity),
-                    ),
+                    for (final item in _sceneSpecs)
+                      _PickChip(
+                        label: item.$2,
+                        selected: _scene == item.$1,
+                        onTap: () => setState(() => _scene = item.$1),
+                      ),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -242,6 +287,10 @@ class _VersionPicker extends StatelessWidget {
               (PixelSpriteVersion.v1, 'V1 · Original'),
               (PixelSpriteVersion.v2, 'V2 · Mochi buddies'),
               (PixelSpriteVersion.v3, 'V3 · Pocket pals'),
+              (PixelSpriteVersion.v4, 'V4 · Bouncy Slime'),
+              (PixelSpriteVersion.v5, 'V5 · Cyber Mecha'),
+              (PixelSpriteVersion.v6, 'V6 · Wind-up Toy'),
+              (PixelSpriteVersion.v7, 'V7 · Astral Ghost'),
             ])
               DropdownMenuItem(
                 value: version,
