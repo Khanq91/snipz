@@ -1,8 +1,7 @@
-id: 2026-10-22-mochi-skins
-title: "Mochi Neko Pudding and Cloud skins"
-date: 2026-10-22
-added: []
-fixed:
-  - coucou_mochi
-  - pixel_walker
-  - pull_reveal_refresh
+id: 2026-11-17-pin-ui-port
+title: "Port Pin-UI LiquidVoice + ThemeSwitch to Flutter"
+date: 2026-11-17
+added:
+  - liquid_voice
+  - theme_switch
+fixed: []

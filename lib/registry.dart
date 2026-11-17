@@ -60,6 +60,7 @@ import 'package:snipz/components/jelly_blob/jelly_blob_demo.dart';
 import 'package:snipz/components/lattice_snap/lattice_snap_demo.dart';
 import 'package:snipz/components/like_burst/like_burst_demo.dart';
 import 'package:snipz/components/line_drawing/line_drawing_demo.dart';
+import 'package:snipz/components/liquid_voice/liquid_voice_demo.dart';
 import 'package:snipz/components/marquee_reveal/marquee_reveal_demo.dart';
 import 'package:snipz/components/momentum_picker/momentum_picker_demo.dart';
 import 'package:snipz/components/morph_slider/morph_slider_demo.dart';
@@ -99,6 +100,7 @@ import 'package:snipz/components/switch_spring/switch_spring_demo.dart';
 import 'package:snipz/components/tab_pill_glide/tab_pill_glide_demo.dart';
 import 'package:snipz/components/tag_input/tag_input_demo.dart';
 import 'package:snipz/components/text_type/text_type_demo.dart';
+import 'package:snipz/components/theme_switch/theme_switch_demo.dart';
 import 'package:snipz/components/toast_overshoot/toast_overshoot_demo.dart';
 import 'package:snipz/components/toast_stack/toast_stack_demo.dart';
 import 'package:snipz/components/true_focus/true_focus_demo.dart';
@@ -168,6 +170,7 @@ final Map<String, ComponentDemo> componentRegistry = <String, ComponentDemo>{
   'lattice_snap': latticeSnapDemo,
   'like_burst': likeBurstDemo,
   'line_drawing': lineDrawingDemo,
+  'liquid_voice': liquidVoiceDemo,
   'marquee_reveal': marqueeRevealDemo,
   'momentum_picker': momentumPickerDemo,
   'morph_slider': morphSliderDemo,
@@ -207,6 +210,7 @@ final Map<String, ComponentDemo> componentRegistry = <String, ComponentDemo>{
   'tab_pill_glide': tabPillGlideDemo,
   'tag_input': tagInputDemo,
   'text_type': textTypeDemo,
+  'theme_switch': themeSwitchDemo,
   'toast_overshoot': toastOvershootDemo,
   'toast_stack': toastStackDemo,
   'true_focus': trueFocusDemo,

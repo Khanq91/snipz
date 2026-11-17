@@ -1,19 +1,18 @@
 {
   "_generated": true,
-  "_generated_at": "2026-10-29T09:20:00.134416Z",
+  "_generated_at": "2026-11-17T04:43:42.115501+00:00",
   "_generated_flutter": "3.44.5",
   "_generated_dart": "3.12.2",
   "_generated_remote": "https://github.com/Khanq91/snipz",
   "session": {
-    "id": "2026-10-22-mochi-skins",
-    "title": "Mochi Neko Pudding and Cloud skins",
-    "date": "2026-10-22",
-    "added": [],
-    "fixed": [
-      "coucou_mochi",
-      "pixel_walker",
-      "pull_reveal_refresh"
-    ]
+    "id": "2026-11-17-pin-ui-port",
+    "title": "Port Pin-UI LiquidVoice + ThemeSwitch to Flutter",
+    "date": "2026-11-17",
+    "added": [
+      "liquid_voice",
+      "theme_switch"
+    ],
+    "fixed": []
   },
   "components": [
     {
@@ -2694,6 +2693,49 @@
       "test_history": []
     },
     {
+      "id": "liquid_voice",
+      "title": "Liquid Voice",
+      "kind": "composite",
+      "tags": [
+        "voice",
+        "recording",
+        "glass",
+        "animation",
+        "pill"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "single_file",
+      "entry": "liquid_voice.dart",
+      "files": {
+        "liquid_voice.dart": "entry, public API"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/shadcn-labs/Pin-UI",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-11-17",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 1,
+      "test_history": []
+    },
+    {
       "id": "marquee_reveal",
       "title": "Marquee Reveal",
       "kind": "effect",
@@ -4444,6 +4486,54 @@
       "status": null,
       "preview": null,
       "file_count": 1,
+      "test_history": []
+    },
+    {
+      "id": "theme_switch",
+      "title": "Theme Switch",
+      "kind": "composite",
+      "tags": [
+        "theme",
+        "toggle",
+        "animation",
+        "particles",
+        "rain",
+        "fireworks",
+        "droplet",
+        "canvas",
+        "physics"
+      ],
+      "paint_source": "none",
+      "carriers_verified": [],
+      "carriers_failed": {},
+      "scale_aware": false,
+      "portability": "folder",
+      "entry": "theme_switch.dart",
+      "files": {
+        "theme_switch.dart": "entry, public API + widget",
+        "_engine.dart": "physics engine — droplet/rain/diwali math + data types"
+      },
+      "vendored_from": null,
+      "assets_required": [],
+      "shaders_required": [],
+      "deps": {},
+      "origin": "reimplemented",
+      "source": "https://github.com/shadcn-labs/Pin-UI",
+      "author": "Khang",
+      "license": "MIT",
+      "created": "2026-11-17",
+      "created_flutter": "3.44.5",
+      "created_dart": "3.12.2",
+      "created_deps": {},
+      "platforms_initial": [
+        "android"
+      ],
+      "version": "1.0.0",
+      "latest_known_good": null,
+      "last_verified": null,
+      "status": null,
+      "preview": null,
+      "file_count": 2,
       "test_history": []
     },
     {
