@@ -5,6 +5,7 @@
 /// Entry file. Copy the whole folder into another project and import this file.
 library;
 
+import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
@@ -111,6 +112,7 @@ class _LiquidVoiceWidgetState extends State<LiquidVoiceWidget>
 
   // spinner rotation (continuous)
   late final AnimationController _spinner;
+  Timer? _micIntroTimer;
 
   // vertical breathe on send
   double _pillY = 0;
@@ -180,7 +182,8 @@ class _LiquidVoiceWidgetState extends State<LiquidVoiceWidget>
     _pillW.value = 16;
     _pillH.value = 16;
     _drivePillTo(_idleW, _idleH, stiffness: 180, damping: 14);
-    Future<void>.delayed(const Duration(milliseconds: 200), () {
+    _micIntroTimer = Timer(const Duration(milliseconds: 200), () {
+      _micIntroTimer = null;
       if (!mounted) return;
       _micOpacity.forward();
     });
@@ -205,6 +208,7 @@ class _LiquidVoiceWidgetState extends State<LiquidVoiceWidget>
 
   @override
   void dispose() {
+    _micIntroTimer?.cancel();
     _skyTicker.dispose();
     _waveTicker.dispose();
     _pillW.dispose();
@@ -847,25 +851,28 @@ class _PillContents extends StatelessWidget {
         // ── waveform bars (center) ─────────────────────────────────────────
         Positioned.fill(
           child: Center(
-            child: SizedBox(
-              width: 140,
-              height: 28,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: List.generate(bars, (i) {
-                  final k = barIn[i];
-                  final envH = 3.5 + _envelope[i] * barLevels[i] * 24 * k;
-                  return Container(
-                    width: 2.2,
-                    height: envH.clamp(2.0, 28.0),
-                    margin: const EdgeInsets.symmetric(horizontal: 1.75),
-                    decoration: BoxDecoration(
-                      color: _barColor.withValues(alpha: math.min(1.0, k * 1.4)),
-                      borderRadius: BorderRadius.circular(99),
-                    ),
-                  );
-                }),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: SizedBox(
+                width: 140,
+                height: 28,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: List.generate(bars, (i) {
+                    final k = barIn[i];
+                    final envH = 3.5 + _envelope[i] * barLevels[i] * 24 * k;
+                    return Container(
+                      width: 2.2,
+                      height: envH.clamp(2.0, 28.0),
+                      margin: const EdgeInsets.symmetric(horizontal: 1.75),
+                      decoration: BoxDecoration(
+                        color: _barColor.withValues(alpha: math.min(1.0, k * 1.4)),
+                        borderRadius: BorderRadius.circular(99),
+                      ),
+                    );
+                  }),
+                ),
               ),
             ),
           ),

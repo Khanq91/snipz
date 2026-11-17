@@ -457,57 +457,60 @@ class _SegmentedControl extends StatelessWidget {
     const double pad = 3;
     final int selectedIndex = _options.indexWhere((o) => o.$1 == selected);
 
-    return Container(
-      decoration: BoxDecoration(
-        color: segBg,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      padding: const EdgeInsets.all(pad),
-      child: Stack(
-        children: [
-          // Sliding thumb
-          AnimatedPositioned(
-            duration: const Duration(milliseconds: 220),
-            curve: const Cubic(0.23, 1, 0.32, 1),
-            left: pad - pad + selectedIndex * segW, // relative to padding
-            top: 0,
-            child: Container(
-              width: segW,
-              height: segH,
-              decoration: BoxDecoration(
-                color: segThumb,
-                borderRadius: BorderRadius.circular(7),
-                boxShadow: const [BoxShadow(color: Color(0x14000000), blurRadius: 2, offset: Offset(0, 1))],
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      child: Container(
+        decoration: BoxDecoration(
+          color: segBg,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        padding: const EdgeInsets.all(pad),
+        child: Stack(
+          children: [
+            // Sliding thumb
+            AnimatedPositioned(
+              duration: const Duration(milliseconds: 220),
+              curve: const Cubic(0.23, 1, 0.32, 1),
+              left: pad - pad + selectedIndex * segW, // relative to padding
+              top: 0,
+              child: Container(
+                width: segW,
+                height: segH,
+                decoration: BoxDecoration(
+                  color: segThumb,
+                  borderRadius: BorderRadius.circular(7),
+                  boxShadow: const [BoxShadow(color: Color(0x14000000), blurRadius: 2, offset: Offset(0, 1))],
+                ),
               ),
             ),
-          ),
-          // Labels row
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: _options.map((o) {
-              final bool active = o.$1 == selected;
-              return GestureDetector(
-                onTap: () => onChanged(o.$1),
-                child: SizedBox(
-                  width: segW,
-                  height: segH,
-                  child: Center(
-                    child: Text(
-                      o.$2,
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color: active ? segActive : segText,
-                        decoration: TextDecoration.none,
-                        height: 1,
+            // Labels row
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: _options.map((o) {
+                final bool active = o.$1 == selected;
+                return GestureDetector(
+                  onTap: () => onChanged(o.$1),
+                  child: SizedBox(
+                    width: segW,
+                    height: segH,
+                    child: Center(
+                      child: Text(
+                        o.$2,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: active ? segActive : segText,
+                          decoration: TextDecoration.none,
+                          height: 1,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              );
-            }).toList(),
-          ),
-        ],
+                );
+              }).toList(),
+            ),
+          ],
+        ),
       ),
     );
   }
